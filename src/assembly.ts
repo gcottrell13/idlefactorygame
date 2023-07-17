@@ -1,19 +1,25 @@
-import { useEffect, useState } from 'react';
-import { recipes, amountThatWeHave, assemblersPerRecipe, Items } from './values';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { recipes, Items } from './values';
 import _ from 'lodash';
 import { SMap } from './smap';
 
+interface State {
+    assemblersPerRecipe: Partial<SMap<number>>;
+    amountThatWeHave: { [p in Items]: number };
+}
 
-function doProduction(rate: number) {
-    const amounts: {[p: string]: number} = {};
+function doProduction({
+    assemblersPerRecipe,
+    amountThatWeHave,
+}: State, rate: number) {
+    const amounts: { [p: string]: number } = { ...amountThatWeHave };
     _.forEach(assemblersPerRecipe, (assemblerCount, itemName) => {
         const recipe = recipes[itemName as Items];
         if (recipe === undefined) return;
-        if (!assemblerCount) return;
 
         const amt = amountThatWeHave[itemName as Items] ?? 0;
 
-        let numberOfRecipesToMake = assemblerCount;
+        let numberOfRecipesToMake = assemblerCount ?? 0;
         _.toPairs(recipe).forEach(pair => {
             const [ingredientName, requiredCount] = pair;
             const weHave = amountThatWeHave[ingredientName as Items] ?? 0;
@@ -29,21 +35,44 @@ function doProduction(rate: number) {
         amounts[itemName] = amt + numberOfRecipesToMake * rate;
         amountThatWeHave[itemName as Items] = amounts[itemName];
     });
-    return amounts;
+    return {
+        assemblersPerRecipe,
+        amountThatWeHave: amounts as { [p in Items]: number },
+    };
 }
 
 export function useProduction(rate: number) {
-    const [state, setState] = useState<SMap<number>>({});
+    const stateRef = useRef<State>({
+        amountThatWeHave: {
+            "iron-bar": 0,
+            "iron-ore": 0,
+            assembler: 0,
+        }, assemblersPerRecipe: {}
+    });
+
+    const [c, setCounter] = useState<number>(0);
+
+    const addAmount = useCallback(
+        (itemName: Items, amount: number) => {
+            stateRef.current.amountThatWeHave[itemName] += amount;
+        },
+        []
+    );
+    const addAssemblers = useCallback(
+        (itemName: Items, amount: number) => {
+            const current = stateRef.current.assemblersPerRecipe[itemName] ?? 0;
+            stateRef.current.assemblersPerRecipe[itemName] = current + amount;
+        },
+        []
+    );
+
     useEffect(
         () => {
-            const i = setInterval(() => {
-                setState(doProduction(1 / rate));
+            const i = setTimeout(() => {
+                stateRef.current = doProduction(stateRef.current, 1 / rate);
+                setCounter(c + 1);
             }, 1000 / rate);
-            return () => {
-                clearInterval(i);
-            }
-        },
-        [rate]
+        }
     );
-    return state;
+    return { ...stateRef.current, addAmount, addAssemblers };
 }

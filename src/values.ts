@@ -20,11 +20,3 @@ export const recipes: Recipes = {
     'iron-ore': {},
     'assembler': {},
 };
-
-type SMap<T extends string, K> = {[p in T]: K};
-
-export const assemblersPerRecipe: Partial<SMap<Items, number>> = {
-    'iron-ore': 10,
-};
-
-export const amountThatWeHave: Partial<SMap<Items, number>> = {};
