@@ -12,6 +12,8 @@ type partialItems<T> = { [p in Items]?: T };
 
 export type Items = ''
     // land
+    | 'land'
+    | 'rocky-land' | 'wet-land' | 'dry-land'
     // raw materials
     | 'iron-ore' | 'gas' | 'stone' | 'oil'
     | 'uranium-ore' | 'copper-ore'
@@ -43,10 +45,16 @@ export type Items = ''
     | 'water-pump-mk1' | 'water-pump-mk2'
     | 'greenhouse' | 'hydroponics'
     | 'water-filter'
+    | 'explorer'
     ;
 
 export const recipes: Recipes = {
     '': { '': 0 },
+
+    'land': {},
+    'wet-land': {},
+    'dry-land': {},
+    'rocky-land': {},
 
     // raw
     'iron-ore': {},
@@ -123,10 +131,17 @@ export const recipes: Recipes = {
     'greenhouse': { 'steel': 10, 'glass': 20 },
     'hydroponics': { 'steel': 50, 'basic-circuit': 20 },
     'water-filter': { 'steel': 5, 'pipe': 5 },
+
+    'explorer': {'steel': 10, 'basic-circuit': 15},
 };
 
 export const timePerRecipe: { [p in Items]: number } = {
     '': 0,
+
+    'land': 10,
+    'wet-land': 0,
+    'dry-land': 0,
+    'rocky-land': 0,
 
     // raw
     "iron-ore": 1,
@@ -176,6 +191,7 @@ export const timePerRecipe: { [p in Items]: number } = {
     'water-filter': 10,
     'greenhouse': 10,
     'hydroponics': 20,
+    explorer: 20,
 };
 
 export const assemblerSpeeds: { [p in Items]?: number } = {
@@ -193,9 +209,14 @@ export const assemblerSpeeds: { [p in Items]?: number } = {
     'water-filter': 1,
     'greenhouse': 0.5,
     'hydroponics': 1.5,
+    'explorer': 1,
 };
 
 export const requiredBuildings: { [p in Items]?: (Items | 'by-hand')[] } = {
+    'land': ['by-hand', 'explorer'],
+    'wet-land': [],
+    'dry-land': [],
+    'rocky-land': [],
     // raw
     'gas': ['gas-extractor'],
     'iron-ore': ['miner-mk1', 'by-hand'],
@@ -261,6 +282,9 @@ export const requiredOtherProducts: { [p in Items]?: Items[][] } = {
  * determined by their relative values
  */
 export const sideProducts: partialItems<partialItems<number>[]> = {
+    'land': [
+        { 'rocky-land': 2, 'wet-land': 1, 'dry-land': 2 },
+    ],
     'water': [
         { 'water': 1 },
         { 'silt': 0.001, 'sand': 0.1 }
@@ -277,4 +301,5 @@ export const byHandVerbs: { [p in Items]?: string } = {
     'stone': 'gather',
     'coal': 'gather',
     'seed': 'gather',
+    'land': 'explore',
 }

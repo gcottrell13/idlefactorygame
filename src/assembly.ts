@@ -93,7 +93,7 @@ function addToTotal(itemName: Items, recipeCount: number, amounts: partialItems<
             _.forIn(keys(sideProduct), key => {
                 const k = key as Items;
                 runningTotal += sideProduct[k] ?? 0;
-                if (Math.random() < (runningTotal / total)) {
+                if (Math.random() <= (runningTotal / total)) {
                     amounts[k] = (amounts[k] ?? 0) + recipeCount;
                     return false;
                 }
@@ -177,8 +177,8 @@ export function useProduction(ticksPerSecond: number) {
                 stateRef.current.amountThatWeHave[ingredientName as Items] = newTotal;
                 stateRef.current.displayAmount[ingredientName as Items] = newTotal;
             });
-            stateRef.current.amountThatWeHave[itemName] = (stateRef.current.amountThatWeHave[itemName] ?? 0) + 1;
-            stateRef.current.displayAmount[itemName] = stateRef.current.amountThatWeHave[itemName];
+            addToTotal(itemName, 1, stateRef.current.amountThatWeHave, stateRef.current.displayAmount);
+            setState();
         },
         []
     );

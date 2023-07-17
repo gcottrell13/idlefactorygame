@@ -159,19 +159,14 @@ function App() {
         });
 
         if (seen.includes(itemName as Items) === false) {
-            if (keys(recipe).length === 0 && !buildingsToMakeThis.includes('by-hand')) {
-                if (!buildingsToMakeThis.some(x => x == 'by-hand' || (amountThatWeHave[x as Items] ?? 0) > 0)) {
-                    return;
-                }
-            }
-            else {
-                const haveIngredients = _.keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
+            if (amt <= 0) {
                 const haveProducers = Object.keys(assemblersMakingThis).length > 0;
-                if (haveIngredients === false && haveProducers === false && amt <= 0) return;
+                if (haveProducers === false && !buildingsToMakeThis.includes('by-hand')) return;
+                const haveIngredients = _.keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
+                if (haveIngredients === false && amt <= 0) return;
+                const requiredUnlocks = requiredOtherProducts[itemName as Items] ?? [];
+                if (requiredUnlocks.some(list => seen.every(x => seen.includes(x)))) return;
             }
-            const requiredUnlocks = requiredOtherProducts[itemName as Items] ?? [];
-            if (requiredUnlocks.some(list => seen.every(x => seen.includes(x)))) return;
-
             markAsSeen(itemName as Items);
         }
 
