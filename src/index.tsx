@@ -9,6 +9,8 @@ import {
     timePerRecipe,
     requiredBuildings,
     byHandVerbs,
+    sideProducts,
+    requiredOtherProducts,
 } from './values';
 import './css.css';
 import { Button, Row, Col, OverlayTrigger, ProgressBar } from 'react-bootstrap';
@@ -66,10 +68,12 @@ function ItemDisplay({
 
     const formatIngredients = _.toPairs(recipes[itemName as Items]).map(([name, count]) => <tr><td className={'popover-ingredient-count'}>{count}</td><td>{name}</td></tr>);
 
+    const byproductOf = keys(sideProducts).filter(mainProduct => sideProducts[mainProduct]?.[itemName as Items] !== undefined);
+
     const tooltip = (props: any) => (
         <Popover id="" {...props}>
             <Popover.Header>
-                {itemName}
+                {itemName} - {baseCraftTime}s
             </Popover.Header>
             <Popover.Body>
                 Made in: {(requiredBuildings[itemName as Items] ?? ['by-hand']).join(', ')}
@@ -79,6 +83,11 @@ function ItemDisplay({
                             <hr />
                             Ingredients: <table>{formatIngredients}</table>
                         </span>
+                    ) : null
+                }
+                {
+                    byproductOf.length > 0 ? (
+                        <div>Byproduct of: {byproductOf.join(', ')}</div>
                     ) : null
                 }
             </Popover.Body>
@@ -149,10 +158,22 @@ function App() {
             );
         });
 
-        const haveIngredients = _.keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
-        const haveProducers = Object.keys(assemblersMakingThis).length > 0;
-        if (haveIngredients === false && haveProducers === false && amt <= 0 && seen.includes(itemName as Items) === false) return;
-        markAsSeen(itemName as Items);
+        if (seen.includes(itemName as Items) === false) {
+            if (keys(recipe).length === 0 && !buildingsToMakeThis.includes('by-hand')) {
+                if (!buildingsToMakeThis.some(x => x == 'by-hand' || (amountThatWeHave[x as Items] ?? 0) > 0)) {
+                    return;
+                }
+            }
+            else {
+                const haveIngredients = _.keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
+                const haveProducers = Object.keys(assemblersMakingThis).length > 0;
+                if (haveIngredients === false && haveProducers === false && amt <= 0) return;
+            }
+            const requiredUnlocks = requiredOtherProducts[itemName as Items] ?? [];
+            if (requiredUnlocks.some(list => seen.every(x => seen.includes(x)))) return;
+
+            markAsSeen(itemName as Items);
+        }
 
         parts.push(
             <ItemDisplay

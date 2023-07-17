@@ -16,6 +16,7 @@ export type Items = ''
     | 'coal'
     | 'wood' | 'seed' | 'tree' | 'fertilizer' | 'nitrogen' | 'dirt'
     | 'sand'
+    | 'studonite' | 'dust'
 // processed raw
     | 'iron-bar' | 'copper-bar' | 'sulfur'
     | 'steel'
@@ -28,11 +29,12 @@ export type Items = ''
 // advanced materials
     | 'sulfuric-acid'
     | 'basic-circuit'
+    | 'solvent'
 // buildings
     | 'assembler1' | 'assembler2' | 'assembler3'
     | 'gas-extractor'
     | 'chemical-plant'
-    | 'smelter-mk1'
+    | 'smelter-mk1' | 'smelter-mk2'
     | 'miner-mk1'
     | 'oil-pump'
     | 'water-pump-mk1' | 'water-pump-mk2'
@@ -58,7 +60,9 @@ export const recipes: Recipes = {
     'fertilizer': {'dirt': 2, 'nitrogen': 1},
     'dirt': {'silt': 20},
     'nitrogen': {},
-    'sand': {'silt': 10},
+    'sand': {},
+    'studonite': {'solvent': 0.1},
+    'dust': {},
 
     // processed raw
     'iron-bar': {'iron-ore': 1, 'coal': 0.1},
@@ -77,6 +81,7 @@ export const recipes: Recipes = {
     // advanced materials
     'sulfuric-acid': {'sulfur': 1, 'water': 5},
     'basic-circuit': {'copper-wire': 2, 'wood': 0.25},
+    'solvent': {'sulfuric-acid': 2, 'nitrogen': 1},
 
     // buildings
     'assembler1': {
@@ -95,6 +100,8 @@ export const recipes: Recipes = {
     },
     'chemical-plant': {
         'gear': 50,
+        'steel': 15,
+        'basic-circuit': 10,
     },
     'miner-mk1': {
         'gear': 20,
@@ -102,6 +109,7 @@ export const recipes: Recipes = {
     'smelter-mk1': {
         'stone': 10
     },
+    'smelter-mk2': {'iron-bar': 10, 'copper-wire': 10, 'stone': 10},
     'oil-pump': {
         'steel': 10,
         'iron-bar': 5,
@@ -110,7 +118,7 @@ export const recipes: Recipes = {
     'water-pump-mk1': {'iron-bar': 15, 'pipe': 5},
     'water-pump-mk2': {'steel': 15, 'pipe': 10},
     'greenhouse': {'steel': 10, 'glass': 20},
-    'hydroponics': {'steel': 50},
+    'hydroponics': {'steel': 50, 'basic-circuit': 20},
     'water-filter': {'steel': 5, 'pipe': 5},
 };
 
@@ -133,6 +141,8 @@ export const timePerRecipe: {[p in Items]: number} = {
     seed: 0,
     tree: 10,
     'sand': 1,
+    'studonite': 3,
+    'dust': 0,
     // processed raw
     "iron-bar": 2,
     sulfur: 3,
@@ -147,6 +157,7 @@ export const timePerRecipe: {[p in Items]: number} = {
     // advanced materials
     "sulfuric-acid": 5,
     'basic-circuit': 1,
+    solvent: 4,
     // buildings
     assembler1: 10,
     assembler2: 15,
@@ -155,6 +166,7 @@ export const timePerRecipe: {[p in Items]: number} = {
     "chemical-plant": 15,
     'miner-mk1': 10,
     'smelter-mk1': 10,
+    'smelter-mk2': 15,
     'oil-pump': 15,
     'water-pump-mk1': 15,
     'water-pump-mk2': 30,
@@ -170,6 +182,7 @@ export const assemblerSpeeds: {[p in Items]?: number} = {
     "chemical-plant": 1.0,
     'gas-extractor': 1.0,
     'smelter-mk1': 0.5,
+    'smelter-mk2': 1,
     'oil-pump': 1.0,
     'miner-mk1': 0.75,
     'water-pump-mk1': 1,
@@ -190,10 +203,11 @@ export const requiredBuildings: {[p in Items]?: (Items | 'by-hand')[]} = {
     'coal': ['miner-mk1', 'by-hand'],
     'stone': ['miner-mk1', 'by-hand'],
     'dirt': ['assembler1'],
+    'studonite': ['miner-mk1'], dust: [],
     // processed raw
     'iron-bar': ['smelter-mk1'],
     'copper-bar': ['smelter-mk1'],
-    'steel': ['smelter-mk1'],
+    'steel': ['smelter-mk2'],
     'sulfur': ['chemical-plant'],
     'glass': ['smelter-mk1'],
     'copper-wire': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
@@ -208,6 +222,7 @@ export const requiredBuildings: {[p in Items]?: (Items | 'by-hand')[]} = {
     // advanced materials
     'sulfuric-acid': ['chemical-plant'],
     'basic-circuit': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
+    solvent: ['chemical-plant'],
     // buildings
     'gas-extractor': ['assembler3', 'assembler2'],
     'assembler3': ['assembler2', 'assembler1', 'assembler3'],
@@ -219,6 +234,7 @@ export const requiredBuildings: {[p in Items]?: (Items | 'by-hand')[]} = {
     'water-pump-mk2': ['assembler2', 'assembler3'],
     'oil-pump': ['assembler2', 'assembler3'],
     'smelter-mk1': ['by-hand', 'assembler1', 'assembler2'],
+    'smelter-mk2': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
     'greenhouse': ['assembler1', 'assembler2', 'by-hand'],
     'hydroponics': ['assembler3'],
     'water-filter': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
@@ -231,13 +247,16 @@ export const requiredBuildings: {[p in Items]?: (Items | 'by-hand')[]} = {
  * ]
  */
 export const requiredOtherProducts: {[p in Items]?: Items[][]} = {
-    'pipe': [],
+    'dust': [
+        ['studonite'],
+    ],
 }
 
 export const sideProducts: Partial<Recipes> = {
-    'water': {'silt': 0.001},
-    'clean-water': {'silt': 0.1},
-    'wood': {'seed': 0.25},
+    'water': {'silt': 0.001, 'sand': 0.1},
+    'clean-water': {'silt': 0.1, 'sand': 0.2},
+    'wood': {'seed': 0.25, 'dust': 0.001},
+    'studonite': {'dirt': 1, 'dust': 0.1},
 };
 
 export const byHandVerbs: {[p in Items]?: string} = {
