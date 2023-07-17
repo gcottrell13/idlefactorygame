@@ -63,7 +63,10 @@ function ItemDisplay({
 
 
 function App() {
-    const { assemblers, amountThatWeHave, addAmount, addAssemblers, resetAll } = useProduction(TICKS_PER_SECOND);
+    const { 
+        assemblers, amountThatWeHave, addAssemblers, resetAll,
+        makeItem, canMakeItem, 
+    } = useProduction(TICKS_PER_SECOND);
 
     const parts: JSX.Element[] = [];
 
@@ -76,7 +79,7 @@ function App() {
 
         if (_.keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0) === false) return;
 
-        const makeByHand = (requiredBuildings[itemName as Items] ?? ['by-hand']).includes('by-hand');
+        const makeByHand = (requiredBuildings[itemName as Items] ?? ['by-hand']).includes('by-hand') && canMakeItem;
         const assemblerCount = _.mapValues(assemblers, (value, key) => value[itemName] ?? 0);
 
         const assemblerButtons: JSX.Element[] = [];
@@ -104,7 +107,7 @@ function App() {
                 itemName={itemName}
                 assemblerButtons={assemblerButtons}
                 makeByHand={makeByHand ? () => {
-                    addAmount(itemName as Items, 1);
+                    makeItem(itemName as Items);
                 } : null}
             />
         );

@@ -78,6 +78,34 @@ export function useProduction(ticksPerSecond: number) {
         },
         []
     );
+
+    const makeItem = useCallback(
+        (itemName: Items) => {
+            const recipe = recipes[itemName];
+            _.toPairs(recipe).forEach(pair => {
+                const [ingredientName, requiredCount] = pair;
+                const weHave = stateRef.current.amountThatWeHave[ingredientName as Items] ?? 0;
+                stateRef.current.amountThatWeHave[ingredientName as Items] = Math.max(0, weHave - requiredCount);
+            });
+            stateRef.current.amountThatWeHave[itemName] = (stateRef.current.amountThatWeHave[itemName] ?? 0) + 1;
+        },
+        []
+    );
+
+    const canMakeItem = useCallback(
+        (itemName: Items) => {
+            const recipe = recipes[itemName];
+            let canMake = true;
+            _.toPairs(recipe).forEach(pair => {
+                const [ingredientName, requiredCount] = pair;
+                const weHave = stateRef.current.amountThatWeHave[ingredientName as Items] ?? 0;
+                if (weHave < requiredCount) canMake = false;
+            });
+            return canMake;
+        },
+        []
+    );
+
     const addAssemblers = useCallback(
         (level: Items, itemName: Items, amount: number) => {
             const k = stateRef.current.assemblers[level] ?? {};
@@ -108,5 +136,5 @@ export function useProduction(ticksPerSecond: number) {
             };
         }
     );
-    return { ...stateRef.current, addAmount, addAssemblers, resetAll };
+    return { ...stateRef.current, addAmount, addAssemblers, resetAll, makeItem, canMakeItem };
 }
