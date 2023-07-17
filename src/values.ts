@@ -8,7 +8,7 @@ type Recipes = {
     [p in Items]: Recipe;
 }
 
-type partialItems<T> = { [p in Items]?: T };
+export type partialItems<T> = { [p in Items]?: T };
 
 export type Items = ''
     // land
@@ -46,6 +46,11 @@ export type Items = ''
     | 'greenhouse' | 'hydroponics'
     | 'water-filter'
     | 'explorer'
+
+    // storage
+    | 'box'
+    | 'tank'
+    | 'warehouse' // for storing buildings
     ;
 
 export const recipes: Recipes = {
@@ -133,6 +138,10 @@ export const recipes: Recipes = {
     'water-filter': { 'steel': 5, 'pipe': 5 },
 
     'explorer': {'steel': 10, 'basic-circuit': 15},
+
+    'box': {'iron-bar': 1},
+    'tank': {'steel': 20},
+    'warehouse': {'steel': 200},
 };
 
 export const timePerRecipe: { [p in Items]: number } = {
@@ -192,6 +201,10 @@ export const timePerRecipe: { [p in Items]: number } = {
     'greenhouse': 10,
     'hydroponics': 20,
     explorer: 20,
+
+    'warehouse': 30,
+    'box': 2,
+    'tank': 10,
 };
 
 export const assemblerSpeeds: { [p in Items]?: number } = {
@@ -262,6 +275,10 @@ export const requiredBuildings: { [p in Items]?: (Items | 'by-hand')[] } = {
     'greenhouse': ['assembler1', 'assembler2', 'by-hand'],
     'hydroponics': ['assembler3'],
     'water-filter': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
+
+    'warehouse': ['assembler3'],
+    'box': ['by-hand'],
+    'tank': ['by-hand'],
 };
 
 /**
@@ -302,4 +319,66 @@ export const byHandVerbs: { [p in Items]?: string } = {
     'coal': 'gather',
     'seed': 'gather',
     'land': 'explore',
-}
+};
+
+// these items impose a limit on how much we can have. if the item does not have a value, it can have an infinite amount.
+// if the array is empty, then it cannot be stored.
+export const itemsCanBeStoreIn: partialItems<Items[]> = {
+    // raw
+    'gas': ['tank'],
+    'iron-ore': ['box'],
+    'copper-ore': ['box'],
+    'uranium-ore': ['box'],
+    'water': ['tank'], 
+    'silt': ['box'],
+    'oil': ['tank'],
+    'coal': ['box'],
+    'stone': ['box'],
+    'dirt': ['box'],
+    'studonite': ['box'], 
+    dust: ['box'],
+    // processed raw
+    'iron-bar': ['box'],
+    'copper-bar': ['box'],
+    'steel': ['box'],
+    'sulfur': ['box'],
+    'glass': ['box'],
+    'copper-wire': ['box'],
+    'clean-water': ['tank'],
+    'tree': ['box'],
+    'wood': ['box'],
+    'fertilizer': ['box'],
+    'nitrogen': ['tank'],
+    // building materials
+    'gear': ['box'],
+    'pipe': ['box'],
+    // advanced materials
+    'sulfuric-acid': ['tank'],
+    'basic-circuit': ['box'],
+    solvent: ['tank'],
+    // buildings
+    'gas-extractor': ['warehouse'],
+    'assembler3': ['warehouse'],
+    'assembler2': ['warehouse'],
+    'assembler1': ['warehouse'],
+    'chemical-plant': ['warehouse'],
+    'miner-mk1': ['warehouse'],
+    'water-pump-mk1': ['warehouse'],
+    'water-pump-mk2': ['warehouse'],
+    'oil-pump': ['warehouse'],
+    'smelter-mk1': ['warehouse'],
+    'smelter-mk2': ['warehouse'],
+    'greenhouse': ['warehouse'],
+    'hydroponics': ['warehouse'],
+    'water-filter': ['warehouse'],
+
+    'box': ['warehouse'],
+    'tank': ['warehouse'],
+    'warehouse': ['warehouse'],
+};
+
+export const storageSizes: partialItems<number> = {
+    'box': 50,
+    'tank': 1500,
+    'warehouse': 10,
+};

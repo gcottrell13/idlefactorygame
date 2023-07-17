@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import _ from 'lodash';
-import { useProduction } from "./assembly";
+import { calculateStorage, useProduction } from "./assembly";
 import {
     recipes,
     Items,
@@ -11,6 +11,7 @@ import {
     byHandVerbs,
     sideProducts,
     requiredOtherProducts,
+    partialItems,
 } from './values';
 import './css.css';
 import { Button, Row, Col, OverlayTrigger, ProgressBar } from 'react-bootstrap';
@@ -34,6 +35,7 @@ function ItemDisplay({
     assemblerButtons,
     makeByHand,
     progress,
+    storage,
 }: {
     amt: number,
     itemName: string,
@@ -41,6 +43,7 @@ function ItemDisplay({
     assemblerButtons: JSX.Element[],
     makeByHand: null | func,
     progress: SMap<number>,
+    storage: partialItems<number>,
 }) {
 
     const byHandVerb = byHandVerbs[itemName as Items] ?? 'make';
@@ -69,6 +72,8 @@ function ItemDisplay({
     const formatIngredients = _.toPairs(recipes[itemName as Items]).map(([name, count]) => <tr><td className={'popover-ingredient-count'}>{count}</td><td>{name}</td></tr>);
 
     const byproductOf = keys(sideProducts).filter(mainProduct => sideProducts[mainProduct]?.some(v => v[itemName as Items] !== undefined));
+
+    const maxValue = calculateStorage(itemName as Items, storage);
 
     const tooltip = (props: any) => (
         <Popover id="" {...props}>
@@ -104,8 +109,10 @@ function ItemDisplay({
                     <span className="item-name">{itemName}</span>
                 </OverlayTrigger>
             </Col>
-            <Col xs={1}>
-                <span className="item-count">{d(amt)}</span> <span className={'speed'}> (+{speed}/s)</span>
+            <Col xs={2}>
+                <span className="item-count">{d(amt)}</span>
+                <span className="item-max">{maxValue === -1 ? '' : `/ ${maxValue}`}</span>
+                <span className={'speed'}> (+{speed}/s)</span>
             </Col>
             <Col xs={4}>
                 {assemblerDisplay}
@@ -120,7 +127,7 @@ function ItemDisplay({
 
 function App() {
     const {
-        assemblers, amountThatWeHave, displayAmount, timeLeftInProduction,
+        assemblers, amountThatWeHave, displayAmount, timeLeftInProduction, storage,
         addAssemblers, resetAll,
         makeItem, canMakeItem,
         seen, markAsSeen,
@@ -161,11 +168,22 @@ function App() {
         if (seen.includes(itemName as Items) === false) {
             if (amt <= 0) {
                 const haveProducers = Object.keys(assemblersMakingThis).length > 0;
-                if (haveProducers === false && !buildingsToMakeThis.includes('by-hand')) return;
+                const canAddProducer = buildingsToMakeThis.some(x => (amountThatWeHave[x as Items] ?? 0) > 0);
+                const canBeMadeByHand = buildingsToMakeThis.includes('by-hand');
                 const haveIngredients = _.keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
-                if (haveIngredients === false && amt <= 0) return;
                 const requiredUnlocks = requiredOtherProducts[itemName as Items] ?? [];
-                if (requiredUnlocks.some(list => seen.every(x => seen.includes(x)))) return;
+                const haveRequiredUnlocks = requiredUnlocks.length === 0 || requiredUnlocks.some(list => seen.every(x => seen.includes(x)));
+
+                if (canBeMadeByHand) {
+                    if (!haveIngredients) return;
+                    if (!haveRequiredUnlocks) return;
+                }
+                else {
+                    if (haveProducers === false && canAddProducer === false) return;
+                    if (haveIngredients === false && amt <= 0) return;
+                    if (!haveRequiredUnlocks) return;
+                }
+
             }
             markAsSeen(itemName as Items);
         }
@@ -181,6 +199,7 @@ function App() {
                     makeItem(itemName as Items);
                 } : null}
                 progress={mapValues(timeLeftInProduction[itemName], (v, k) => v[3] * 100)}
+                storage={storage[itemName] ?? {}}
             />
         );
     });

@@ -17,6 +17,11 @@ button.make-by-hand {
     white-space: nowrap;
 }
 
+.item-max { 
+    color: gray;
+    margin-left: 5px;
+}
+
 .game-container .item-row:nth-of-type(even) {
     background-color: rgb(236, 236, 236);
 }
