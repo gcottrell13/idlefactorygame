@@ -6,15 +6,19 @@ import { SMap } from './smap';
 interface State {
     assemblers: {[p: string]: Partial<SMap<number>>};
     amountThatWeHave: { [p in Items]?: number };
+    inReserve: {[p in Items]?: {[k in Items]?: number}};
+    seen: Items[];
 }
 
 const defaultState = {
     amountThatWeHave: {},
     assemblers: {},
+    seen: [],
+    inReserve: {},
 } satisfies State;
 
 const ex = localStorage.getItem('state');
-const existingStorage = ex ? JSON.parse(ex) : JSON.parse(JSON.stringify(defaultState));
+const existingStorage = {...defaultState, ...(ex ? JSON.parse(ex) : {})};
 
 
 function assemble(itemName: Items, assemblerCount: number, speed: number, timeStep: number, amounts: SMap<number>) {
@@ -24,23 +28,30 @@ function assemble(itemName: Items, assemblerCount: number, speed: number, timeSt
     const amt = amounts[itemName as Items] ?? 0;
 
     const craftTime = timePerRecipe[itemName];
-    let numberOfRecipesToMake = (assemblerCount ?? 0) * timeStep * speed / craftTime;
+    const TIME = timeStep * speed / craftTime;
+
+    let numberOfRecipesToMake = assemblerCount ?? 0;
     if (numberOfRecipesToMake <= 0)
         return;
 
     _.toPairs(recipe).forEach(pair => {
         const [ingredientName, requiredCount] = pair;
         const weHave = amounts[ingredientName as Items] ?? 0;
-        numberOfRecipesToMake = Math.min(weHave * timeStep / requiredCount, numberOfRecipesToMake);
+        if (weHave < requiredCount) {
+            numberOfRecipesToMake = 0;
+        }
+        else {
+            numberOfRecipesToMake = Math.min(weHave / requiredCount, numberOfRecipesToMake);
+        }
     });
 
     _.toPairs(recipe).forEach(pair => {
         const [ingredientName, requiredCount] = pair;
         const weHave = amounts[ingredientName as Items] ?? 0;
-        amounts[ingredientName as Items] = Math.max(0, weHave - (numberOfRecipesToMake * requiredCount));
+        amounts[ingredientName as Items] = Math.max(0, weHave - (numberOfRecipesToMake * requiredCount * TIME));
     });
 
-    amounts[itemName] = amt + numberOfRecipesToMake;
+    amounts[itemName] = amt + numberOfRecipesToMake * TIME;
 }
 
 
@@ -125,6 +136,16 @@ export function useProduction(ticksPerSecond: number) {
         [],
     );
 
+    const markAsSeen = useCallback(
+        (item: Items) => {
+            if (!stateRef.current.seen.includes(item)) {
+                stateRef.current.seen.push(item);
+                setState();
+            }
+        },
+        []
+    );
+
     useEffect(
         () => {
             const i = setTimeout(() => {
@@ -136,5 +157,5 @@ export function useProduction(ticksPerSecond: number) {
             };
         }
     );
-    return { ...stateRef.current, addAmount, addAssemblers, resetAll, makeItem, canMakeItem };
+    return { ...stateRef.current, addAmount, addAssemblers, resetAll, makeItem, canMakeItem, markAsSeen };
 }

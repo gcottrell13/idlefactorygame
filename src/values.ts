@@ -38,9 +38,11 @@ export const recipes: Recipes = {
     },
     'assembler2': {
         'assembler1': 1,
+        'gear': 30,
     },
     'assembler3': {
         'assembler2': 1,
+        'gear': 30,
     },
     'uranium-ore': {
         'sulfuric-acid': 1,
@@ -88,12 +90,23 @@ export const assemblerSpeeds: {[p in Items]?: number} = {
 
 export const requiredBuildings: {[p in Items]?: (Items | 'by-hand')[]} = {
     'gas': ['gas-extractor'],
+    'gear': ['assembler1', 'assembler2', 'assembler3', 'by-hand'],
     'gas-extractor': ['assembler3', 'assembler2'],
     'assembler3': ['assembler2', 'assembler1', 'assembler3'],
     'assembler2': ['assembler1', 'assembler2', 'assembler3'],
-    'assembler1': ['assembler1', 'assembler2', 'assembler3'],
+    'assembler1': ['assembler1', 'assembler2', 'assembler3', 'by-hand'],
     'chemical-plant': ['assembler2', 'assembler3'],
 };
+
+/**
+ * [
+ *  [all these are unlocked]
+ *  OR [all these are unlocked]
+ * ]
+ */
+export const requiredOtherProducts: {[p in Items]?: Items[][]} = {
+    'pipe': [],
+}
 
 export const sideProducts: Partial<Recipes> = {
 
