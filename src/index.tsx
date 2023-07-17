@@ -68,7 +68,7 @@ function ItemDisplay({
 
     const formatIngredients = _.toPairs(recipes[itemName as Items]).map(([name, count]) => <tr><td className={'popover-ingredient-count'}>{count}</td><td>{name}</td></tr>);
 
-    const byproductOf = keys(sideProducts).filter(mainProduct => sideProducts[mainProduct]?.[itemName as Items] !== undefined);
+    const byproductOf = keys(sideProducts).filter(mainProduct => sideProducts[mainProduct]?.some(v => v[itemName as Items] !== undefined));
 
     const tooltip = (props: any) => (
         <Popover id="" {...props}>
@@ -131,7 +131,7 @@ function App() {
     const haveAssemblers = _.mapValues(assemblerSpeeds, (value, key) => amountThatWeHave[key as Items] ?? 0);
 
     keys(recipes).sort().forEach(itemName => {
-        const amt = displayAmount[itemName as Items] ?? 0;
+        const amt = amountThatWeHave[itemName as Items] ?? 0;
         const recipe = recipes[itemName as Items];
         if (recipe === undefined) return;
 

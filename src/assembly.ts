@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { recipes, Items, assemblerSpeeds, timePerRecipe, sideProducts } from './values';
-import _ from 'lodash';
-import { SMap, forEach, keys } from './smap';
+import _, { forIn } from 'lodash';
+import { SMap, forEach, keys, values } from './smap';
 
 type productionTime = [ticksLeft: number, totalTicks: number, recipesCreated: number, percentDone: number];
 
@@ -85,17 +85,25 @@ function assemble(itemName: Items, assemblerCount: number, speed: number, timeSt
 function addToTotal(itemName: Items, recipeCount: number, amounts: partialItems<number>, display: partialItems<number>) {
     // const recipe = recipes[itemName];
     // if (recipe === undefined) return [0, 0, 0];
-
+    
     if (sideProducts[itemName]) {
-        keys(sideProducts[itemName]).map(sideProduct => {
-            const amt = sideProducts[itemName]![sideProduct] ?? 0;
-            amounts[sideProduct] = (amounts[sideProduct] ?? 0) + amt * recipeCount;
-            display[sideProduct] = amounts[sideProduct];
-        })
+        sideProducts[itemName]?.forEach(sideProduct => {
+            const total = _.sum(values(sideProduct));
+            let runningTotal = 0;
+            _.forIn(keys(sideProduct), key => {
+                const k = key as Items;
+                runningTotal += sideProduct[k] ?? 0;
+                if (Math.random() < (runningTotal / total)) {
+                    amounts[k] = (amounts[k] ?? 0) + recipeCount;
+                    return false;
+                }
+            });
+        });
     }
-
-    amounts[itemName] = (amounts[itemName] ?? 0) + recipeCount;
-    display[itemName] = amounts[itemName];
+    else {
+        amounts[itemName] = (amounts[itemName] ?? 0) + recipeCount;
+        display[itemName] = amounts[itemName];
+    }
 }
 
 
