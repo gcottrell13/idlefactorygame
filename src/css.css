@@ -1,5 +1,6 @@
 .item-name {
     margin-right: 10px;
+    text-decoration: underline;
 }
 
 .assembler-count {
@@ -13,6 +14,7 @@ button.add-assembler {
 button.make-by-hand {
     margin-left: 20px;
     float: right;
+    white-space: nowrap;
 }
 
 .game-container .item-row:nth-of-type(even) {
@@ -33,4 +35,9 @@ button.btn {
 
 .speed {
     color: gray;
+}
+
+.popover-ingredient-count {
+    padding-right: 5px;
+    font-weight: bold;
 }

@@ -1,17 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { recipes, Items, assemblerSpeeds, timePerRecipe } from './values';
+import { recipes, Items, assemblerSpeeds, timePerRecipe, sideProducts } from './values';
 import _ from 'lodash';
-import { SMap } from './smap';
+import { SMap, forEach, keys } from './smap';
 
-type productionTime = [ticksLeft: number, productCount: number];
+type productionTime = [ticksLeft: number, totalTicks: number, recipesCreated: number, percentDone: number];
+
+const zeroProduction: productionTime = [0, 0, 0, 0];
+
+type partialItems<T> = {[p in Items]?: T};
 interface State {
-    assemblers: {[p: string]: Partial<SMap<number>>};
-    amountThatWeHave: { [p in Items]?: number };
-    timeLeftInProduction: {[p in Items]?: productionTime};
+    assemblers: partialItems<partialItems<number>>;
+    displayAmount: partialItems<number>;
+    amountThatWeHave: partialItems<number>;
+    timeLeftInProduction: partialItems<partialItems<productionTime>>;
     seen: Items[];
 }
 
 const defaultState = {
+    displayAmount: {},
     amountThatWeHave: {},
     assemblers: {},
     seen: [],
@@ -21,29 +27,33 @@ const defaultState = {
 const ex = localStorage.getItem('state');
 const existingStorage = {...defaultState, ...(ex ? JSON.parse(ex) : {})};
 
+function increaseDisplayAmount(itemName: Items, display: SMap<number>, [ticksLeft, totalTicks, recipesCreated, _]: productionTime): productionTime {
+    const recipe = recipes[itemName];
+    if (recipe === undefined) return zeroProduction;
 
-function assemble(itemName: Items, assemblerCount: number, speed: number, timeStep: number, amounts: SMap<number>, [ticksLeft, productCount]: productionTime): productionTime {
-    const recipe = recipes[itemName as Items];
-    if (recipe === undefined) return [0, 0];
+    const amt = display[itemName] ?? 0;
 
-    const amt = amounts[itemName as Items] ?? 0;
-    const craftTime = timePerRecipe[itemName];
-    const timePerTick = timeStep * speed / craftTime;
 
     if (ticksLeft > 0) {
-        amounts[itemName] = amt + productCount * timePerTick;
-        return [ticksLeft - 1, productCount];
+        display[itemName] = amt + recipesCreated / totalTicks;
+        return [ticksLeft - 1, totalTicks, recipesCreated, 1 - (ticksLeft / totalTicks)];
     }
+    return zeroProduction;
+}
 
+
+function assemble(itemName: Items, assemblerCount: number, speed: number, timeStep: number, amounts: SMap<number>, display: SMap<number>): productionTime {
+    const recipe = recipes[itemName];
+    if (recipe === undefined) return zeroProduction;
     // not producing, so let's try to grab materials
 
     let numberOfRecipesToMake = assemblerCount ?? 0;
     if (numberOfRecipesToMake <= 0)
-        return [0, 0];
+        return zeroProduction;
     
     _.toPairs(recipe).forEach(pair => {
         const [ingredientName, requiredCount] = pair;
-        const weHave = amounts[ingredientName as Items] ?? 0;
+        const weHave = amounts[ingredientName] ?? 0;
         if (weHave < requiredCount) {
             numberOfRecipesToMake = 0;
         }
@@ -52,19 +62,40 @@ function assemble(itemName: Items, assemblerCount: number, speed: number, timeSt
         }
     });
 
+    if (numberOfRecipesToMake <= 0)
+        return zeroProduction;
+
     _.toPairs(recipe).forEach(pair => {
         const [ingredientName, requiredCount] = pair;
         const toGrab = numberOfRecipesToMake * requiredCount;
 
-        const weHave = amounts[ingredientName as Items] ?? 0;
-        amounts[ingredientName as Items] = Math.max(0, weHave - toGrab);
+        const weHave = amounts[ingredientName] ?? 0;
+        amounts[ingredientName] = Math.max(0, weHave - toGrab);
+        display[ingredientName] = amounts[ingredientName];
     });
 
     if (numberOfRecipesToMake <= 0)
-        return [0, 0];
+        return zeroProduction;
 
-    const ticksToMake = Math.floor(1 / timePerTick);
-    return [ticksToMake, numberOfRecipesToMake];
+    const craftTime = timePerRecipe[itemName];
+    const ticksToMake = Math.floor(craftTime / speed / timeStep);
+    return [ticksToMake, ticksToMake, Math.round(numberOfRecipesToMake), 0];
+}
+
+function addToTotal(itemName: Items, recipeCount: number, amounts: partialItems<number>, display: partialItems<number>) {
+    // const recipe = recipes[itemName];
+    // if (recipe === undefined) return [0, 0, 0];
+
+    if (sideProducts[itemName]) {
+        keys(sideProducts[itemName]).map(sideProduct => {
+            const amt = sideProducts[itemName]![sideProduct] ?? 0;
+            amounts[sideProduct] = (amounts[sideProduct] ?? 0) + amt * recipeCount;
+            display[sideProduct] = amounts[sideProduct];
+        })
+    }
+
+    amounts[itemName] = (amounts[itemName] ?? 0) + recipeCount;
+    display[itemName] = amounts[itemName];
 }
 
 
@@ -72,18 +103,38 @@ function doProduction({
     assemblers,
     amountThatWeHave: _amountsThatWeHave,
     timeLeftInProduction,
+    displayAmount: _display,
 }: State, timeStep: number) {
-    const amounts: { [p: string]: number } = { ..._amountsThatWeHave };
+    const amounts: partialItems<number> = { ..._amountsThatWeHave };
+    const displayAmount: partialItems<number> = { ..._display };
 
-    _.keys(assemblers).sort().forEach(level => {
-        _.forEach(assemblers[level], (assemblerCount, itemName) => {
-            const time = assemble(itemName as Items, assemblerCount ?? 0, assemblerSpeeds[level as Items] ?? 0, timeStep, amounts, timeLeftInProduction[itemName as Items] ?? [0, 0]);
-            timeLeftInProduction[itemName as Items] = time;
+    keys(assemblers).sort().forEach(level => {
+        forEach(assemblers[level], (assemblerCount, itemName) => {
+            let time = timeLeftInProduction[itemName]?.[level] ?? zeroProduction;
+
+            if (time[0] === 0) {
+                // gather more materials
+                time = assemble(itemName, assemblerCount ?? 0, assemblerSpeeds[level] ?? 0, timeStep, amounts, displayAmount);
+            }
+            
+            if (time[0] !== 0) {
+                time = increaseDisplayAmount(itemName, displayAmount, time);
+
+                if (time[0] === 0) {
+                    addToTotal(itemName, time[2], amounts, displayAmount);
+                    time = zeroProduction;
+                }
+            }
+
+            if (!timeLeftInProduction[itemName]) 
+                timeLeftInProduction[itemName] = {};
+            timeLeftInProduction[itemName]![level] = time;
         });
     });
 
     return {
-        amountThatWeHave: amounts as { [p in Items]: number },
+        amountThatWeHave: amounts,
+        displayAmount,
     };
 }
 
@@ -102,6 +153,7 @@ export function useProduction(ticksPerSecond: number) {
         (itemName: Items, amount: number) => {
             const k = stateRef.current.amountThatWeHave[itemName] ?? 0;
             stateRef.current.amountThatWeHave[itemName] = k + amount;
+            stateRef.current.displayAmount[itemName] = stateRef.current.amountThatWeHave[itemName];
             setState();
         },
         []
@@ -113,9 +165,12 @@ export function useProduction(ticksPerSecond: number) {
             _.toPairs(recipe).forEach(pair => {
                 const [ingredientName, requiredCount] = pair;
                 const weHave = stateRef.current.amountThatWeHave[ingredientName as Items] ?? 0;
-                stateRef.current.amountThatWeHave[ingredientName as Items] = Math.max(0, weHave - requiredCount);
+                const newTotal = Math.max(0, weHave - requiredCount);
+                stateRef.current.amountThatWeHave[ingredientName as Items] = newTotal;
+                stateRef.current.displayAmount[ingredientName as Items] = newTotal;
             });
             stateRef.current.amountThatWeHave[itemName] = (stateRef.current.amountThatWeHave[itemName] ?? 0) + 1;
+            stateRef.current.displayAmount[itemName] = stateRef.current.amountThatWeHave[itemName];
         },
         []
     );
@@ -141,6 +196,7 @@ export function useProduction(ticksPerSecond: number) {
             k[itemName] = current + amount;
             stateRef.current.assemblers[level] = k;
             stateRef.current.amountThatWeHave[level]! -= 1;
+            stateRef.current.displayAmount[level] = stateRef.current.amountThatWeHave[level];
             setState();
         },
         []
