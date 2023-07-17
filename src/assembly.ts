@@ -12,6 +12,11 @@ import {
 import _, { forIn } from 'lodash';
 import { SMap, forEach, keys, values } from './smap';
 
+const PRECISION = 1e5;
+function round(n: number) {
+    return Math.round(n * PRECISION) / PRECISION;
+}
+
 type productionTime = [ticksLeft: number, totalTicks: number, recipesCreated: number, percentDone: number];
 
 const zeroProduction: productionTime = [0, 0, 0, 0];
@@ -89,7 +94,7 @@ function assemble(itemName: Items, assemblerCount: number, speed: number, timeSt
         const toGrab = numberOfRecipesToMake * requiredCount;
 
         const weHave = amounts[ingredientName] ?? 0;
-        amounts[ingredientName] = Math.max(0, weHave - toGrab);
+        amounts[ingredientName] = round(Math.max(0, weHave - toGrab));
     });
 
     if (numberOfRecipesToMake <= 0)
@@ -111,34 +116,38 @@ export function calculateStorage(itemName: Items, storage?: partialItems<number>
     }), 10);
 }
 
-function addToTotal(itemName: Items, recipeCount: number, amounts: partialItems<number>, storage: partialItems<partialItems<number>>) {
+function addToTotal(itemName: Items, recipeCount: number, amounts: partialItems<number>, storage: partialItems<partialItems<number>>): boolean {
     // const recipe = recipes[itemName];
     // if (recipe === undefined) return [0, 0, 0];
     
     if (sideProducts[itemName]) {
-        sideProducts[itemName]?.forEach(sideProduct => {
-            const total = _.sum(values(sideProduct));
-            let runningTotal = 0;
-            _.forIn(keys(sideProduct), key => {
-                const k = key as Items;
-                runningTotal += sideProduct[k] ?? 0;
-                if (Math.random() <= (runningTotal / total)) {
-                    const maxValue = calculateStorage(k, storage[k]);
-                    const newVal = (amounts[k] ?? 0) + recipeCount;;
-                    if (maxValue === -1 || maxValue > newVal)
-                        amounts[k] = newVal;
-                    return false;
-                }
+        for (let i = 0; i < recipeCount; i++) {
+            sideProducts[itemName]?.forEach(sideProduct => {
+                const total = _.sum(values(sideProduct));
+                let runningTotal = 0;
+                _.forIn(keys(sideProduct), key => {
+                    const k = key as Items;
+                    runningTotal += sideProduct[k] ?? 0;
+                    if (Math.random() <= (runningTotal / total)) {
+                        const maxValue = calculateStorage(k, storage[k]);
+                        const newVal = (amounts[k] ?? 0) + 1;
+                        if (maxValue === -1 || maxValue > newVal)
+                            amounts[k] = round(newVal);
+                        return false;
+                    }
+                });
             });
-        });
+        }
     }
     else {
-        
         const maxValue = calculateStorage(itemName, storage[itemName]);
         const newVal = (amounts[itemName] ?? 0) + recipeCount;;
-        if (maxValue === -1 || maxValue >= newVal)
-            amounts[itemName] = newVal;
+        if (maxValue === -1 || maxValue >= newVal) {
+            amounts[itemName] = round(newVal);
+            return true;
+        }
     }
+    return false;
 }
 
 
@@ -207,16 +216,17 @@ export function useProduction(ticksPerSecond: number) {
 
     const makeItem = useCallback(
         (itemName: Items) => {
-            const recipe = recipes[itemName];
-            _.toPairs(recipe).forEach(pair => {
-                const [ingredientName, requiredCount] = pair;
-                const weHave = stateRef.current.amountThatWeHave[ingredientName as Items] ?? 0;
-                const newTotal = Math.max(0, weHave - requiredCount);
-                stateRef.current.amountThatWeHave[ingredientName as Items] = newTotal;
-                stateRef.current.displayAmount[ingredientName as Items] = newTotal;
-            });
-            addToTotal(itemName, 1, stateRef.current.amountThatWeHave, stateRef.current.storage);
-            setState();
+            if (addToTotal(itemName, 1, stateRef.current.amountThatWeHave, stateRef.current.storage)) {
+                const recipe = recipes[itemName];
+                _.toPairs(recipe).forEach(pair => {
+                    const [ingredientName, requiredCount] = pair;
+                    const weHave = stateRef.current.amountThatWeHave[ingredientName as Items] ?? 0;
+                    const newTotal = Math.max(0, weHave - requiredCount);
+                    stateRef.current.amountThatWeHave[ingredientName as Items] = newTotal;
+                    stateRef.current.displayAmount[ingredientName as Items] = newTotal;
+                });
+                setState();
+            }
         },
         []
     );
@@ -231,7 +241,7 @@ export function useProduction(ticksPerSecond: number) {
                 if (weHave < requiredCount) canMake = false;
             });
             const maxValue = calculateStorage(itemName, stateRef.current.storage[itemName]);
-            if (maxValue === -1 || maxValue > (stateRef.current.amountThatWeHave[itemName] ?? 0))
+            if (maxValue === -1 || maxValue >= (stateRef.current.amountThatWeHave[itemName] ?? 0) + 1)
                 return canMake;
             return false;
         },
@@ -249,6 +259,16 @@ export function useProduction(ticksPerSecond: number) {
             setState();
         },
         []
+    );
+
+    const addContainer = useCallback(
+        (itemName: Items, container: Items, amount: number) => {
+            stateRef.current.storage[itemName] ??= {};
+            const v = stateRef.current.storage[itemName]![container] ?? 0;
+            stateRef.current.storage[itemName]![container] = v + amount;
+            stateRef.current.amountThatWeHave[container]! -= amount;
+        },
+        [],
     );
 
     const resetAll = useCallback(
@@ -279,5 +299,5 @@ export function useProduction(ticksPerSecond: number) {
             };
         }
     );
-    return { ...stateRef.current, addAmount, addAssemblers, resetAll, makeItem, canMakeItem, markAsSeen };
+    return { ...stateRef.current, addAmount, addAssemblers, resetAll, makeItem, canMakeItem, markAsSeen, addContainer };
 }

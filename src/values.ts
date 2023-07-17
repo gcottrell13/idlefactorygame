@@ -13,7 +13,7 @@ export type partialItems<T> = { [p in Items]?: T };
 export type Items = ''
     // land
     | 'land'
-    | 'rocky-land' | 'wet-land' | 'dry-land'
+    | 'rocky-land' | 'wet-land' | 'dry-land' | 'stony-land'
     // raw materials
     | 'iron-ore' | 'gas' | 'stone' | 'oil'
     | 'uranium-ore' | 'copper-ore'
@@ -36,7 +36,7 @@ export type Items = ''
     | 'basic-circuit'
     | 'solvent'
     // buildings
-    | 'assembler1' | 'assembler2' | 'assembler3'
+    | 'constructer' | 'assembler' | 'manufacturer'
     | 'gas-extractor'
     | 'chemical-plant'
     | 'smelter-mk1' | 'smelter-mk2'
@@ -45,7 +45,9 @@ export type Items = ''
     | 'water-pump-mk1' | 'water-pump-mk2'
     | 'greenhouse' | 'hydroponics'
     | 'water-filter'
+
     | 'explorer'
+    | 'excavator' | 'excavate-dirt'
 
     // storage
     | 'box'
@@ -60,23 +62,26 @@ export const recipes: Recipes = {
     'wet-land': {},
     'dry-land': {},
     'rocky-land': {},
+    'stony-land': {},
 
     // raw
-    'iron-ore': {},
+    'iron-ore': {'rocky-land': 0.01},
     'gas': {},
-    'uranium-ore': { 'sulfuric-acid': 1 },
-    'copper-ore': {},
-    'oil': {},
-    'stone': {},
-    'water': {}, 'silt': {},
-    'coal': {},
+    'uranium-ore': {'rocky-land': 0.1, 'sulfuric-acid': 1 },
+    'copper-ore': {'dry-land': 0.01},
+    'oil': {'dry-land': 0.01},
+    'stone': {'stony-land': 0.01},
+    'water': {'wet-land': 0.01}, 
+    'silt': {},
+    'coal': {'stony-land': 0.01},
     'wood': { 'tree': 0.25 },
-    'seed': {},
+    'seed': {'wet-land': 0.01},
     'tree': { 'fertilizer': 5, 'seed': 1, 'clean-water': 5 },
     'fertilizer': { 'dirt': 2, 'nitrogen': 1 },
     'dirt': { 'silt': 20 },
+    'excavate-dirt': {},
     'nitrogen': {},
-    'sand': {},
+    'sand': {'dry-land': 0.01},
     'studonite': { 'solvent': 0.1 },
     'dust': {},
 
@@ -100,15 +105,15 @@ export const recipes: Recipes = {
     'solvent': { 'sulfuric-acid': 2, 'nitrogen': 1 },
 
     // buildings
-    'assembler1': {
+    'constructer': {
         'gear': 10,
     },
-    'assembler2': {
-        'assembler1': 1,
+    'assembler': {
+        'constructer': 1,
         'gear': 30,
     },
-    'assembler3': {
-        'assembler2': 1,
+    'manufacturer': {
+        'assembler': 1,
         'gear': 30,
     },
     'gas-extractor': {
@@ -137,7 +142,8 @@ export const recipes: Recipes = {
     'hydroponics': { 'steel': 50, 'basic-circuit': 20 },
     'water-filter': { 'steel': 5, 'pipe': 5 },
 
-    'explorer': {'steel': 10, 'basic-circuit': 15},
+    'explorer': {'steel': 10, 'basic-circuit': 8},
+    'excavator': {'steel': 20, 'basic-circuit': 8},
 
     'box': {'iron-bar': 1},
     'tank': {'steel': 20},
@@ -151,6 +157,7 @@ export const timePerRecipe: { [p in Items]: number } = {
     'wet-land': 0,
     'dry-land': 0,
     'rocky-land': 0,
+    'stony-land': 0,
 
     // raw
     "iron-ore": 1,
@@ -164,6 +171,7 @@ export const timePerRecipe: { [p in Items]: number } = {
     'wood': 2,
     'fertilizer': 1,
     dirt: 4,
+    'excavate-dirt': 3,
     nitrogen: 1,
     seed: 0,
     tree: 10,
@@ -186,9 +194,9 @@ export const timePerRecipe: { [p in Items]: number } = {
     'basic-circuit': 1,
     solvent: 4,
     // buildings
-    assembler1: 10,
-    assembler2: 15,
-    assembler3: 25,
+    constructer: 10,
+    assembler: 15,
+    manufacturer: 25,
     "gas-extractor": 30,
     "chemical-plant": 15,
     'miner-mk1': 10,
@@ -200,6 +208,8 @@ export const timePerRecipe: { [p in Items]: number } = {
     'water-filter': 10,
     'greenhouse': 10,
     'hydroponics': 20,
+
+    'excavator': 20,
     explorer: 20,
 
     'warehouse': 30,
@@ -208,9 +218,9 @@ export const timePerRecipe: { [p in Items]: number } = {
 };
 
 export const assemblerSpeeds: { [p in Items]?: number } = {
-    'assembler1': 0.5,
-    'assembler2': 0.75,
-    'assembler3': 1.0,
+    'constructer': 0.5,
+    'assembler': 0.75,
+    'manufacturer': 1.0,
     "chemical-plant": 1.0,
     'gas-extractor': 1.0,
     'smelter-mk1': 0.5,
@@ -223,6 +233,7 @@ export const assemblerSpeeds: { [p in Items]?: number } = {
     'greenhouse': 0.5,
     'hydroponics': 1.5,
     'explorer': 1,
+    'excavator': 1,
 };
 
 export const requiredBuildings: { [p in Items]?: (Items | 'by-hand')[] } = {
@@ -230,6 +241,7 @@ export const requiredBuildings: { [p in Items]?: (Items | 'by-hand')[] } = {
     'wet-land': [],
     'dry-land': [],
     'rocky-land': [],
+    'stony-land': [],
     // raw
     'gas': ['gas-extractor'],
     'iron-ore': ['miner-mk1', 'by-hand'],
@@ -239,44 +251,48 @@ export const requiredBuildings: { [p in Items]?: (Items | 'by-hand')[] } = {
     'oil': ['oil-pump'],
     'coal': ['miner-mk1', 'by-hand'],
     'stone': ['miner-mk1', 'by-hand'],
-    'dirt': ['assembler1'],
+    'dirt': ['constructer'],
     'studonite': ['miner-mk1'], dust: [],
+    'excavate-dirt': ['excavator'],
     // processed raw
     'iron-bar': ['smelter-mk1'],
     'copper-bar': ['smelter-mk1'],
     'steel': ['smelter-mk2'],
     'sulfur': ['chemical-plant'],
     'glass': ['smelter-mk1'],
-    'copper-wire': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
+    'copper-wire': ['by-hand', 'constructer'],
     'clean-water': ['water-filter'],
     'tree': ['greenhouse', 'hydroponics'],
-    'wood': ['assembler1', 'assembler2', 'assembler3'],
-    'fertilizer': ['assembler1', 'assembler2', 'assembler3'],
+    'wood': ['constructer', 'assembler', 'manufacturer'],
+    'fertilizer': ['constructer', 'assembler', 'manufacturer'],
     'nitrogen': ['gas-extractor'],
     // building materials
-    'gear': ['assembler1', 'assembler2', 'assembler3', 'by-hand'],
-    'pipe': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
+    'gear': ['constructer', 'by-hand'],
+    'pipe': ['by-hand', 'constructer'],
     // advanced materials
     'sulfuric-acid': ['chemical-plant'],
-    'basic-circuit': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
+    'basic-circuit': ['by-hand', 'constructer', 'assembler'],
     solvent: ['chemical-plant'],
     // buildings
-    'gas-extractor': ['assembler3', 'assembler2'],
-    'assembler3': ['assembler2', 'assembler1', 'assembler3'],
-    'assembler2': ['assembler1', 'assembler2', 'assembler3'],
-    'assembler1': ['assembler1', 'assembler2', 'assembler3', 'by-hand'],
-    'chemical-plant': ['assembler2', 'assembler3'],
-    'miner-mk1': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
-    'water-pump-mk1': ['by-hand', 'assembler1', 'assembler2'],
-    'water-pump-mk2': ['assembler2', 'assembler3'],
-    'oil-pump': ['assembler2', 'assembler3'],
-    'smelter-mk1': ['by-hand', 'assembler1', 'assembler2'],
-    'smelter-mk2': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
-    'greenhouse': ['assembler1', 'assembler2', 'by-hand'],
-    'hydroponics': ['assembler3'],
-    'water-filter': ['by-hand', 'assembler1', 'assembler2', 'assembler3'],
+    'gas-extractor': ['manufacturer', 'assembler'],
+    'manufacturer': ['assembler', 'manufacturer'],
+    'assembler': ['by-hand', 'assembler', 'manufacturer'],
+    'constructer': ['constructer', 'by-hand'],
+    'chemical-plant': ['assembler', 'manufacturer'],
+    'miner-mk1': ['by-hand', 'constructer'],
+    'water-pump-mk1': ['by-hand', 'constructer', 'assembler'],
+    'water-pump-mk2': ['assembler', 'manufacturer'],
+    'oil-pump': ['assembler', 'manufacturer'],
+    'smelter-mk1': ['by-hand', 'constructer', 'assembler'],
+    'smelter-mk2': ['by-hand', 'assembler', 'manufacturer'],
+    'greenhouse': ['constructer', 'assembler', 'by-hand'],
+    'hydroponics': ['manufacturer'],
+    'water-filter': ['by-hand', 'constructer', 'assembler'],
 
-    'warehouse': ['assembler3'],
+    'explorer': ['by-hand', 'assembler'],
+    'excavator': ['by-hand', 'assembler'],
+
+    'warehouse': ['manufacturer'],
     'box': ['by-hand'],
     'tank': ['by-hand'],
 };
@@ -300,7 +316,7 @@ export const requiredOtherProducts: { [p in Items]?: Items[][] } = {
  */
 export const sideProducts: partialItems<partialItems<number>[]> = {
     'land': [
-        { 'rocky-land': 2, 'wet-land': 1, 'dry-land': 2 },
+        { 'rocky-land': 2, 'wet-land': 1, 'dry-land': 2, 'stony-land': 1 },
     ],
     'water': [
         { 'water': 1 },
@@ -309,6 +325,7 @@ export const sideProducts: partialItems<partialItems<number>[]> = {
     'clean-water': [{'clean-water': 1}, {'silt': 0.1, 'sand': 0.2 }],
     'wood': [{'wood': 1}, { 'seed': 0.25, 'dust': 0.001 }],
     'studonite': [{'studonite': 1}, { 'dirt': 1, 'dust': 0.1 }],
+    'excavate-dirt': [{'dirt': 1}],
 };
 
 export const byHandVerbs: { [p in Items]?: string } = {
@@ -358,9 +375,9 @@ export const itemsCanBeStoreIn: partialItems<Items[]> = {
     solvent: ['tank'],
     // buildings
     'gas-extractor': ['warehouse'],
-    'assembler3': ['warehouse'],
-    'assembler2': ['warehouse'],
-    'assembler1': ['warehouse'],
+    'manufacturer': ['warehouse'],
+    'assembler': ['warehouse'],
+    'constructer': ['warehouse'],
     'chemical-plant': ['warehouse'],
     'miner-mk1': ['warehouse'],
     'water-pump-mk1': ['warehouse'],
