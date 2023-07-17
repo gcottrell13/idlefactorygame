@@ -21,3 +21,11 @@ button.btn {
 .item-row {
     padding: 10px;
 }
+
+.assembler-count-name {
+    color: gray;
+}
+
+.speed {
+    color: gray;
+}

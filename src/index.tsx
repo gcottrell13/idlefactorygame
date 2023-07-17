@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import _ from 'lodash';
 import { useProduction } from "./assembly";
-import { recipes, Items, assemblerSpeeds } from './values';
+import { recipes, Items, assemblerSpeeds, timePerRecipe, requiredBuildings } from './values';
 import './css.css';
 import { Button, Row, Col } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
@@ -29,21 +29,31 @@ function ItemDisplay({
     const makeByHandButton = makeByHand && (
         <Button className={'make-by-hand'} onClick={makeByHand}>Make 1 {itemName}</Button>
     );
+    const baseCraftTime = timePerRecipe[itemName as Items];
 
-    const assemblers = _.toPairs(assemblerCount).map(([name, no]) => <span className={'assembler-count'} key={name}><span className={'ass-count-name'}>{name}:</span> {no}</span>);
+    const assemblers = _.toPairs(assemblerCount).map(([name, no]) => (
+        <span className={'assembler-count'} key={name}>
+            <span className={'assembler-count-name'}>{name} ({baseCraftTime * (assemblerSpeeds[name as Items] ?? 0)}/s):</span> {no} ({baseCraftTime * (assemblerSpeeds[name as Items] ?? 0) * no}/s)
+        </span>
+    ));
+    const assemblerDisplay = assemblers.length > 0 ? (
+        <div className='assembler-count'>buildings making {itemName}: {assemblers}</div>
+    ) : null;
+
+    const speed = _.sum(_.keys(assemblerCount).map(key => (assemblerSpeeds[key as Items] ?? 0) * assemblerCount[key] / baseCraftTime));
 
     return (
         <Row className='item-row'>
-            <Col xs={3}>
+            <Col xs={1}>
                 <span className="item-name">{itemName}</span>
             </Col>
-            <Col xs={3}>
-                <span className="item-count">{Math.round(amt)}</span>
+            <Col xs={1}>
+                <span className="item-count">{Math.round(amt)}</span> <span className={'speed'}> (+{speed}/s)</span>
             </Col>
-            <Col xs={3}>
-                <div className='assembler-count'>assemblers making {itemName}: {assemblers}</div>
+            <Col xs={5}>
+                {assemblerDisplay}
             </Col>
-            <Col xs={3}>
+            <Col xs={5}>
                 {makeByHandButton}
                 {assemblerButtons}
             </Col>
@@ -59,18 +69,20 @@ function App() {
 
     const haveAssemblers = _.mapValues(assemblerSpeeds, (value, key) => amountThatWeHave[key as Items] ?? 0);
 
-    _.keys(amountThatWeHave).sort().forEach(itemName => {
+    _.keys(recipes).sort().forEach(itemName => {
         const amt = amountThatWeHave[itemName as Items];
         const recipe = recipes[itemName as Items];
         if (recipe === undefined) return;
 
-        const makeByHand = Object.keys(recipes[itemName as Items]).length === 0;
+        if (_.keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0) === false) return;
+
+        const makeByHand = (requiredBuildings[itemName as Items] ?? ['by-hand']).includes('by-hand');
         const assemblerCount = _.mapValues(assemblers, (value, key) => value[itemName] ?? 0);
 
         const assemblerButtons: JSX.Element[] = [];
 
         _.keys(haveAssemblers).forEach(assemblerName => {
-            if ((haveAssemblers[assemblerName] ?? 0) <= 0) return;
+            if ((haveAssemblers[assemblerName as Items] ?? 0) <= 0) return;
             assemblerButtons.push(
                 <Button
                     className={'add-assembler'}
@@ -88,7 +100,7 @@ function App() {
             <ItemDisplay
                 key={itemName}
                 amt={amt ?? 0}
-                assemblerCount={assemblerCount}
+                assemblerCount={_.pickBy(assemblerCount, x => x !== 0)}
                 itemName={itemName}
                 assemblerButtons={assemblerButtons}
                 makeByHand={makeByHand ? () => {

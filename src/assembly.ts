@@ -1,21 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { recipes, Items, assemblerSpeeds } from './values';
+import { recipes, Items, assemblerSpeeds, timePerRecipe } from './values';
 import _ from 'lodash';
 import { SMap } from './smap';
 
 interface State {
     assemblers: {[p: string]: Partial<SMap<number>>};
-    amountThatWeHave: { [p in Items]: number };
+    amountThatWeHave: { [p in Items]?: number };
 }
 
 const defaultState = {
-    amountThatWeHave: {
-        "iron-bar": 0,
-        "iron-ore": 0,
-        assembler1: 0,
-        assembler2: 0,
-        assembler3: 0,
-    },
+    amountThatWeHave: {},
     assemblers: {},
 } satisfies State;
 
@@ -29,7 +23,8 @@ function assemble(itemName: Items, assemblerCount: number, speed: number, timeSt
 
     const amt = amounts[itemName as Items] ?? 0;
 
-    let numberOfRecipesToMake = (assemblerCount ?? 0) * timeStep * speed;
+    const craftTime = timePerRecipe[itemName];
+    let numberOfRecipesToMake = (assemblerCount ?? 0) * timeStep * speed / craftTime;
     if (numberOfRecipesToMake <= 0)
         return;
 
@@ -56,7 +51,7 @@ function doProduction({
     const amounts: { [p: string]: number } = { ..._amountsThatWeHave };
 
     _.keys(assemblers).sort().forEach(level => {
-        _.forEach(assemblers[level], (assemblerCount, itemName) => assemble(itemName as Items, assemblerCount ?? 0, assemblerSpeeds[level] ?? 0, timeStep, amounts));
+        _.forEach(assemblers[level], (assemblerCount, itemName) => assemble(itemName as Items, assemblerCount ?? 0, assemblerSpeeds[level as Items] ?? 0, timeStep, amounts));
     });
 
     return {
@@ -77,7 +72,8 @@ export function useProduction(ticksPerSecond: number) {
 
     const addAmount = useCallback(
         (itemName: Items, amount: number) => {
-            stateRef.current.amountThatWeHave[itemName] += amount;
+            const k = stateRef.current.amountThatWeHave[itemName] ?? 0;
+            stateRef.current.amountThatWeHave[itemName] = k + amount;
             setState();
         },
         []
