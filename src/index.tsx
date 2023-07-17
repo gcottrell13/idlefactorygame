@@ -2,7 +2,14 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import _ from 'lodash';
 import { useProduction } from "./assembly";
-import { recipes, Items, assemblerSpeeds, timePerRecipe, requiredBuildings } from './values';
+import { 
+    recipes, 
+    Items, 
+    assemblerSpeeds, 
+    timePerRecipe, 
+    requiredBuildings, 
+    byHandVerbs,
+ } from './values';
 import './css.css';
 import { Button, Row, Col } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
@@ -30,8 +37,10 @@ function ItemDisplay({
     assemblerButtons: JSX.Element[],
     makeByHand: null | func,
 }) {
+
+    const byHandVerb = byHandVerbs[itemName as Items] ?? 'make';
     const makeByHandButton = makeByHand && (
-        <Button className={'make-by-hand'} onClick={makeByHand}>Make 1 {itemName}</Button>
+        <Button className={'make-by-hand'} onClick={makeByHand}>{byHandVerb} {itemName}</Button>
     );
     const baseCraftTime = timePerRecipe[itemName as Items];
 
@@ -48,6 +57,9 @@ function ItemDisplay({
 
     return (
         <Row className='item-row'>
+            <Col xs={2}>
+                {makeByHandButton}
+            </Col>
             <Col xs={1}>
                 <span className="item-name">{itemName}</span>
             </Col>
@@ -56,9 +68,6 @@ function ItemDisplay({
             </Col>
             <Col xs={5}>
                 {assemblerDisplay}
-            </Col>
-            <Col xs={2}>
-                {makeByHandButton}
             </Col>
             <Col xs={3}>
                 {assemblerButtons}
@@ -69,10 +78,10 @@ function ItemDisplay({
 
 
 function App() {
-    const { 
+    const {
         assemblers, amountThatWeHave, addAssemblers, resetAll,
-        makeItem, canMakeItem, 
-        seen, markAsSeen, 
+        makeItem, canMakeItem,
+        seen, markAsSeen,
     } = useProduction(TICKS_PER_SECOND);
 
     const parts: JSX.Element[] = [];
@@ -128,7 +137,7 @@ function App() {
 
 
     return (
-        <Container fluid>
+        <Container fluid className={'game-container'}>
             <Button onClick={resetAll}>Reset</Button>
             {parts}
         </Container>

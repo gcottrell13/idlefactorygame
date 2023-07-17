@@ -12,6 +12,11 @@ button.add-assembler {
 
 button.make-by-hand {
     margin-left: 20px;
+    float: right;
+}
+
+.game-container .item-row:nth-of-type(even) {
+    background-color: rgb(236, 236, 236);
 }
 
 button.btn {
