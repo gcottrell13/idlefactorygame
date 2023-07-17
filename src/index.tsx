@@ -2,9 +2,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import _ from 'lodash';
 import { useProduction } from "./assembly";
-import { recipes, Items } from './values';
+import { recipes, Items, assemblerSpeeds } from './values';
 import './css.css';
-import { Button } from 'react-bootstrap';
+import { Button, Row, Col } from 'react-bootstrap';
+import Container from 'react-bootstrap/Container';
+import { SMap } from './smap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const TICKS_PER_SECOND = 20;
 
@@ -14,57 +17,80 @@ function ItemDisplay({
     amt,
     itemName,
     assemblerCount,
-    onAddAssembler,
+    assemblerButtons,
     makeByHand,
 }: {
     amt: number,
     itemName: string,
-    assemblerCount: number,
-    onAddAssembler: null | func,
+    assemblerCount: SMap<number>,
+    assemblerButtons: JSX.Element[],
     makeByHand: null | func,
 }) {
-    const addAssemblerButton = onAddAssembler && (
-        <Button onClick={onAddAssembler}>+ Assembler</Button>
-    );
     const makeByHandButton = makeByHand && (
-        <Button onClick={makeByHand}>Make 1 {itemName}</Button>
+        <Button className={'make-by-hand'} onClick={makeByHand}>Make 1 {itemName}</Button>
     );
 
+    const assemblers = _.toPairs(assemblerCount).map(([name, no]) => <span className={'assembler-count'} key={name}><span className={'ass-count-name'}>{name}:</span> {no}</span>);
+
     return (
-        <div>
-            <span className="item-name">{itemName}</span>
-            <span className="item-count">{Math.round(amt)}</span>
-            <span className='assembler-count'>assemblers making {itemName}: {assemblerCount}</span> {addAssemblerButton}
-            {makeByHandButton}
-        </div>
+        <Row className='item-row'>
+            <Col xs={3}>
+                <span className="item-name">{itemName}</span>
+            </Col>
+            <Col xs={3}>
+                <span className="item-count">{Math.round(amt)}</span>
+            </Col>
+            <Col xs={3}>
+                <div className='assembler-count'>assemblers making {itemName}: {assemblers}</div>
+            </Col>
+            <Col xs={3}>
+                {makeByHandButton}
+                {assemblerButtons}
+            </Col>
+        </Row>
     );
 }
 
 
 function App() {
-    const {assemblersPerRecipe, amountThatWeHave, addAmount, addAssemblers } = useProduction(TICKS_PER_SECOND);
+    const { assemblers, amountThatWeHave, addAmount, addAssemblers, resetAll } = useProduction(TICKS_PER_SECOND);
 
     const parts: JSX.Element[] = [];
 
-    const haveAssemblers = amountThatWeHave['assembler'] ?? 0;
+    const haveAssemblers = _.mapValues(assemblerSpeeds, (value, key) => amountThatWeHave[key as Items] ?? 0);
 
-    _.forEach(amountThatWeHave, (amt, itemName) => {
+    _.keys(amountThatWeHave).sort().forEach(itemName => {
+        const amt = amountThatWeHave[itemName as Items];
         const recipe = recipes[itemName as Items];
-        const assemblerCount = assemblersPerRecipe[itemName] ?? 0;
         if (recipe === undefined) return;
 
         const makeByHand = Object.keys(recipes[itemName as Items]).length === 0;
+        const assemblerCount = _.mapValues(assemblers, (value, key) => value[itemName] ?? 0);
+
+        const assemblerButtons: JSX.Element[] = [];
+
+        _.keys(haveAssemblers).forEach(assemblerName => {
+            if ((haveAssemblers[assemblerName] ?? 0) <= 0) return;
+            assemblerButtons.push(
+                <Button
+                    className={'add-assembler'}
+                    key={assemblerName}
+                    onClick={() => {
+                        addAssemblers(assemblerName as Items, itemName as Items, 1);
+                    }}
+                >
+                    Add {assemblerName}
+                </Button>
+            );
+        });
 
         parts.push(
             <ItemDisplay
                 key={itemName}
                 amt={amt ?? 0}
-                assemblerCount={assemblerCount} 
-                itemName={itemName} 
-                onAddAssembler={haveAssemblers > 0 ? (() => {
-                    addAssemblers(itemName as Items, 1);
-                    addAmount('assembler', -1);
-                }) : null}
+                assemblerCount={assemblerCount}
+                itemName={itemName}
+                assemblerButtons={assemblerButtons}
                 makeByHand={makeByHand ? () => {
                     addAmount(itemName as Items, 1);
                 } : null}
@@ -74,9 +100,10 @@ function App() {
 
 
     return (
-        <div>
+        <Container fluid>
+            <Button onClick={resetAll}>Reset</Button>
             {parts}
-        </div>
+        </Container>
     );
 }
 

@@ -5,3 +5,19 @@
 .assembler-count {
     margin-left: 10px;
 }
+
+button.add-assembler {
+    margin-left: 20px;
+}
+
+button.make-by-hand {
+    margin-left: 20px;
+}
+
+button.btn {
+    padding: 0;
+}
+
+.item-row {
+    padding: 10px;
+}
