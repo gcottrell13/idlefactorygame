@@ -10,30 +10,33 @@ interface State {
 
 function doProduction({
     assemblersPerRecipe,
-    amountThatWeHave,
-}: State, rate: number) {
-    const amounts: { [p: string]: number } = { ...amountThatWeHave };
+    amountThatWeHave: _amountsThatWeHave,
+}: State, timeStep: number) {
+    const amounts: { [p: string]: number } = { ..._amountsThatWeHave };
+
     _.forEach(assemblersPerRecipe, (assemblerCount, itemName) => {
         const recipe = recipes[itemName as Items];
         if (recipe === undefined) return;
 
-        const amt = amountThatWeHave[itemName as Items] ?? 0;
+        const amt = amounts[itemName as Items] ?? 0;
 
-        let numberOfRecipesToMake = assemblerCount ?? 0;
+        let numberOfRecipesToMake = (assemblerCount ?? 0) * timeStep;
+        if (numberOfRecipesToMake <= 0)
+            return;
+
         _.toPairs(recipe).forEach(pair => {
             const [ingredientName, requiredCount] = pair;
-            const weHave = amountThatWeHave[ingredientName as Items] ?? 0;
-            numberOfRecipesToMake = Math.min(weHave / requiredCount, numberOfRecipesToMake);
+            const weHave = amounts[ingredientName as Items] ?? 0;
+            numberOfRecipesToMake = Math.min(weHave * timeStep / requiredCount, numberOfRecipesToMake);
         });
 
         _.toPairs(recipe).forEach(pair => {
             const [ingredientName, requiredCount] = pair;
-            const weHave = amountThatWeHave[ingredientName as Items] ?? 0;
-            amountThatWeHave[ingredientName as Items] = Math.max(0, weHave - (numberOfRecipesToMake * requiredCount));
+            const weHave = amounts[ingredientName as Items] ?? 0;
+            amounts[ingredientName as Items] = Math.max(0, weHave - (numberOfRecipesToMake * requiredCount));
         });
 
-        amounts[itemName] = amt + numberOfRecipesToMake * rate;
-        amountThatWeHave[itemName as Items] = amounts[itemName];
+        amounts[itemName] = amt + numberOfRecipesToMake;
     });
     return {
         assemblersPerRecipe,
@@ -41,13 +44,14 @@ function doProduction({
     };
 }
 
-export function useProduction(rate: number) {
+export function useProduction(ticksPerSecond: number) {
     const stateRef = useRef<State>({
         amountThatWeHave: {
             "iron-bar": 0,
             "iron-ore": 0,
             assembler: 0,
-        }, assemblersPerRecipe: {}
+        }, 
+        assemblersPerRecipe: {},
     });
 
     const [c, setCounter] = useState<number>(0);
@@ -69,9 +73,12 @@ export function useProduction(rate: number) {
     useEffect(
         () => {
             const i = setTimeout(() => {
-                stateRef.current = doProduction(stateRef.current, 1 / rate);
+                stateRef.current = doProduction(stateRef.current, 1 / ticksPerSecond);
                 setCounter(c + 1);
-            }, 1000 / rate);
+            }, 1000 / ticksPerSecond);
+            return () => {
+                clearTimeout(i);
+            };
         }
     );
     return { ...stateRef.current, addAmount, addAssemblers };

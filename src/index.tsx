@@ -31,7 +31,7 @@ function ItemDisplay({
     );
 
     return (
-        <div key={itemName}>
+        <div>
             <span className="item-name">{itemName}</span>
             <span className="item-count">{Math.round(amt)}</span>
             <span className='assembler-count'>assemblers making {itemName}: {assemblerCount}</span> {addAssemblerButton}
@@ -57,6 +57,7 @@ function App() {
 
         parts.push(
             <ItemDisplay
+                key={itemName}
                 amt={amt ?? 0}
                 assemblerCount={assemblerCount} 
                 itemName={itemName} 
