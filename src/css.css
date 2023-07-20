@@ -22,6 +22,10 @@ button.make-by-hand {
     margin-left: 5px;
 }
 
+.badge.new-item-badge {
+    background-color: orangered !important;
+}
+
 .game-container .item-row:nth-of-type(even) {
     background-color: rgb(236, 236, 236);
 }

@@ -29,6 +29,8 @@ function ItemDisplay({
     makeByHand,
     progress = {},
     storage,
+    onMouseover,
+    isAcked,
 }: {
     amt: number,
     itemName: Items,
@@ -38,6 +40,8 @@ function ItemDisplay({
     makeByHand: null | func,
     progress: partialItems<number | null> | undefined,
     storage: partialItems<number>,
+    onMouseover: func | undefined,
+    isAcked: boolean,
 }) {
 
     const makeByHandButton = makeByHand && (
@@ -162,8 +166,11 @@ function ItemDisplay({
     );
 
     return (
-        <Row className='item-row'>
+        <Row className='item-row' onMouseEnter={onMouseover}>
             <Col xs={1}>
+                {!isAcked && (
+                    <Badge className={'new-item-badge'}>New</Badge>
+                )}
                 {makeByHandButton}
             </Col>
             <Col xs={1}>
@@ -193,6 +200,7 @@ function ItemDisplay({
 function App() {
     const {
         assemblers, amountThatWeHave, productionProgress, storage, visible,
+        acknowledgeItem, acknowledged,
         addAssemblers, resetAll,
         makeItemByhand, canMakeItemByHand,
         addContainer,
@@ -251,6 +259,8 @@ function App() {
 
         const prodStatus = productionProgress[itemName];
 
+        const isAcked = acknowledged[itemName] === true;
+
         parts.push(
             <ItemDisplay
                 key={itemName}
@@ -264,6 +274,10 @@ function App() {
                 } : null}
                 progress={prodStatus}
                 storage={storage[itemName] ?? {}}
+                isAcked={isAcked}
+                onMouseover={!isAcked ? (() => {
+                    acknowledgeItem(itemName);
+                }) : undefined}
             />
         );
     });

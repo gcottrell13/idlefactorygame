@@ -36,6 +36,8 @@ interface State {
     // undefined objects will check each tick if they should be revealed
     visible: partialItems<boolean>;
 
+    acknowledged: partialItems<boolean>;
+
     // how many of each item has been made
     amountCreated: partialItems<number>;
 }
@@ -49,6 +51,7 @@ const defaultState = {
     storage: {},
     productionProgress: {},
     amountCreated: {},
+    acknowledged: {},
 } satisfies State;
 
 const ex = localStorage.getItem('state');
@@ -118,7 +121,7 @@ export function useProduction(ticksPerSecond: number) {
     function addToTotal(itemName: Items, recipeCount: number): boolean {
         if (GAME.sideProducts(itemName).length > 0) {
             for (let i = 0; i < recipeCount; i++) {
-                
+
                 const itemsChosen: Items[] = [];
 
                 GAME.sideProducts(itemName).forEach(sideProduct => {
@@ -176,7 +179,7 @@ export function useProduction(ticksPerSecond: number) {
                         return;
                     }
                 }
-                
+
                 if (time === null) {
                     time = consumeMaterials(itemName, amountThatWeHave);
 
@@ -308,24 +311,36 @@ export function useProduction(ticksPerSecond: number) {
             visible,
             amountThatWeHave,
         } = stateRef.current;
+        
+        let discoveredSomething = true;
 
-        GAME.allItemNames.forEach(itemName => {
-            if (visible[itemName] === undefined) {
-                if ((amountThatWeHave[itemName] ?? 0) <= 0) {
-                    const required = GAME.requiredBuildings(itemName);
-                    const haveBuilding = required.some(x => visible[x as Items]) || required.includes('by-hand');
-                    const recipe = GAME.recipes(itemName);
-                    const haveIngredients = keys(recipe).every(key => visible[key as Items]);
-                    const unlockedWith = GAME.unlockedWith(itemName).every(x => amountThatWeHave[x] ?? 0);
-                    if (haveBuilding && unlockedWith && (keys(recipe).length === 0 || haveIngredients)) {
+        while (discoveredSomething) {
+            discoveredSomething = false;
+            GAME.allItemNames.forEach(itemName => {
+                if (visible[itemName] === undefined) {
+                    if ((amountThatWeHave[itemName] ?? 0) <= 0) {
+                        const required = GAME.requiredBuildings(itemName);
+                        const haveBuilding = required.some(x => visible[x as Items]) || required.includes('by-hand');
+                        const recipe = GAME.recipes(itemName);
+                        const haveIngredients = keys(recipe).every(key => visible[key as Items]);
+                        const unlockedWith = GAME.unlockedWith(itemName).every(x => amountThatWeHave[x] ?? 0);
+                        if (haveBuilding && unlockedWith && (keys(recipe).length === 0 || haveIngredients)) {
+                            markVisibility(itemName, true);
+                            discoveredSomething = true;
+                        }
+                    }
+                    else {
                         markVisibility(itemName, true);
+                        discoveredSomething = true;
                     }
                 }
-                else {
-                    markVisibility(itemName, true);
-                }
-            }
-        });
+            });
+        }
+    };
+
+    const acknowledgeItem = (item: Items) => {
+        stateRef.current.acknowledged[item] = true;
+        setState();
     };
 
     useEffect(
@@ -351,5 +366,14 @@ export function useProduction(ticksPerSecond: number) {
         []
     );
 
-    return { ...stateRef.current, addAmount, addAssemblers, resetAll, makeItemByhand, canMakeItemByHand, addContainer };
+    return {
+        ...stateRef.current,
+        addAmount,
+        addAssemblers,
+        resetAll,
+        makeItemByhand,
+        canMakeItemByHand,
+        addContainer,
+        acknowledgeItem,
+    };
 }
