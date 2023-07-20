@@ -402,7 +402,7 @@ const ex = {
 };
 
 const makesAsASideProduct = mapValues(recipes, (_, item) => {
-    return keys(sideProducts).filter(mainOutput => ex.sideProducts(mainOutput).some(p => p[item]));
+    return keys(sideProducts).filter(mainOutput => mainOutput !== item && ex.sideProducts(mainOutput).some(p => p[item]));
 });
 
 export default ex;

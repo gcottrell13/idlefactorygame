@@ -62,7 +62,7 @@ function ItemDisplay({
     ) : null;
 
     const speed = d(_.sum(keys(assemblerCount).map(key => GAME.assemblerSpeeds(key) * (assemblerCount[key] ?? 0) / baseCraftTime)));
-    
+
     const recipe = GAME.recipes(itemName);
     const formatIngredients = keys(recipe).map(name => [name, recipe[name]!] as const).filter(([_name, count]) => count > 0).map(
         ([name, count]) => (
@@ -83,51 +83,65 @@ function ItemDisplay({
 
     const assemblerSpeed = GAME.assemblerSpeeds(itemName);
 
-    const tooltip = (props: any) => (
-        <Popover id="" {...props}>
-            <Popover.Header>
-                {GAME.displayNames(itemName)}
+    const parts = [
+        (
+            storageObjects.length > 0 && (
                 <div className={'storage-options'}>
                     Stored in: {storageObjects.join(', ')}
                 </div>
-                {
-                    storageValueIfContainer > 0 && (
-                        <div className={'storage-size'}>
-                            Storage Size: {storageValueIfContainer}
-                        </div>
-                    )
-                }
-                {
-                    assemblerSpeed > 0 && (
-                        <div className={'item-assembler-speed'}>
-                            Crafting Speed: {assemblerSpeed}x
-                        </div>
-                    )
-                }
+            )
+        ),
+        (
+            storageValueIfContainer > 0 && (
+                <div className={'storage-size'}>
+                    Storage Size: {storageValueIfContainer}
+                </div>
+            )
+        ),
+        (
+            assemblerSpeed > 0 && (
+                <div className={'item-assembler-speed'}>
+                    Crafting Speed: {assemblerSpeed}x
+                </div>
+            )
+        ),
+        (
+            formatIngredients.length > 0 && (
+                <div className={'ingredient-list'}>
+                    Ingredients: <table><tbody>{formatIngredients}</tbody></table>
+                </div>
+            )
+        ),
+        (
+            byproducts.length > 0 && (
+                <div className={'byproduct-list'}>Byproducts: {byproducts}</div>
+            )
+        ),
+        (
+            byproductOf.length > 0 && (
+                <div className={'byproduct-of-list'}>Byproduct of: {byproductOf.join(', ')}</div>
+            )
+        ),
+    ];
+
+    const displayParts: JSX.Element[] = [];
+    parts.forEach(part => {
+        if (part) {
+            displayParts.push(<hr />);
+            displayParts.push(part);
+        }
+    })
+
+    const tooltip = (props: any) => (
+        <Popover id={`${itemName}-popover`} {...props}>
+            <Popover.Header>
+                <span className={'popover-name'}>{GAME.displayNames(itemName)}</span>
             </Popover.Header>
             <Popover.Body>
-                Made in: {GAME.requiredBuildings(itemName).map(GAME.displayNames).join(', ')}
-                {
-                    formatIngredients.length > 0 ? (
-                        <div className={'ingredient-list'}>
-                            <hr />
-                            Ingredients: <table><tbody>{formatIngredients}</tbody></table>
-                        </div>
-                    ) : null
-                }
-                {
-                    byproductOf.length > 0 ? (
-                        <div className={'byproduct-of-list'}>Byproduct of: {byproductOf.join(', ')}</div>
-                    ) : null
-                }
-                {
-                    byproducts.length > 0 && (
-                        <>
-                            <hr />
-                            <div className={'byproduct-list'}>Byproducts: {byproducts}</div>
-                        </>
-                    )
-                }
+                <div className={'made-in'}>
+                    Made in: <br />{GAME.requiredBuildings(itemName).map(GAME.displayNames).join(', ')}
+                </div>
+                {displayParts}
             </Popover.Body>
         </Popover>
     );
