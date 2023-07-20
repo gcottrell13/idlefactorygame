@@ -271,7 +271,7 @@ function App() {
 
     return (
         <Container fluid className={'game-container'}>
-            <Button onClick={resetAll}>Reset</Button> <span>{VERSION}</span>
+            <Button onClick={resetAll} variant={'secondary'}>Reset</Button> <span>{VERSION}</span>
             {parts}
         </Container>
     );

@@ -118,6 +118,9 @@ export function useProduction(ticksPerSecond: number) {
     function addToTotal(itemName: Items, recipeCount: number): boolean {
         if (GAME.sideProducts(itemName).length > 0) {
             for (let i = 0; i < recipeCount; i++) {
+                
+                const itemsChosen: Items[] = [];
+
                 GAME.sideProducts(itemName).forEach(sideProduct => {
                     const total = _.sum(values(sideProduct));
                     let runningTotal = 0;
@@ -125,13 +128,20 @@ export function useProduction(ticksPerSecond: number) {
                         const k = key as Items;
                         runningTotal += sideProduct[k] ?? 0;
                         if (Math.random() <= (runningTotal / total)) {
-                            if (hasStorageCapacity(k, 1))
-                                addAmount(k, 1);
+                            itemsChosen.push(k);
                             return false;
                         }
                     });
                 });
+
+                if (itemsChosen.every(x => hasStorageCapacity(x, 1))) {
+                    itemsChosen.forEach(x => addAmount(x, 1));
+                }
+                else {
+                    return false;
+                }
             }
+            return true;
         }
         else {
             if (hasStorageCapacity(itemName, recipeCount)) {

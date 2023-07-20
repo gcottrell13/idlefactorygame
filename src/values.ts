@@ -3,6 +3,8 @@ import { SMap, keys, mapValues } from "./smap";
 const timePerRecipe = {
     '': 0,
 
+    'begin': 0,
+
     'land': 10,
     'wet-land': 0,
     'dry-land': 0,
@@ -339,6 +341,7 @@ export type partialItems<T> = { [p in Items]?: T };
 
 const recipes: Recipes = {
     '': {},
+    'begin': {},
 
     'land': {},
     'wet-land': {},
@@ -525,11 +528,13 @@ const unlockedWith: partialItems<Items[]> = {
     'research-box3': ['research-box2'],
     'research-box4': ['research-box3'],
     'research-box5': ['research-box4'],
+
+    'land': ['begin'],
 };
 
 const hideOnBuy: Items[] = [
     ...keys(recipes).filter(x => x.startsWith('research-')),
-
+    'begin',
 ];
 
 const assemblerSpeeds = {
@@ -555,6 +560,7 @@ const assemblerSpeeds = {
 } satisfies { [p in Items]?: number };
 
 const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-hand')[] } = {
+    'begin': ['by-hand'],
     "adamantium-drill": ['manufacturer'],
     "advanced-circuit": ['assembler'],
     "crushed-uranium": ['rock-crusher'],
@@ -606,11 +612,11 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     science5: ['by-hand', 'manufacturer'],
     seed: ['by-hand'],
     u235: ['centrifuge'],
-    centrifuge: ['by-hand', 'manufacturer'],
+    centrifuge: ['manufacturer'],
     'u234': [],
     'slag': [],
 
-    'land': ['by-hand', 'explorer'],
+    'land': ['explorer'],
     'wet-land': [],
     'dry-land': [],
     'rocky-land': [],
@@ -686,7 +692,14 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
  */
 const sideProducts: partialItems<partialItems<number>[]> = {
     'land': [
-        { 'rocky-land': 2, 'wet-land': 1, 'dry-land': 2, 'stony-land': 1 },
+        { 'rocky-land': 1 },
+        { 'stony-land': 1 },
+        { 'wet-land': 1 },
+        { 'dry-land': 1 },
+    ],
+    'begin': [
+        { 'begin': 1, },
+        { 'explorer': 1 },
     ],
     'water': [
         { 'water': 1 },
@@ -710,6 +723,7 @@ const byHandVerbs: { [p in Items]?: string } = {
     'coal': 'gather',
     'seed': 'gather',
     'land': 'explore',
+    'begin': 'Begin',
 };
 
 const storageSizes = {
@@ -729,8 +743,8 @@ const itemsCanBeStoreIn: { [p in Items]?: (keyof typeof storageSizes)[] | undefi
     "rocky-land": [],
     "stony-land": [],
     "wet-land": [],
-    excavator: [],
-    explorer: [],
+    excavator: ['box4'],
+    explorer: ['box4'],
     land: [],
     sand: [],
     science0: ['box'],
