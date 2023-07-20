@@ -40,7 +40,7 @@ const timePerRecipe = {
     'research-wire': 0,
 
     // science
-    'science0': 0,
+    'science0': 1,
     'science1': 1,
 
     // buildings
@@ -51,6 +51,10 @@ const timePerRecipe = {
 
     // containers
     'box': 2,
+    'box-box': 2,
+    'box3': 2,
+    'box4': 2,
+    'box5': 2,
 
     //endregion : tier 0 -----------------------------------------------------------------
 
@@ -162,7 +166,6 @@ const timePerRecipe = {
     'computer': 10,
 
     // containers
-    'warehouse': 30,
 
     // research
     'research-studonite': 0, // science 3
@@ -206,19 +209,16 @@ const timePerRecipe = {
     'rock-crusher': 10,
     'centrifuge': 10,
 
-    'fuck': 100,
-
 
     'science10': 10,
 
     // research
     'research-uranium': 0, // science 5
-    'research-warehouse': 0,
 
 
 } satisfies SMap<number>;
 
-const displayNames: partialItems<string> = {
+const displayNames: {[p in Items]?: string} = {
     'assembler': 'Assembler',
     'constructer': 'Constructor',
     'miner-mk1': 'Miner Mark I',
@@ -233,6 +233,45 @@ const displayNames: partialItems<string> = {
     'research-wire': 'Tech: Copper Wire',
     'research-steel': 'Tech: Steel',
     'research-arbol': 'Tech: Arbology',
+    'box': 'Box',
+    'box-box': 'Box of Box',
+    'box3': 'Bigger Box',
+    'box4': 'Massive Box',
+    'box5': 'Biggest Box',
+    "": '',
+    "adamantium-drill": 'Adamantium Drill',
+    "adamantium-frame": 'Adamantium Frame',
+    "advanced-circuit": 'Advanced Circuit',
+    "copper-bar": 'Copper Bar',
+    "copper-ore": 'Copper Ore',
+    "copper-wire": 'Copper Wire',
+    "crushed-uranium": 'Crushed Uranium',
+    "dry-land": 'Dry Land',
+    "gas-extractor": 'Gas Extractor',
+    "iron-bar": 'Iron Bar',
+    "iron-frame": 'Frame',
+    "iron-ore": 'Iron Ore',
+    "oil-pump": 'Oil Pump',
+    "research-adamantium-drill": 'Tech: Adamantium Drill',
+    "research-aluminum": 'Tech: Aluminium',
+    "research-assembler": 'Tech: Assembler',
+    "research-computer": 'Tech: Computers',
+    "research-helpers": 'Tech: Excavator and Explorer',
+    "research-manufacturer": 'Tech: Manufacturer',
+    "research-natural-gas": 'Tech: Natural Gas',
+    "research-nitrogen": 'Tech: Nitrogen Extraction',
+    "research-studonite": 'Tech: Strange Rock',
+    "research-uranium": 'Tech: Glowy Rock That Makes Me Feel Bad',
+    "research-water-filter": 'Tech: Water Filter',
+    "rock-crusher": 'Rock Crusher',
+    'adamantium': 'Adamantium',
+    "stony-land": "Stone Land",
+    "sulfuric-acid": 'Sulfuric Acid',
+    "uranium-ore": 'Uranium Ore',
+    "water-filter": 'Water Filter',
+    "water-pump-mk1": 'Water Pump',
+    "water-pump-mk2": 'Fast Water Pump',
+    "wet-land": 'Wet Land',
 };
 
 export type Items = keyof typeof timePerRecipe;
@@ -299,8 +338,6 @@ const recipes: Recipes = {
     'pipe': { 'iron-bar': 5 },
     'iron-frame': { 'iron-bar': 2 },
 
-    'fuck': { 'u235': 10 },
-
     // advanced materials
     'sulfuric-acid': { 'sulfur': 1, 'water': 5 },
     'basic-circuit': { 'copper-wire': 2, 'wood': 0.25 },
@@ -334,8 +371,11 @@ const recipes: Recipes = {
     'centrifuge': { 'adamantium-frame': 50, 'chemical-plant': 2 },
 
     'box': { 'iron-bar': 1 },
+    'box-box': { 'box': 5 },
+    'box3': { 'box-box': 5 },
+    'box4': { 'box3': 5 },
+    'box5': { 'box4': 5 },
     'tank': { 'steel': 20, 'pipe': 10 },
-    'warehouse': { 'steel': 200 },
 
     'science0': { 'copper-bar': 1, 'iron-bar': 1 },
     'science1': { 'copper-wire': 1, 'gear': 1 },
@@ -358,7 +398,6 @@ const recipes: Recipes = {
     'research-studonite': { 'science3': 50 },
     'research-aluminum': { 'science3': 20 },
     'research-adamantium-drill': { 'science4': 20 },
-    'research-warehouse': { 'science10': 1 },
     'research-computer': { 'science4': 50 },
     'research-uranium': { 'science5': 50 },
 };
@@ -391,8 +430,6 @@ const unlockedWith: partialItems<Items[]> = {
     'bauxite': ['research-aluminum'],
 
     'computer': ['research-computer'],
-
-    'warehouse': ['research-warehouse'],
 };
 
 const hideOnBuy: Items[] = [
@@ -441,12 +478,10 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     "research-steel": ['by-hand'],
     "research-studonite": ['by-hand'],
     "research-uranium": ['by-hand'],
-    "research-warehouse": ['by-hand'],
     "research-water-filter": ['by-hand'],
     "research-wire": ['by-hand'],
     aluminum: ['smelter-mk2'],
     computer: ['manufacturer'],
-    fuck: ['by-hand'],
     plastic: ['chemical-plant'],
     sand: [],
     science0: ['by-hand', 'constructer'],
@@ -523,8 +558,11 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     'explorer': ['by-hand', 'assembler'],
     'excavator': ['by-hand', 'assembler'],
 
-    'warehouse': ['manufacturer'],
-    'box': ['by-hand'],
+    'box': ['by-hand', 'constructer'],
+    'box-box': ['by-hand', 'constructer'],
+    'box3': ['constructer'],
+    'box4': ['constructer'],
+    'box5': ['constructer'],
     'tank': ['by-hand'],
 };
 
@@ -559,22 +597,22 @@ const byHandVerbs: { [p in Items]?: string } = {
     'coal': 'gather',
     'seed': 'gather',
     'land': 'explore',
-    'fuck': 'give a',
 };
 
 const storageSizes = {
     'box': 50,
+    'box-box': 10,
+    'box3': 10,
+    'box4': 10,
+    'box5': 10,
     'tank': 1500,
-    'warehouse': 10,
 } satisfies partialItems<number>;
 
-// these items impose a limit on how much we can have. if the item does not have a value, it can have an infinite amount.
-// if the array is empty, then it cannot be stored.
-const itemsCanBeStoreIn: { [p in Items]: (keyof typeof storageSizes)[] } = {
+// these items impose a limit on how much we can have. if the array is empty, then it have an infinite amount.
+const itemsCanBeStoreIn: { [p in Items]: (keyof typeof storageSizes)[] | undefined } = {
     "": [],
     "dry-land": [],
     "excavate-dirt": [],
-    adamantium: ['box'],
     "research-adamantium-drill": [],
     "research-aluminum": [],
     "research-arbol": [],
@@ -587,7 +625,6 @@ const itemsCanBeStoreIn: { [p in Items]: (keyof typeof storageSizes)[] } = {
     "research-steel": [],
     "research-studonite": [],
     "research-uranium": [],
-    "research-warehouse": [],
     "research-water-filter": [],
     "research-wire": [],
     "rocky-land": [],
@@ -595,9 +632,8 @@ const itemsCanBeStoreIn: { [p in Items]: (keyof typeof storageSizes)[] } = {
     "wet-land": [],
     excavator: [],
     explorer: [],
-    fuck: [],
     land: [],
-    sand: ['box'],
+    sand: [],
     science0: ['box'],
     science1: ['box'],
     science10: ['box'],
@@ -605,9 +641,10 @@ const itemsCanBeStoreIn: { [p in Items]: (keyof typeof storageSizes)[] } = {
     science3: ['box'],
     science4: ['box'],
     science5: ['box'],
+    adamantium: ['box'],
     seed: ['box'],
-    "rock-crusher": ['warehouse'],
-    centrifuge: ['warehouse'],
+    "rock-crusher": ['box3'],
+    centrifuge: ['box3'],
     // raw
     'gas': ['tank'],
     'iron-ore': ['box'],
@@ -641,26 +678,26 @@ const itemsCanBeStoreIn: { [p in Items]: (keyof typeof storageSizes)[] } = {
     'basic-circuit': ['box'],
     solvent: ['tank'],
     // buildings
-    'gas-extractor': ['warehouse'],
-    'manufacturer': ['warehouse'],
-    'assembler': ['warehouse'],
-    'constructer': ['warehouse'],
-    'chemical-plant': ['warehouse'],
-    'miner-mk1': ['warehouse'],
-    'water-pump-mk1': ['warehouse'],
-    'water-pump-mk2': ['warehouse'],
-    'oil-pump': ['warehouse'],
-    'smelter-mk1': ['warehouse'],
-    'smelter-mk2': ['warehouse'],
-    'greenhouse': ['warehouse'],
-    'hydroponics': ['warehouse'],
-    'water-filter': ['warehouse'],
+    'gas-extractor': ['box3'],
+    'manufacturer': ['box3'],
+    'assembler': ['box3'],
+    'constructer': ['box3'],
+    'chemical-plant': ['box3'],
+    'miner-mk1': ['box3'],
+    'water-pump-mk1': ['box3'],
+    'water-pump-mk2': ['box3'],
+    'oil-pump': ['box3'],
+    'smelter-mk1': ['box3'],
+    'smelter-mk2': ['box3'],
+    'greenhouse': ['box3'],
+    'hydroponics': ['box3'],
+    'water-filter': ['box3'],
     'slag': ['box'],
     'u234': ['box'],
     'u235': ['box'],
     'computer': ['box'],
     'adamantium-frame': ['box'],
-    'adamantium-drill': ['warehouse'],
+    'adamantium-drill': ['box3'],
     'crushed-uranium': ['box'],
     'aluminum': ['box'],
     'bauxite': ['box'],
@@ -669,9 +706,12 @@ const itemsCanBeStoreIn: { [p in Items]: (keyof typeof storageSizes)[] } = {
     'gold': ['box'],
     'iron-frame': ['box'],
 
-    'box': ['warehouse'],
-    'tank': ['warehouse'],
-    'warehouse': ['warehouse'],
+    'box': ['box-box'],
+    'box-box': ['box3'],
+    'box3': ['box4'],
+    'box4': ['box5'],
+    'box5': [],
+    'tank': ['box3'],
 };
 
 const allItemNames = keys(recipes).sort();

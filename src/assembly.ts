@@ -128,10 +128,6 @@ export function useProduction(ticksPerSecond: number) {
     }
 
     function addToTotal(itemName: Items, recipeCount: number): boolean {
-        // const recipe = recipes[itemName];
-        // if (recipe === undefined) return [0, 0, 0];
-        const storage = stateRef.current.storage;
-        
         if (GAME.sideProducts(itemName).length > 0) {
             for (let i = 0; i < recipeCount; i++) {
                 GAME.sideProducts(itemName).forEach(sideProduct => {

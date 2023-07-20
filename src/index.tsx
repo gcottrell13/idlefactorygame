@@ -4,11 +4,13 @@ import _ from 'lodash';
 import { calculateStorage, useProduction } from "./assembly";
 import GAME, { Items, partialItems } from './values';
 import './css.css';
-import { Button, Row, Col, OverlayTrigger, ProgressBar, ButtonGroup, ButtonToolbar } from 'react-bootstrap';
+import { Button, Row, Col, OverlayTrigger, ButtonGroup } from 'react-bootstrap';
 import Popover from 'react-bootstrap/Popover';
 import Container from 'react-bootstrap/Container';
-import { SMap, keys, mapValues, values } from './smap';
+import { keys, mapValues } from './smap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+const VERSION = "v1.1";
 
 function d(n: number | undefined) {
     n ??= 0;
@@ -37,9 +39,8 @@ function ItemDisplay({
     storage: partialItems<number>,
 }) {
 
-    const byHandVerb = GAME.byHandVerbs(itemName) ?? 'make';
     const makeByHandButton = makeByHand && (
-        <Button className={'make-by-hand'} onClick={makeByHand}>{byHandVerb} {itemName}</Button>
+        <Button className={'make-by-hand'} onClick={makeByHand}>{GAME.byHandVerbs(itemName)}</Button>
     );
     const baseCraftTime = GAME.timePerRecipe(itemName);
 
@@ -167,13 +168,11 @@ function ItemDisplay({
                 <span className="item-max">{maxValue === Number.MAX_SAFE_INTEGER ? '' : `/ ${maxValue}`}</span>
                 <span className={'speed'}> (+{speed}/s)</span>
             </Col>
-            <Col xs={4}>
+            <Col xs={3}>
                 {assemblerDisplay}
             </Col>
-            <Col xs={4}>
-                <ButtonGroup>
-                    {assemblerButtons}
-                </ButtonGroup>
+            <Col xs={5}>
+                {assemblerButtons}
             </Col>
         </Row>
     );
@@ -205,6 +204,23 @@ function App() {
         const assemblersMakingThis = _.pickBy(assemblerCount, x => x !== 0);
         const assemblerButtons: JSX.Element[] = [];
 
+        GAME.itemsCanBeStoreIn(itemName).forEach(container => {
+            if ((amountThatWeHave[container] ?? 0) > 0) {
+                assemblerButtons.push(
+                    <Button
+                        className={'add-container'}
+                        key={container}
+                        onClick={() => {
+                            addContainer(itemName, container, 1);
+                        }}
+                        variant="info"
+                    >
+                        Add {GAME.displayNames(container)}
+                    </Button>
+                );
+            }
+        });
+
         haveAssemblers.forEach(assemblerName => {
             if (buildingsToMakeThis.includes(assemblerName) === false) return;
             assemblerButtons.push(
@@ -216,26 +232,9 @@ function App() {
                     }}
                     variant="secondary"
                 >
-                    Add {assemblerName}
+                    Add {GAME.displayNames(assemblerName)}
                 </Button>
             );
-        });
-
-        GAME.itemsCanBeStoreIn(itemName).forEach(container => {
-            if (amountThatWeHave[container]) {
-                assemblerButtons.push(
-                    <Button
-                        className={'add-container'}
-                        key={container}
-                        onClick={() => {
-                            addContainer(itemName, container, 1);
-                        }}
-                        variant="info"
-                    >
-                        Add {container}
-                    </Button>
-                );
-            }
         });
 
         const prod = timeLeftInProduction[itemName];
@@ -259,7 +258,7 @@ function App() {
 
     return (
         <Container fluid className={'game-container'}>
-            <Button onClick={resetAll}>Reset</Button>
+            <Button onClick={resetAll}>Reset</Button> <span>{VERSION}</span>
             {parts}
         </Container>
     );
@@ -267,3 +266,5 @@ function App() {
 
 const root = createRoot(document.getElementById("view")!);
 root.render(<App />);
+
+document.title = "idlefactorygame " + VERSION;
