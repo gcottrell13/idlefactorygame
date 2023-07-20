@@ -67,6 +67,8 @@ function ItemDisplay({
     const byproductOf = GAME.makesAsASideProduct(itemName);
     const storageObjects = GAME.itemsCanBeStoreIn(itemName);
 
+    const storageValueIfContainer = GAME.storageSizes(itemName);
+
     const maxValue = calculateStorage(itemName as Items, storage);
 
     const tooltip = (props: any) => (
@@ -76,6 +78,13 @@ function ItemDisplay({
                 <div className={'storage-options'}>
                     Stored in: {storageObjects.join(', ')}
                 </div>
+                {
+                    storageValueIfContainer > 0 && (
+                        <div className={'storage-size'}>
+                            Storage Size: {storageValueIfContainer}
+                        </div>
+                    )
+                }
             </Popover.Header>
             <Popover.Body>
                 Made in: {GAME.requiredBuildings(itemName).join(', ')}
@@ -108,7 +117,7 @@ function ItemDisplay({
             </Col>
             <Col xs={2}>
                 <span className="item-count">{d(amt)}</span>
-                <span className="item-max">{maxValue === -1 ? '' : `/ ${maxValue}`}</span>
+                <span className="item-max">{maxValue === Number.MAX_SAFE_INTEGER ? '' : `/ ${maxValue}`}</span>
                 <span className={'speed'}> (+{speed}/s)</span>
             </Col>
             <Col xs={4}>
@@ -134,7 +143,7 @@ function App() {
 
     const parts: JSX.Element[] = [];
 
-    const haveAssemblers = _.mapValues(GAME.assemblerSpeeds, (value, key) => amountThatWeHave[key as Items] ?? 0);
+    const haveAssemblers = GAME.allAssemblers.filter(key => (amountThatWeHave[key] ?? 0) > 0);
 
     GAME.allItemNames.forEach(itemName => {
         const amt = amountThatWeHave[itemName] ?? 0;
@@ -147,9 +156,8 @@ function App() {
         const assemblersMakingThis = _.pickBy(assemblerCount, x => x !== 0);
         const assemblerButtons: JSX.Element[] = [];
 
-        keys(haveAssemblers).forEach(assemblerName => {
+        haveAssemblers.forEach(assemblerName => {
             if (buildingsToMakeThis.includes(assemblerName) === false) return;
-            if ((haveAssemblers[assemblerName] ?? 0) < 1) return;
             assemblerButtons.push(
                 <Button
                     className={'add-assembler'}

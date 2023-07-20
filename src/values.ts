@@ -391,6 +391,7 @@ const ex = {
     storageSizes: (item: Items): number => (storageSizes as SMap<number>)[item] ?? 0,
 
     allItemNames: allItemNames,
+    allAssemblers: keys(assemblerSpeeds),
     makesAsASideProduct: (item: Items) => makesAsASideProduct[item],
 };
 
