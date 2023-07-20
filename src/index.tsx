@@ -4,13 +4,13 @@ import _ from 'lodash';
 import { calculateStorage, useProduction } from "./assembly";
 import GAME, { Items, partialItems } from './values';
 import './css.css';
-import { Button, Row, Col, OverlayTrigger, ButtonGroup } from 'react-bootstrap';
+import { Button, Row, Col, OverlayTrigger, ButtonGroup, Badge } from 'react-bootstrap';
 import Popover from 'react-bootstrap/Popover';
 import Container from 'react-bootstrap/Container';
 import { keys, mapValues } from './smap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const VERSION = "v1.1";
+const VERSION = "v1.2";
 
 function d(n: number | undefined) {
     n ??= 0;
@@ -26,16 +26,18 @@ function ItemDisplay({
     itemName,
     assemblerCount,
     assemblerButtons,
+    boxButtons,
     makeByHand,
-    progress,
+    progress = {},
     storage,
 }: {
     amt: number,
     itemName: Items,
     assemblerCount: partialItems<number>,
     assemblerButtons: JSX.Element[],
+    boxButtons: JSX.Element[],
     makeByHand: null | func,
-    progress: partialItems<number>,
+    progress: partialItems<number | null> | undefined,
     storage: partialItems<number>,
 }) {
 
@@ -48,8 +50,15 @@ function ItemDisplay({
         const no = assemblerCount[name] ?? 0;
         const speedPer = GAME.assemblerSpeeds(name) / baseCraftTime;
         let label = <span><span className={'assembler-count-name'}>{GAME.displayNames(name)} ({d(speedPer)}/s):</span> {no} ({d(speedPer * no)}/s)</span>;
-        if (progress[name]) {
-            label = <span>{label} {d(progress[name])}%</span>;
+        const prog = progress[name] ?? null;
+        if (prog === null) {
+            label = <span>{label} <Badge bg={'danger'}>No Input</Badge></span>;
+        }
+        else if (prog < 0) {
+            label = <span>{label} <Badge bg={'warning'}>Output Blocked</Badge></span>;
+        }
+        else {
+            label = <span>{label} <Badge>Working {d(prog * 100)}%</Badge></span>;
         }
         return (
             <div className={'assembler-count'} key={name}>
@@ -59,7 +68,7 @@ function ItemDisplay({
     });
 
     const assemblerDisplay = assemblers.length > 0 ? (
-        <div className='assembler-count'>buildings making {itemName}: {assemblers}</div>
+        <div className='assembler-count'>buildings making {GAME.displayNames(itemName)}: {assemblers}</div>
     ) : null;
 
     const speed = d(_.sum(keys(assemblerCount).map(key => GAME.assemblerSpeeds(key) * (assemblerCount[key] ?? 0) / baseCraftTime)));
@@ -171,7 +180,10 @@ function ItemDisplay({
             <Col xs={3}>
                 {assemblerDisplay}
             </Col>
-            <Col xs={5}>
+            <Col xs={1}>
+                {boxButtons}
+            </Col>
+            <Col xs={4}>
                 {assemblerButtons}
             </Col>
         </Row>
@@ -181,7 +193,7 @@ function ItemDisplay({
 
 function App() {
     const {
-        assemblers, amountThatWeHave, timeLeftInProduction, storage, visible,
+        assemblers, amountThatWeHave, productionProgress, storage, visible,
         addAssemblers, resetAll,
         makeItemByhand, canMakeItemByHand,
         addContainer,
@@ -203,10 +215,11 @@ function App() {
         const assemblerCount = _.mapValues(assemblers, (value, key) => value?.[itemName] ?? 0);
         const assemblersMakingThis = _.pickBy(assemblerCount, x => x !== 0);
         const assemblerButtons: JSX.Element[] = [];
+        const boxButtons: JSX.Element[] = [];
 
         GAME.itemsCanBeStoreIn(itemName).forEach(container => {
             if ((amountThatWeHave[container] ?? 0) > 0) {
-                assemblerButtons.push(
+                boxButtons.push(
                     <Button
                         className={'add-container'}
                         key={container}
@@ -237,19 +250,20 @@ function App() {
             );
         });
 
-        const prod = timeLeftInProduction[itemName];
+        const prodStatus = productionProgress[itemName];
 
         parts.push(
             <ItemDisplay
                 key={itemName}
                 amt={amt ?? 0}
                 assemblerCount={assemblersMakingThis}
+                boxButtons={boxButtons}
                 itemName={itemName}
                 assemblerButtons={assemblerButtons}
                 makeByHand={makeByHand ? () => {
                     makeItemByhand(itemName as Items);
                 } : null}
-                progress={mapValues(prod, (v, k) => v[3] * 100)}
+                progress={prodStatus}
                 storage={storage[itemName] ?? {}}
             />
         );

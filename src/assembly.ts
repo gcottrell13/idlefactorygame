@@ -8,19 +8,22 @@ function round(n: number) {
     return Math.round(n * PRECISION) / PRECISION;
 }
 
-type productionTime = [ticksLeft: number, totalTicks: number, recipesCreated: number, percentDone: number];
-
-export function getByItem<T>(dict: {[p in Items]?: T}, item: Items, _default: T): T {
+export function getByItem<T>(dict: { [p in Items]?: T }, item: Items, _default: T): T {
     return dict[item] ?? _default;
 }
 
-const zeroProduction: productionTime = [0, 0, 0, 0];
-
 interface State {
+    /**
+     * [the building][what its making]
+     */
     assemblers: partialItems<partialItems<number>>;
     displayAmount: partialItems<number>;
     amountThatWeHave: partialItems<number>;
-    timeLeftInProduction: partialItems<partialItems<productionTime>>;
+
+    /**
+     * [whats being made] [the building making it]
+     */
+    productionProgress: partialItems<partialItems<number | null>>;
 
     // for each item, how many storage containers are there.
     // this storage is a soft limit, the actual values may go over via direct production, but not from byproducts
@@ -40,33 +43,23 @@ const defaultState = {
     assemblers: {},
     visible: {},
     storage: {},
-    timeLeftInProduction: {},
+    productionProgress: {},
     amountCreated: {},
 } satisfies State;
 
 const ex = localStorage.getItem('state');
-const existingStorage = {...defaultState, ...(ex ? JSON.parse(ex) : {})};
+const existingStorage = { ...defaultState, ...(ex ? JSON.parse(ex) : {}) };
 
-function increaseDisplayAmount(itemName: Items, [ticksLeft, totalTicks, recipesCreated, _]: productionTime): productionTime {
+function consumeMaterials(
+    itemName: Items,
+    amounts: SMap<number>
+): number | null {
     const recipe = GAME.recipes(itemName);
-    if (recipe === undefined) return zeroProduction;
-
-    if (ticksLeft > 0) {
-        return [ticksLeft - 1, totalTicks, recipesCreated, 1 - (ticksLeft / totalTicks)];
-    }
-    return zeroProduction;
-}
-
-
-function assemble(itemName: Items, assemblerCount: number, speed: number, timeStep: number, amounts: SMap<number>, storage: partialItems<number>): productionTime {
-    const recipe = GAME.recipes(itemName);
-    if (recipe === undefined) return zeroProduction;
+    if (recipe === undefined) return 0;
     // not producing, so let's try to grab materials
 
-    let numberOfRecipesToMake = assemblerCount ?? 0;
-    if (numberOfRecipesToMake <= 0)
-        return zeroProduction;
-    
+    let numberOfRecipesToMake = 1;
+
     _.toPairs(recipe).forEach(pair => {
         const [ingredientName, requiredCount] = pair;
         const weHave = amounts[ingredientName] ?? 0;
@@ -77,15 +70,9 @@ function assemble(itemName: Items, assemblerCount: number, speed: number, timeSt
             numberOfRecipesToMake = Math.min(Math.floor(weHave / requiredCount), numberOfRecipesToMake);
         }
     });
-    
-    const amt = amounts[itemName] ?? 0;
-    const maxValue = calculateStorage(itemName, storage);
-    if (maxValue > -1) {
-        numberOfRecipesToMake = Math.floor(Math.min(maxValue - amt, numberOfRecipesToMake));
-    }
 
     if (numberOfRecipesToMake <= 0)
-        return zeroProduction;
+        return null;
 
     _.toPairs(recipe).forEach(pair => {
         const [ingredientName, requiredCount] = pair;
@@ -96,16 +83,13 @@ function assemble(itemName: Items, assemblerCount: number, speed: number, timeSt
     });
 
     if (numberOfRecipesToMake <= 0)
-        return zeroProduction;
-
-    const craftTime = GAME.timePerRecipe(itemName);
-    const ticksToMake = Math.floor(craftTime / speed / timeStep);
-    return [ticksToMake, ticksToMake, Math.round(numberOfRecipesToMake), 0];
+        return null;
+    return 0;
 }
 
 export function calculateStorage(itemName: Items, storage?: partialItems<number>) {
     const canBeStoredIn = GAME.itemsCanBeStoreIn(itemName);
-    if (canBeStoredIn.length === 0) 
+    if (canBeStoredIn.length === 0)
         return Number.MAX_SAFE_INTEGER;
     if (storage === undefined)
         return 10;
@@ -158,33 +142,52 @@ export function useProduction(ticksPerSecond: number) {
         const {
             assemblers,
             amountThatWeHave,
-            timeLeftInProduction,
+            productionProgress,
             storage,
         } = stateRef.current;
 
         keys(assemblers).sort().forEach(level => {
             forEach(assemblers[level], (assemblerCount, itemName) => {
-                let time = timeLeftInProduction[itemName]?.[level] ?? zeroProduction;
+                let time = productionProgress[itemName]?.[level] ?? null;
 
                 if (!storage[itemName]) storage[itemName] = {};
 
-                if (time[0] === 0) {
-                    // gather more materials
-                    time = assemble(itemName, assemblerCount ?? 0, GAME.assemblerSpeeds(level) ?? 0, timeStep, amountThatWeHave, storage[itemName]!);
+                // there's probably a better way to organize this code
+
+                if (time === -1) {
+                    if (addToTotal(itemName, 1)) {
+                        time = null;
+                    }
+                    else {
+                        return;
+                    }
                 }
                 
-                if (time[0] !== 0) {
-                    time = increaseDisplayAmount(itemName, time);
+                if (time === null) {
+                    time = consumeMaterials(itemName, amountThatWeHave);
 
-                    if (time[0] === 0) {
-                        addToTotal(itemName, time[2]);
-                        time = zeroProduction;
+                    if (time === null) return;
+                }
+
+                time += GAME.assemblerSpeeds(level) * assemblerCount * timeStep / GAME.timePerRecipe(itemName);
+
+                while (time >= 1) {
+                    if (addToTotal(itemName, 1)) {
+                        time -= 1;
+                        if (consumeMaterials(itemName, amountThatWeHave) === null) {
+                            time = null;
+                            break;
+                        }
+                    }
+                    else {
+                        time = -1;
+                        break;
                     }
                 }
 
-                if (!timeLeftInProduction[itemName]) 
-                    timeLeftInProduction[itemName] = {};
-                timeLeftInProduction[itemName]![level] = time;
+                if (!productionProgress[itemName])
+                    productionProgress[itemName] = {};
+                productionProgress[itemName]![level] = time;
             });
         });
 
@@ -194,7 +197,7 @@ export function useProduction(ticksPerSecond: number) {
     }
 
     const setState = (state: Partial<State> = {}) => {
-        stateRef.current = {...stateRef.current, ...state};
+        stateRef.current = { ...stateRef.current, ...state };
     };
 
     const [c, setCounter] = useState<number>(0);
@@ -233,7 +236,7 @@ export function useProduction(ticksPerSecond: number) {
 
     const canMakeItemByHand = useCallback(
         (itemName: Items) => {
-            if (GAME.requiredBuildings(itemName).includes('by-hand') === false) 
+            if (GAME.requiredBuildings(itemName).includes('by-hand') === false)
                 return false;
 
             const recipe = GAME.recipes(itemName);
@@ -298,7 +301,7 @@ export function useProduction(ticksPerSecond: number) {
                     const required = GAME.requiredBuildings(itemName);
                     const haveBuilding = required.some(x => visible[x as Items]) || required.includes('by-hand');
                     const recipe = GAME.recipes(itemName);
-                    const haveIngredients = keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
+                    const haveIngredients = keys(recipe).every(key => visible[key as Items]);
                     const unlockedWith = GAME.unlockedWith(itemName).every(x => amountThatWeHave[x] ?? 0);
                     if (haveBuilding && unlockedWith && (keys(recipe).length === 0 || haveIngredients)) {
                         markVisibility(itemName, true);

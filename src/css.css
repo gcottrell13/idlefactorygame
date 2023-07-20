@@ -35,6 +35,10 @@ button.btn {
     padding: 10px;
 }
 
+.game-container .item-row:hover {
+    background-color: rgb(212, 208, 208);
+}
+
 .assembler-count-name {
     color: gray;
 }

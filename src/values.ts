@@ -38,6 +38,11 @@ const timePerRecipe = {
 
     // research
     'research-wire': 0,
+    'research-science-1': 0,
+    'research-box2': 0,
+    'research-box3': 0,
+    'research-box4': 0,
+    'research-box5': 0,
 
     // science
     'science0': 1,
@@ -90,6 +95,7 @@ const timePerRecipe = {
     'research-nitrogen': 0, // science2
     'research-water-filter': 0, // science2
     'research-arbol': 0, // science2
+    'research-science-2': 0,
 
     // buildings
     'water-pump-mk2': 30,
@@ -137,6 +143,8 @@ const timePerRecipe = {
     'excavate-dirt': 3,
 
     // research
+    'research-science-3': 0,
+    'research-oil': 0, // science 2
     'research-natural-gas': 0, // science2
     'research-manufacturer': 0, // science3
     'research-helpers': 0, // science3
@@ -172,10 +180,10 @@ const timePerRecipe = {
     'research-aluminum': 0, // science 3
     'research-adamantium-drill': 0, // science 4
     'research-computer': 0, // science 4
+    'research-science-4': 0,
 
     // science 
     'science4': 4,
-    'science5': 5,
 
     // buildings
     'adamantium-drill': 50,
@@ -186,8 +194,8 @@ const timePerRecipe = {
     // region : tier 4 -----------------------------------------------------------------
     //                               __   __
     //                              |  | |  |
-    //                              |  \ |  |
-    //                              \_____  |
+    //                              |  \_|  |
+    //                               \____  |
     //                                   |  |
     //                                   |__|
 
@@ -210,15 +218,17 @@ const timePerRecipe = {
     'centrifuge': 10,
 
 
+    'science5': 5,
     'science10': 10,
 
     // research
+    'research-science-5': 0,
     'research-uranium': 0, // science 5
 
 
 } satisfies SMap<number>;
 
-const displayNames: {[p in Items]?: string} = {
+const displayNames: { [p in Items]?: string } = {
     'assembler': 'Assembler',
     'constructer': 'Constructor',
     'miner-mk1': 'Miner Mark I',
@@ -263,6 +273,7 @@ const displayNames: {[p in Items]?: string} = {
     "research-studonite": 'Tech: Strange Rock',
     "research-uranium": 'Tech: Glowy Rock That Makes Me Feel Bad',
     "research-water-filter": 'Tech: Water Filter',
+    'research-oil': 'Tech: Essential Oils',
     "rock-crusher": 'Rock Crusher',
     'adamantium': 'Adamantium',
     "stony-land": "Stone Land",
@@ -272,6 +283,16 @@ const displayNames: {[p in Items]?: string} = {
     "water-pump-mk1": 'Water Pump',
     "water-pump-mk2": 'Fast Water Pump',
     "wet-land": 'Wet Land',
+    'gold': 'Gold!',
+    "research-science-1": 'Tech: Science 1',
+    "research-science-3": 'Tech: Science 3',
+    "research-science-2": 'Tech: Science 2',
+    "research-science-4": 'Tech: Science 4',
+    "research-science-5": 'Tech: Science 5',
+    'research-box2': 'Tech: Box of a Bigger Size 1',
+    'research-box3': 'Tech: Box of a Bigger Size 2',
+    'research-box4': 'Tech: Box of a Bigger Size 3',
+    'research-box5': 'Tech: Box of a Bigger Size 4',
 };
 
 export type Items = keyof typeof timePerRecipe;
@@ -305,7 +326,7 @@ const recipes: Recipes = {
     'stone': { 'stony-land': 0.01 },
     'water': { 'wet-land': 0.01 },
     'silt': {},
-    'coal': { 'stony-land': 0.01 },
+    'coal': { 'rocky-land': 0.01 },
     'wood': { 'tree': 0.25 },
     'seed': { 'wet-land': 0.01 },
     'tree': { 'fertilizer': 5, 'seed': 1, 'clean-water': 5 },
@@ -400,6 +421,18 @@ const recipes: Recipes = {
     'research-adamantium-drill': { 'science4': 20 },
     'research-computer': { 'science4': 50 },
     'research-uranium': { 'science5': 50 },
+    'research-oil': { 'science2': 30 },
+
+    "research-science-1": { 'copper-wire': 1, 'gear': 1 },
+    'research-science-2': { 'science1': 2, 'steel': 3 },
+    'research-science-3': { 'science2': 3, 'plastic': 5 },
+    'research-science-4': { 'science3': 4, 'advanced-circuit': 2 },
+    'research-science-5': { 'science4': 5, 'aluminum': 5 },
+
+    'research-box2': { 'science1': 1, 'box': 10 },
+    'research-box3': { 'science1': 10, 'box': 100 },
+    'research-box4': { 'science1': 100, 'box': 1000 },
+    'research-box5': { 'science1': 1000, 'box': 10000 },
 };
 
 const recipeScaleFactor: partialItems<number> = {
@@ -430,6 +463,20 @@ const unlockedWith: partialItems<Items[]> = {
     'bauxite': ['research-aluminum'],
 
     'computer': ['research-computer'],
+
+    'science1': ['research-science-1'],
+    'science2': ['research-science-2'],
+    'science3': ['research-science-3'],
+    'science4': ['research-science-4'],
+    'science5': ['research-science-5'],
+
+    'box-box': ['research-box2'],
+    'box3': ['research-box3'],
+    'box4': ['research-box4'],
+    'box5': ['research-box5'],
+    'research-box3': ['research-box2'],
+    'research-box4': ['research-box3'],
+    'research-box5': ['research-box4'],
 };
 
 const hideOnBuy: Items[] = [
@@ -480,6 +527,18 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     "research-uranium": ['by-hand'],
     "research-water-filter": ['by-hand'],
     "research-wire": ['by-hand'],
+    'research-oil': ['by-hand'],
+
+    "research-science-1": ['by-hand'],
+    'research-science-2': ['by-hand'],
+    'research-science-3': ['by-hand'],
+    'research-science-4': ['by-hand'],
+    'research-science-5': ['by-hand'],
+
+    'research-box2': ['by-hand'],
+    'research-box3': ['by-hand'],
+    'research-box4': ['by-hand'],
+    'research-box5': ['by-hand'],
     aluminum: ['smelter-mk2'],
     computer: ['manufacturer'],
     plastic: ['chemical-plant'],
@@ -609,24 +668,10 @@ const storageSizes = {
 } satisfies partialItems<number>;
 
 // these items impose a limit on how much we can have. if the array is empty, then it have an infinite amount.
-const itemsCanBeStoreIn: { [p in Items]: (keyof typeof storageSizes)[] | undefined } = {
+const itemsCanBeStoreIn: { [p in Items]?: (keyof typeof storageSizes)[] | undefined } = {
     "": [],
     "dry-land": [],
     "excavate-dirt": [],
-    "research-adamantium-drill": [],
-    "research-aluminum": [],
-    "research-arbol": [],
-    "research-assembler": [],
-    "research-computer": [],
-    "research-helpers": [],
-    "research-manufacturer": [],
-    "research-natural-gas": [],
-    "research-nitrogen": [],
-    "research-steel": [],
-    "research-studonite": [],
-    "research-uranium": [],
-    "research-water-filter": [],
-    "research-wire": [],
     "rocky-land": [],
     "stony-land": [],
     "wet-land": [],
