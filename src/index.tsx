@@ -56,25 +56,36 @@ function ItemDisplay({
             </div>
         )
     });
+
     const assemblerDisplay = assemblers.length > 0 ? (
         <div className='assembler-count'>buildings making {itemName}: {assemblers}</div>
     ) : null;
 
     const speed = d(_.sum(keys(assemblerCount).map(key => GAME.assemblerSpeeds(key) * (assemblerCount[key] ?? 0) / baseCraftTime)));
 
-    const formatIngredients = _.toPairs(GAME.recipes(itemName)).map(([name, count]) => <tr><td className={'popover-ingredient-count'}>{count}</td><td>{name}</td></tr>);
+    const formatIngredients = _.toPairs(GAME.recipes(itemName)).filter(([_name, count]) => count > 0).map(
+        ([name, count]) => (
+            <tr key={name}>
+                <td className={'popover-ingredient-count'}>{count}</td><td>{name}</td>
+            </tr>
+        )
+    );
 
     const byproductOf = GAME.makesAsASideProduct(itemName);
     const storageObjects = GAME.itemsCanBeStoreIn(itemName);
 
     const storageValueIfContainer = GAME.storageSizes(itemName);
 
+    const byproducts = _.uniq(GAME.sideProducts(itemName).flatMap(x => keys(x))).filter(x => x != itemName).join(', ');
+
     const maxValue = calculateStorage(itemName as Items, storage);
+
+    const assemblerSpeed = GAME.assemblerSpeeds(itemName);
 
     const tooltip = (props: any) => (
         <Popover id="" {...props}>
             <Popover.Header>
-                {itemName} - {baseCraftTime}s
+                {GAME.displayNames(itemName)} - {baseCraftTime}s
                 <div className={'storage-options'}>
                     Stored in: {storageObjects.join(', ')}
                 </div>
@@ -85,21 +96,36 @@ function ItemDisplay({
                         </div>
                     )
                 }
+                {
+                    assemblerSpeed > 0 && (
+                        <div className={'item-assembler-speed'}>
+                            Crafting Speed: {assemblerSpeed}x
+                        </div>
+                    )
+                }
             </Popover.Header>
             <Popover.Body>
                 Made in: {GAME.requiredBuildings(itemName).join(', ')}
                 {
                     formatIngredients.length > 0 ? (
-                        <span>
+                        <div className={'ingredient-list'}>
                             <hr />
-                            Ingredients: <table>{formatIngredients}</table>
-                        </span>
+                            Ingredients: <table><tbody>{formatIngredients}</tbody></table>
+                        </div>
                     ) : null
                 }
                 {
                     byproductOf.length > 0 ? (
-                        <div>Byproduct of: {byproductOf.join(', ')}</div>
+                        <div className={'byproduct-of-list'}>Byproduct of: {byproductOf.join(', ')}</div>
                     ) : null
+                }
+                {
+                    byproducts.length > 0 && (
+                        <>
+                            <hr />
+                            <div className={'byproduct-list'}>Byproducts: {byproducts}</div>
+                        </>
+                    )
                 }
             </Popover.Body>
         </Popover>
@@ -112,7 +138,7 @@ function ItemDisplay({
             </Col>
             <Col xs={1}>
                 <OverlayTrigger placement='right' overlay={tooltip}>
-                    <span className="item-name">{itemName}</span>
+                    <span className="item-name">{GAME.displayNames(itemName)}</span>
                 </OverlayTrigger>
             </Col>
             <Col xs={2}>
