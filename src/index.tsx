@@ -176,7 +176,7 @@ function ItemDisplay({
 
 function App() {
     const {
-        assemblers, amountThatWeHave, timeLeftInProduction, storage,
+        assemblers, amountThatWeHave, timeLeftInProduction, storage, visible,
         addAssemblers, resetAll,
         makeItemByhand, canMakeItemByHand,
         addContainer,
@@ -187,6 +187,8 @@ function App() {
     const haveAssemblers = GAME.allAssemblers.filter(key => (amountThatWeHave[key] ?? 0) > 0);
 
     GAME.allItemNames.forEach(itemName => {
+        if (!visible[itemName]) return;
+
         const amt = amountThatWeHave[itemName] ?? 0;
         const recipe = GAME.recipes(itemName);
         if (recipe === undefined) return;

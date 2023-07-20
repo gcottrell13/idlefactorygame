@@ -208,6 +208,14 @@ export function useProduction(ticksPerSecond: number) {
             const k = stateRef.current.amountThatWeHave[itemName] ?? 0;
             stateRef.current.amountThatWeHave[itemName] = Math.max(0, k + amount);
             stateRef.current.displayAmount[itemName] = stateRef.current.amountThatWeHave[itemName];
+
+            const b = stateRef.current.amountCreated[itemName] ?? 0;
+            stateRef.current.amountCreated[itemName] = b + amount;
+
+            if (GAME.hideOnBuy(itemName)) {
+                markVisibility(itemName, false);
+            }
+
             setState();
         },
         []
@@ -288,16 +296,19 @@ export function useProduction(ticksPerSecond: number) {
             amountThatWeHave,
         } = stateRef.current;
 
-        keys(GAME.recipes).forEach(itemName => {
+        GAME.allItemNames.forEach(itemName => {
             if (visible[itemName] === undefined) {
                 if ((amountThatWeHave[itemName] ?? 0) <= 0) {
                     const required = GAME.requiredBuildings(itemName);
                     const haveBuilding = required.some(x => amountThatWeHave[x as Items] ?? 0) || required.includes('by-hand');
-                    const recipe = GAME.recipes[itemName];
+                    const recipe = GAME.recipes(itemName);
                     const haveIngredients = keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
-                    if (haveBuilding && haveIngredients) {
+                    if (haveBuilding && (keys(recipe).length === 0 || haveIngredients)) {
                         markVisibility(itemName, true);
                     }
+                }
+                else {
+                    markVisibility(itemName, true);
                 }
             }
         });
