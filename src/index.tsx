@@ -2,18 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import _ from 'lodash';
 import { calculateStorage, useProduction } from "./assembly";
-import {
-    recipes,
-    Items,
-    assemblerSpeeds,
-    timePerRecipe,
-    requiredBuildings,
-    byHandVerbs,
-    sideProducts,
-    requiredOtherProducts,
-    partialItems,
-    itemsCanBeStoreIn,
-} from './values';
+import GAME, { Items, partialItems } from './values';
 import './css.css';
 import { Button, Row, Col, OverlayTrigger, ProgressBar, ButtonGroup, ButtonToolbar } from 'react-bootstrap';
 import Popover from 'react-bootstrap/Popover';
@@ -48,15 +37,15 @@ function ItemDisplay({
     storage: partialItems<number>,
 }) {
 
-    const byHandVerb = byHandVerbs[itemName as Items] ?? 'make';
+    const byHandVerb = GAME.byHandVerbs(itemName) ?? 'make';
     const makeByHandButton = makeByHand && (
         <Button className={'make-by-hand'} onClick={makeByHand}>{byHandVerb} {itemName}</Button>
     );
-    const baseCraftTime = timePerRecipe[itemName as Items];
+    const baseCraftTime = GAME.timePerRecipe(itemName);
 
     const assemblers = keys(assemblerCount).map(name => {
         const no = assemblerCount[name] ?? 0;
-        const speedPer = (assemblerSpeeds[name as Items] ?? 0) / baseCraftTime;
+        const speedPer = GAME.assemblerSpeeds(name) / baseCraftTime;
         let label = <span><span className={'assembler-count-name'}>{name} ({d(speedPer)}/s):</span> {no} ({d(speedPer * no)}/s)</span>;
         if (progress[name]) {
             label = <span>{label} {d(progress[name])}%</span>;
@@ -71,11 +60,12 @@ function ItemDisplay({
         <div className='assembler-count'>buildings making {itemName}: {assemblers}</div>
     ) : null;
 
-    const speed = d(_.sum(keys(assemblerCount).map(key => (assemblerSpeeds[key] ?? 0) * (assemblerCount[key] ?? 0) / baseCraftTime)));
+    const speed = d(_.sum(keys(assemblerCount).map(key => GAME.assemblerSpeeds(key) * (assemblerCount[key] ?? 0) / baseCraftTime)));
 
-    const formatIngredients = _.toPairs(recipes[itemName as Items]).map(([name, count]) => <tr><td className={'popover-ingredient-count'}>{count}</td><td>{name}</td></tr>);
+    const formatIngredients = _.toPairs(GAME.recipes(itemName)).map(([name, count]) => <tr><td className={'popover-ingredient-count'}>{count}</td><td>{name}</td></tr>);
 
-    const byproductOf = keys(sideProducts).filter(mainProduct => sideProducts[mainProduct]?.some(v => v[itemName as Items] !== undefined));
+    const byproductOf = GAME.makesAsASideProduct(itemName);
+    const storageObjects = GAME.itemsCanBeStoreIn(itemName);
 
     const maxValue = calculateStorage(itemName as Items, storage);
 
@@ -83,9 +73,12 @@ function ItemDisplay({
         <Popover id="" {...props}>
             <Popover.Header>
                 {itemName} - {baseCraftTime}s
+                <div className={'storage-options'}>
+                    Stored in: {storageObjects.join(', ')}
+                </div>
             </Popover.Header>
             <Popover.Body>
-                Made in: {(requiredBuildings[itemName as Items] ?? ['by-hand']).join(', ')}
+                Made in: {GAME.requiredBuildings(itemName).join(', ')}
                 {
                     formatIngredients.length > 0 ? (
                         <span>
@@ -133,24 +126,23 @@ function ItemDisplay({
 
 function App() {
     const {
-        assemblers, amountThatWeHave, displayAmount, timeLeftInProduction, storage, 
+        assemblers, amountThatWeHave, timeLeftInProduction, storage,
         addAssemblers, resetAll,
-        makeItem, canMakeItem,
-        seen, markAsSeen,
+        makeItemByhand, canMakeItemByHand,
         addContainer,
     } = useProduction(TICKS_PER_SECOND);
 
     const parts: JSX.Element[] = [];
 
-    const haveAssemblers = _.mapValues(assemblerSpeeds, (value, key) => amountThatWeHave[key as Items] ?? 0);
+    const haveAssemblers = _.mapValues(GAME.assemblerSpeeds, (value, key) => amountThatWeHave[key as Items] ?? 0);
 
-    keys(recipes).sort().forEach(itemName => {
+    GAME.allItemNames.forEach(itemName => {
         const amt = amountThatWeHave[itemName] ?? 0;
-        const recipe = recipes[itemName];
+        const recipe = GAME.recipes(itemName);
         if (recipe === undefined) return;
 
-        const buildingsToMakeThis = requiredBuildings[itemName] ?? ['by-hand'];
-        const makeByHand = buildingsToMakeThis.includes('by-hand') && canMakeItem(itemName);
+        const buildingsToMakeThis = GAME.requiredBuildings(itemName);
+        const makeByHand = canMakeItemByHand(itemName);
         const assemblerCount = _.mapValues(assemblers, (value, key) => value?.[itemName] ?? 0);
         const assemblersMakingThis = _.pickBy(assemblerCount, x => x !== 0);
         const assemblerButtons: JSX.Element[] = [];
@@ -172,7 +164,7 @@ function App() {
             );
         });
 
-        itemsCanBeStoreIn[itemName]?.forEach(container => {
+        GAME.itemsCanBeStoreIn(itemName).forEach(container => {
             if (amountThatWeHave[container]) {
                 assemblerButtons.push(
                     <Button
@@ -189,28 +181,7 @@ function App() {
             }
         });
 
-        if (seen.includes(itemName) === false) {
-            if (amt <= 0) {
-                const haveProducers = Object.keys(assemblersMakingThis).length > 0;
-                const canAddProducer = buildingsToMakeThis.some(x => (amountThatWeHave[x as Items] ?? 0) > 0);
-                const canBeMadeByHand = buildingsToMakeThis.includes('by-hand');
-                const haveIngredients = _.keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
-                const requiredUnlocks = requiredOtherProducts[itemName] ?? [];
-                const haveRequiredUnlocks = requiredUnlocks.length === 0 || requiredUnlocks.some(list => seen.every(x => seen.includes(x)));
-
-                if (canBeMadeByHand) {
-                    if (!haveIngredients) return;
-                    if (!haveRequiredUnlocks) return;
-                }
-                else {
-                    if (haveProducers === false && canAddProducer === false) return;
-                    if (haveIngredients === false && amt <= 0) return;
-                    if (!haveRequiredUnlocks) return;
-                }
-
-            }
-            markAsSeen(itemName as Items);
-        }
+        const prod = timeLeftInProduction[itemName];
 
         parts.push(
             <ItemDisplay
@@ -220,9 +191,9 @@ function App() {
                 itemName={itemName}
                 assemblerButtons={assemblerButtons}
                 makeByHand={makeByHand ? () => {
-                    makeItem(itemName as Items);
+                    makeItemByhand(itemName as Items);
                 } : null}
-                progress={mapValues(timeLeftInProduction[itemName], (v, k) => v[3] * 100)}
+                progress={mapValues(prod, (v, k) => v[3] * 100)}
                 storage={storage[itemName] ?? {}}
             />
         );

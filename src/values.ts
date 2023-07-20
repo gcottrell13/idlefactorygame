@@ -1,4 +1,85 @@
-import { SMap } from "./smap";
+import { SMap, keys, mapValues } from "./smap";
+
+const timePerRecipe = {
+    '': 0,
+
+    'land': 10,
+    'wet-land': 0,
+    'dry-land': 0,
+    'rocky-land': 0,
+    'stony-land': 0,
+
+    // raw
+    "iron-ore": 1,
+    "uranium-ore": 5,
+    gas: 3,
+    'copper-ore': 1,
+    oil: 1,
+    stone: 1,
+    water: 1, silt: 0,
+    coal: 1,
+    'wood': 2,
+    'fertilizer': 1,
+    dirt: 4,
+    'excavate-dirt': 3,
+    nitrogen: 1,
+    seed: 0,
+    tree: 10,
+    'sand': 1,
+    'studonite': 3,
+    'dust': 0,
+    // processed raw
+    "iron-bar": 2,
+    sulfur: 3,
+    'copper-bar': 1,
+    steel: 2,
+    'copper-wire': 0.5,
+    'glass': 1,
+    "clean-water": 1,
+    // building materials
+    gear: 0.5,
+    pipe: 0.5,
+    // advanced materials
+    "sulfuric-acid": 5,
+    'basic-circuit': 1,
+    solvent: 4,
+    // buildings
+    constructer: 10,
+    assembler: 15,
+    manufacturer: 25,
+    "gas-extractor": 30,
+    "chemical-plant": 15,
+    'miner-mk1': 10,
+    'smelter-mk1': 10,
+    'smelter-mk2': 15,
+    'oil-pump': 15,
+    'water-pump-mk1': 15,
+    'water-pump-mk2': 30,
+    'water-filter': 10,
+    'greenhouse': 10,
+    'hydroponics': 20,
+
+    'excavator': 20,
+    explorer: 20,
+
+    'warehouse': 30,
+    'box': 2,
+    'tank': 10,
+    'science1': 1,
+    'science2': 2,
+    'science3': 3,
+    'science4': 4,
+} satisfies SMap<number>;
+
+const displayNames: partialItems<string> = {
+    'assembler': 'Assembler',
+    'constructer': 'Constructor',
+    'miner-mk1': 'Miner Mark I',
+    'smelter-mk1': 'Smelter',
+    'smelter-mk2': 'Foundry',
+};
+
+export type Items = keyof typeof timePerRecipe;
 
 type Recipe = {
     [p in Items]?: number;
@@ -10,52 +91,7 @@ type Recipes = {
 
 export type partialItems<T> = { [p in Items]?: T };
 
-export type Items = ''
-    // land
-    | 'land'
-    | 'rocky-land' | 'wet-land' | 'dry-land' | 'stony-land'
-    // raw materials
-    | 'iron-ore' | 'gas' | 'stone' | 'oil'
-    | 'uranium-ore' | 'copper-ore'
-    | 'water' | 'silt'
-    | 'coal'
-    | 'wood' | 'seed' | 'tree' | 'fertilizer' | 'nitrogen' | 'dirt'
-    | 'sand'
-    | 'studonite' | 'dust'
-    // processed raw
-    | 'iron-bar' | 'copper-bar' | 'sulfur'
-    | 'steel'
-    | 'copper-wire'
-    | 'glass'
-    | 'clean-water'
-    // building materials
-    | 'gear'
-    | 'pipe'
-    // advanced materials
-    | 'sulfuric-acid'
-    | 'basic-circuit'
-    | 'solvent'
-    // buildings
-    | 'constructer' | 'assembler' | 'manufacturer'
-    | 'gas-extractor'
-    | 'chemical-plant'
-    | 'smelter-mk1' | 'smelter-mk2'
-    | 'miner-mk1'
-    | 'oil-pump'
-    | 'water-pump-mk1' | 'water-pump-mk2'
-    | 'greenhouse' | 'hydroponics'
-    | 'water-filter'
-
-    | 'explorer'
-    | 'excavator' | 'excavate-dirt'
-
-    // storage
-    | 'box'
-    | 'tank'
-    | 'warehouse' // for storing buildings
-    ;
-
-export const recipes: Recipes = {
+const recipes: Recipes = {
     '': { '': 0 },
 
     'land': {},
@@ -148,76 +184,26 @@ export const recipes: Recipes = {
     'box': {'iron-bar': 1},
     'tank': {'steel': 20},
     'warehouse': {'steel': 200},
+
+    'science1': {},
+    'science2': {'science1': 2},
+    'science3': {'science2': 3},
+    'science4': {'science3': 4},
 };
 
-export const timePerRecipe: { [p in Items]: number } = {
-    '': 0,
+const recipeScaleFactor: partialItems<number> = {
+    // default 1.0
+    science1: 1.001,
+    science2: 1.001,
+    science3: 1.001,
+    science4: 1.001,
+}
 
-    'land': 10,
-    'wet-land': 0,
-    'dry-land': 0,
-    'rocky-land': 0,
-    'stony-land': 0,
+const hideOnBuy: Items[] = [
 
-    // raw
-    "iron-ore": 1,
-    "uranium-ore": 5,
-    gas: 3,
-    'copper-ore': 1,
-    oil: 1,
-    stone: 1,
-    water: 1, silt: 0,
-    coal: 1,
-    'wood': 2,
-    'fertilizer': 1,
-    dirt: 4,
-    'excavate-dirt': 3,
-    nitrogen: 1,
-    seed: 0,
-    tree: 10,
-    'sand': 1,
-    'studonite': 3,
-    'dust': 0,
-    // processed raw
-    "iron-bar": 2,
-    sulfur: 3,
-    'copper-bar': 1,
-    steel: 2,
-    'copper-wire': 0.5,
-    'glass': 1,
-    "clean-water": 1,
-    // building materials
-    gear: 0.5,
-    pipe: 0.5,
-    // advanced materials
-    "sulfuric-acid": 5,
-    'basic-circuit': 1,
-    solvent: 4,
-    // buildings
-    constructer: 10,
-    assembler: 15,
-    manufacturer: 25,
-    "gas-extractor": 30,
-    "chemical-plant": 15,
-    'miner-mk1': 10,
-    'smelter-mk1': 10,
-    'smelter-mk2': 15,
-    'oil-pump': 15,
-    'water-pump-mk1': 15,
-    'water-pump-mk2': 30,
-    'water-filter': 10,
-    'greenhouse': 10,
-    'hydroponics': 20,
+];
 
-    'excavator': 20,
-    explorer: 20,
-
-    'warehouse': 30,
-    'box': 2,
-    'tank': 10,
-};
-
-export const assemblerSpeeds: { [p in Items]?: number } = {
+const assemblerSpeeds = {
     'constructer': 0.5,
     'assembler': 0.75,
     'manufacturer': 1.0,
@@ -234,9 +220,9 @@ export const assemblerSpeeds: { [p in Items]?: number } = {
     'hydroponics': 1.5,
     'explorer': 1,
     'excavator': 1,
-};
+} satisfies { [p in Items]?: number };
 
-export const requiredBuildings: { [p in Items]?: (Items | 'by-hand')[] } = {
+const requiredBuildings: { [p in Items]?: (keyof typeof assemblerSpeeds | 'by-hand')[] } = {
     'land': ['by-hand', 'explorer'],
     'wet-land': [],
     'dry-land': [],
@@ -298,23 +284,11 @@ export const requiredBuildings: { [p in Items]?: (Items | 'by-hand')[] } = {
 };
 
 /**
- * [
- *  [all these are unlocked]
- *  OR [all these are unlocked]
- * ]
- */
-export const requiredOtherProducts: { [p in Items]?: Items[][] } = {
-    'dust': [
-        ['studonite'],
-    ],
-}
-
-/**
  * instead of producing 1 of the listed item, use these tables to determine what to create instead.
  * each item in the array is guaranteed to produce one of the items
  * determined by their relative values
  */
-export const sideProducts: partialItems<partialItems<number>[]> = {
+const sideProducts: partialItems<partialItems<number>[]> = {
     'land': [
         { 'rocky-land': 2, 'wet-land': 1, 'dry-land': 2, 'stony-land': 1 },
     ],
@@ -328,7 +302,7 @@ export const sideProducts: partialItems<partialItems<number>[]> = {
     'excavate-dirt': [{'dirt': 1}],
 };
 
-export const byHandVerbs: { [p in Items]?: string } = {
+const byHandVerbs: { [p in Items]?: string } = {
     // default "make"
     'iron-ore': 'gather',
     'copper-ore': 'gather',
@@ -338,9 +312,15 @@ export const byHandVerbs: { [p in Items]?: string } = {
     'land': 'explore',
 };
 
+const storageSizes = {
+    'box': 50,
+    'tank': 1500,
+    'warehouse': 10,
+} satisfies partialItems<number>;
+
 // these items impose a limit on how much we can have. if the item does not have a value, it can have an infinite amount.
 // if the array is empty, then it cannot be stored.
-export const itemsCanBeStoreIn: partialItems<Items[]> = {
+const itemsCanBeStoreIn: partialItems<(keyof typeof storageSizes)[]> = {
     // raw
     'gas': ['tank'],
     'iron-ore': ['box'],
@@ -394,8 +374,28 @@ export const itemsCanBeStoreIn: partialItems<Items[]> = {
     'warehouse': ['warehouse'],
 };
 
-export const storageSizes: partialItems<number> = {
-    'box': 50,
-    'tank': 1500,
-    'warehouse': 10,
+const allItemNames = keys(recipes).sort();
+allItemNames.shift();
+
+const ex = {
+    assemblerSpeeds: (item: Items): number => (assemblerSpeeds as SMap<number>)[item] ?? 0,
+    byHandVerbs: (item: Items): string => byHandVerbs[item] ?? 'make',
+    displayNames: (item: Items): string => displayNames[item] ?? item,
+    hideOnBuy: (item: Items): boolean => hideOnBuy.includes(item),
+    itemsCanBeStoreIn: (item: Items): Items[] => itemsCanBeStoreIn[item] ?? [],
+    recipeScaleFactor: (item: Items): number => recipeScaleFactor[item] ?? 1.0,
+    recipes: (item: Items): Recipe => recipes[item],
+    requiredBuildings: (item: Items): (Items | 'by-hand')[] => requiredBuildings[item] ?? ['by-hand'],
+    timePerRecipe: (item: Items): number => timePerRecipe[item],
+    sideProducts: (item: Items): partialItems<number>[] => sideProducts[item] ?? [],
+    storageSizes: (item: Items): number => (storageSizes as SMap<number>)[item] ?? 0,
+
+    allItemNames: allItemNames,
+    makesAsASideProduct: (item: Items) => makesAsASideProduct[item],
 };
+
+const makesAsASideProduct = mapValues(recipes, (_, item) => {
+    return keys(sideProducts).filter(mainOutput => ex.sideProducts(mainOutput).some(p => p[item]));
+});
+
+export default ex;
