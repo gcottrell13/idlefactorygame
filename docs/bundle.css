@@ -33,6 +33,7 @@ button.btn {
 
 .item-row {
     padding: 10px;
+    min-height: 50px;
 }
 
 .game-container .item-row:hover {
