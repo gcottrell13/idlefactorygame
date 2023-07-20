@@ -46,7 +46,7 @@ function ItemDisplay({
     const assemblers = keys(assemblerCount).map(name => {
         const no = assemblerCount[name] ?? 0;
         const speedPer = GAME.assemblerSpeeds(name) / baseCraftTime;
-        let label = <span><span className={'assembler-count-name'}>{name} ({d(speedPer)}/s):</span> {no} ({d(speedPer * no)}/s)</span>;
+        let label = <span><span className={'assembler-count-name'}>{GAME.displayNames(name)} ({d(speedPer)}/s):</span> {no} ({d(speedPer * no)}/s)</span>;
         if (progress[name]) {
             label = <span>{label} {d(progress[name])}%</span>;
         }
@@ -62,21 +62,22 @@ function ItemDisplay({
     ) : null;
 
     const speed = d(_.sum(keys(assemblerCount).map(key => GAME.assemblerSpeeds(key) * (assemblerCount[key] ?? 0) / baseCraftTime)));
-
-    const formatIngredients = _.toPairs(GAME.recipes(itemName)).filter(([_name, count]) => count > 0).map(
+    
+    const recipe = GAME.recipes(itemName);
+    const formatIngredients = keys(recipe).map(name => [name, recipe[name]!] as const).filter(([_name, count]) => count > 0).map(
         ([name, count]) => (
             <tr key={name}>
-                <td className={'popover-ingredient-count'}>{count}</td><td>{name}</td>
+                <td className={'popover-ingredient-count'}>{count}</td><td>{GAME.displayNames(name)}</td>
             </tr>
         )
     );
 
-    const byproductOf = GAME.makesAsASideProduct(itemName);
-    const storageObjects = GAME.itemsCanBeStoreIn(itemName);
+    const byproductOf = GAME.makesAsASideProduct(itemName).map(GAME.displayNames);
+    const storageObjects = GAME.itemsCanBeStoreIn(itemName).map(GAME.displayNames);
 
     const storageValueIfContainer = GAME.storageSizes(itemName);
 
-    const byproducts = _.uniq(GAME.sideProducts(itemName).flatMap(x => keys(x))).filter(x => x != itemName).join(', ');
+    const byproducts = _.uniq(GAME.sideProducts(itemName).flatMap(x => keys(x))).filter(x => x != itemName).map(GAME.displayNames).join(', ');
 
     const maxValue = calculateStorage(itemName as Items, storage);
 
@@ -85,7 +86,7 @@ function ItemDisplay({
     const tooltip = (props: any) => (
         <Popover id="" {...props}>
             <Popover.Header>
-                {GAME.displayNames(itemName)} - {baseCraftTime}s
+                {GAME.displayNames(itemName)}
                 <div className={'storage-options'}>
                     Stored in: {storageObjects.join(', ')}
                 </div>
@@ -105,7 +106,7 @@ function ItemDisplay({
                 }
             </Popover.Header>
             <Popover.Body>
-                Made in: {GAME.requiredBuildings(itemName).join(', ')}
+                Made in: {GAME.requiredBuildings(itemName).map(GAME.displayNames).join(', ')}
                 {
                     formatIngredients.length > 0 ? (
                         <div className={'ingredient-list'}>

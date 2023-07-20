@@ -77,6 +77,12 @@ const displayNames: partialItems<string> = {
     'miner-mk1': 'Miner Mark I',
     'smelter-mk1': 'Smelter',
     'smelter-mk2': 'Foundry',
+    'basic-circuit': 'Basic Circuit',
+    'chemical-plant': 'Chemical Plant',
+    'excavate-dirt': 'Recipe: Excavate Dirt',
+    'manufacturer': 'Manufacturer',
+    'rocky-land': 'Rocky Land',
+    'clean-water': 'Clean Water',
 };
 
 export type Items = keyof typeof timePerRecipe;
@@ -380,7 +386,7 @@ allItemNames.shift();
 const ex = {
     assemblerSpeeds: (item: Items): number => (assemblerSpeeds as SMap<number>)[item] ?? 0,
     byHandVerbs: (item: Items): string => byHandVerbs[item] ?? 'make',
-    displayNames: (item: Items): string => displayNames[item] ?? item,
+    displayNames: (item: Items | 'by-hand'): string => item === 'by-hand' ? 'By Hand' : displayNames[item] ?? item,
     hideOnBuy: (item: Items): boolean => hideOnBuy.includes(item),
     itemsCanBeStoreIn: (item: Items): Items[] => itemsCanBeStoreIn[item] ?? [],
     recipeScaleFactor: (item: Items): number => recipeScaleFactor[item] ?? 1.0,
