@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import GAME, { partialItems, Items } from './values';
 import _ from 'lodash';
 import { SMap, forEach, keys, values } from './smap';
+import { VERSION } from './version';
 
 const PRECISION = 1e5;
 function round(n: number) {
@@ -13,6 +14,8 @@ export function getByItem<T>(dict: { [p in Items]?: T }, item: Items, _default: 
 }
 
 interface State {
+    version: string;
+
     /**
      * [the building][what its making]
      */
@@ -38,6 +41,7 @@ interface State {
 }
 
 const defaultState = {
+    version: VERSION,
     displayAmount: {},
     amountThatWeHave: {},
     assemblers: {},
@@ -329,6 +333,9 @@ export function useProduction(ticksPerSecond: number) {
 
     useEffect(
         () => {
+            if (existingStorage.version !== VERSION) {
+                setState(defaultState);
+            }
             setInterval(() => saveGame(stateRef.current), 10 * 1000);
         },
         []

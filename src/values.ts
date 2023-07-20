@@ -9,7 +9,7 @@ const timePerRecipe = {
     'rocky-land': 0,
     'stony-land': 0,
 
-    //region : tier 0 -----------------------------------------------------------------
+    //region : science 0 -----------------------------------------------------------------
     //                           ___   
     //                          / _ \  
     //                         | | | | 
@@ -19,8 +19,6 @@ const timePerRecipe = {
     // raw
     "iron-ore": 1,
     'copper-ore': 1,
-    water: 1,
-    silt: 0,
     coal: 1,
     stone: 1,
     'sand': 1,
@@ -33,37 +31,24 @@ const timePerRecipe = {
     // materials
     gear: 0.5,
     pipe: 0.5,
-    'iron-frame': 2,
-    'copper-wire': 0.5,
 
     // research
-    'research-wire': 0,
     'research-science-1': 0,
-    'research-box2': 0,
-    'research-box3': 0,
-    'research-box4': 0,
-    'research-box5': 0,
+    'research-frames': 0,
+    'research-box': 0,
 
     // science
     'science0': 1,
-    'science1': 1,
 
     // buildings
-    constructer: 10,
-    'water-pump-mk1': 15,
     'smelter-mk1': 10,
-    'miner-mk1': 10,
 
     // containers
     'box': 2,
-    'box-box': 2,
-    'box3': 2,
-    'box4': 2,
-    'box5': 2,
 
-    //endregion : tier 0 -----------------------------------------------------------------
+    //endregion : science 0 -----------------------------------------------------------------
 
-    //region : tier 1 -----------------------------------------------------------------
+    //region : science 1 -----------------------------------------------------------------
     //                          __
     //                         /_ |    
     //                          | |    
@@ -71,12 +56,55 @@ const timePerRecipe = {
     //                          | |    
     //                          |_|   
 
-    // raw
-    nitrogen: 1,
-    gold: 10,
-
     // processed
     steel: 2,
+    'iron-frame': 2,
+    'copper-wire': 0.5,
+
+    // research
+    'research-constructor': 0,
+    'research-miner-mk1': 0,
+    'research-wire': 0,
+    'research-box2': 0,
+    'research-box3': 0,
+    'research-box4': 0,
+    'research-box5': 0,
+    'research-steel': 0, // with science1
+    'research-science-2': 0,
+
+    // science
+    'science1': 1,
+
+    // containers
+    'box-box': 2,
+    'box3': 2,
+    'box4': 2,
+    'box5': 2,
+
+    // buildings
+    constructer: 10,
+    'smelter-mk2': 15,
+
+    //endregion : science 1 -----------------------------------------------------------------
+
+    //region : science 2 -----------------------------------------------------------------
+    //                          ___
+    //                         |__ \   
+    //                            ) |  
+    //                           / /   
+    //                          / /_   
+    //                         |____|  
+
+    // raw
+    'water-pump-mk1': 15,
+    'miner-mk1': 10,
+    water: 1,
+    silt: 0,
+    nitrogen: 1,
+    gold: 10,
+    oil: 1,
+
+    // processed
     'basic-circuit': 1,
     "clean-water": 1,
 
@@ -86,20 +114,22 @@ const timePerRecipe = {
     tree: 10,
     'wood': 2,
 
+    'plastic': 2,
+
     // science
     'science2': 2,
 
     // research
-    'research-steel': 0, // with science1
-    'research-assembler': 0, // science1
+    'research-assembler': 0, // science2
     'research-nitrogen': 0, // science2
-    'research-water-filter': 0, // science2
+    'research-fluids': 0, // science2
     'research-arbol': 0, // science2
-    'research-science-2': 0,
+    'research-oil': 0, // science 2
+    'research-science-3': 0,
 
     // buildings
+    'oil-pump': 15,
     'water-pump-mk2': 30,
-    'smelter-mk2': 15,
     assembler: 15,
     "gas-extractor": 30,
     'greenhouse': 10,
@@ -108,29 +138,28 @@ const timePerRecipe = {
     // containers
     'tank': 10,
 
-    //endregion : tier 1 -----------------------------------------------------------------
+    //endregion : science 2 -----------------------------------------------------------------
 
-    //region : tier 2 -----------------------------------------------------------------
-    //                          ___
-    //                         |__ \   
-    //                            ) |  
-    //                           / /   
-    //                          / /_   
-    //                         |____|  
+    //region : science 3 -----------------------------------------------------------------
+    //                              ____
+    //                             |___ \  
+    //                               __) | 
+    //                              |__ <  
+    //                              ___) | 
+    //                             |____/  
+
     //raw 
     gas: 3,
-    oil: 1,
 
     // processed
     "sulfuric-acid": 5,
     sulfur: 3,
-    'plastic': 2,
+    'gold-filament': 3,
 
     // materials
     'advanced-circuit': 1,
 
     // buildings
-    'oil-pump': 15,
     manufacturer: 25,
     "chemical-plant": 15,
     'excavator': 20,
@@ -143,21 +172,21 @@ const timePerRecipe = {
     'excavate-dirt': 3,
 
     // research
-    'research-science-3': 0,
-    'research-oil': 0, // science 2
-    'research-natural-gas': 0, // science2
+    'research-advanced-circuitry': 0, // science3
+    'research-natural-gas': 0, // science3
     'research-manufacturer': 0, // science3
     'research-helpers': 0, // science3
+    'research-science-4': 0,
 
-    //endregion : tier 2 -----------------------------------------------------------------
+    // endregion : science 3 -----------------------------------------------------------------
 
-    //region : tier 3 -----------------------------------------------------------------
-    //                              ____
-    //                             |___ \  
-    //                               __) | 
-    //                              |__ <  
-    //                              ___) | 
-    //                             |____/  
+    // region : science 4 -----------------------------------------------------------------
+    //                               __   __
+    //                              |  | |  |
+    //                              |  \_|  |
+    //                               \____  |
+    //                                   |  |
+    //                                   |__|
 
     // raw
     'bauxite': 1,
@@ -176,11 +205,11 @@ const timePerRecipe = {
     // containers
 
     // research
-    'research-studonite': 0, // science 3
-    'research-aluminum': 0, // science 3
+    'research-studonite': 0, // science 4
+    'research-aluminum': 0, // science 4
     'research-adamantium-drill': 0, // science 4
     'research-computer': 0, // science 4
-    'research-science-4': 0,
+    'research-science-5': 0,
 
     // science 
     'science4': 4,
@@ -188,43 +217,39 @@ const timePerRecipe = {
     // buildings
     'adamantium-drill': 50,
 
+    // endregion : science 4 -----------------------------------------------------------------
 
-    // endregion : tier 3 -----------------------------------------------------------------
-
-    // region : tier 4 -----------------------------------------------------------------
-    //                               __   __
-    //                              |  | |  |
-    //                              |  \_|  |
-    //                               \____  |
-    //                                   |  |
-    //                                   |__|
+    // region : science 5 -----------------------------------------------------------------
+    //                               ________
+    //                              |  ______|
+    //                              |  |__
+    //                              \____  \
+    //                              _____|  |
+    //                             |_______/
 
     // raw
     "uranium-ore": 5,
+
+    // recipes
+
+    // processed raw
     'crushed-uranium': 2,
     'u235': 10,
     'u234': 10,
     'slag': 0,
 
-    // recipes
-
-    // processed raw
     // materials
+
     // science
+    'science5': 5,
+
+    // research
+    'research-uranium': 0, // science 5
 
     // buildings
     'hydroponics': 20,
     'rock-crusher': 10,
     'centrifuge': 10,
-
-
-    'science5': 5,
-    'science10': 10,
-
-    // research
-    'research-science-5': 0,
-    'research-uranium': 0, // science 5
-
 
 } satisfies SMap<number>;
 
@@ -248,7 +273,7 @@ const displayNames: { [p in Items]?: string } = {
     'box3': 'Bigger Box',
     'box4': 'Massive Box',
     'box5': 'Biggest Box',
-    "": '',
+    "": 'oops!',
     "adamantium-drill": 'Adamantium Drill',
     "adamantium-frame": 'Adamantium Frame',
     "advanced-circuit": 'Advanced Circuit',
@@ -272,8 +297,12 @@ const displayNames: { [p in Items]?: string } = {
     "research-nitrogen": 'Tech: Nitrogen Extraction',
     "research-studonite": 'Tech: Strange Rock',
     "research-uranium": 'Tech: Glowy Rock That Makes Me Feel Bad',
-    "research-water-filter": 'Tech: Water Filter',
+    "research-fluids": 'Tech: Fluids',
     'research-oil': 'Tech: Essential Oils',
+    "research-frames": 'Tech: Applications of Iron',
+    'research-box': 'Tech: Containerization',
+    "research-constructor": 'Tech: More Automation',
+    "research-miner-mk1": 'Tech: Auto Mining',
     "rock-crusher": 'Rock Crusher',
     'adamantium': 'Adamantium',
     "stony-land": "Stone Land",
@@ -284,6 +313,7 @@ const displayNames: { [p in Items]?: string } = {
     "water-pump-mk2": 'Fast Water Pump',
     "wet-land": 'Wet Land',
     'gold': 'Gold!',
+    'gear': 'Iron Gear',
     "research-science-1": 'Tech: Science 1',
     "research-science-3": 'Tech: Science 3',
     "research-science-2": 'Tech: Science 2',
@@ -364,9 +394,10 @@ const recipes: Recipes = {
     'basic-circuit': { 'copper-wire': 2, 'wood': 0.25 },
     'solvent': { 'sulfuric-acid': 2, 'nitrogen': 1 },
     plastic: { 'oil': 1 },
-    'advanced-circuit': { 'basic-circuit': 2, 'plastic': 1 },
+    'advanced-circuit': { 'basic-circuit': 1, 'gold-filament': 1, 'plastic': 0.5 },
     'adamantium-frame': { 'adamantium': 2, 'plastic': 1 },
     'computer': { 'advanced-circuit': 5, 'plastic': 1 },
+    'gold-filament': { 'gold': 1, 'sulfuric-acid': 0.5 },
 
     // buildings
     'constructer': { 'gear': 10, 'iron-frame': 2 },
@@ -376,7 +407,7 @@ const recipes: Recipes = {
     'chemical-plant': { 'gear': 20, 'iron-frame': 15, 'steel': 15, 'basic-circuit': 10 },
     'miner-mk1': { 'gear': 20, 'copper-wire': 20 },
     'smelter-mk1': { 'stone': 10 },
-    'smelter-mk2': { 'iron-bar': 10, 'copper-wire': 10, 'smelter-mk1': 1 },
+    'smelter-mk2': { 'iron-frame': 10, 'copper-wire': 10, 'smelter-mk1': 1 },
     'oil-pump': { 'steel': 10, 'pipe': 10, 'iron-frame': 10 },
     'water-pump-mk1': { 'iron-bar': 15, 'pipe': 5 },
     'water-pump-mk2': { 'steel': 15, 'pipe': 10 },
@@ -404,31 +435,35 @@ const recipes: Recipes = {
     'science3': { 'science2': 3, 'plastic': 5 },
     'science4': { 'science3': 4, 'advanced-circuit': 2 },
     'science5': { 'science4': 5, 'aluminum': 5 },
-    'science10': {},
 
     // research
+    'research-frames': { 'science0': 5 },
     'research-wire': { 'science0': 10, 'iron-frame': 5 },
-    'research-steel': { 'science1': 15, 'coal': 200 },
+    'research-steel': { 'science1': 50, 'coal': 200 },
     'research-arbol': { 'science2': 20 },
-    'research-assembler': { 'science1': 30, 'gear': 50 },
+    'research-assembler': { 'science2': 30, 'gear': 50 },
     'research-nitrogen': { 'science2': 20 },
-    'research-water-filter': { 'science2': 20 },
-    'research-natural-gas': { 'science2': 50, 'nitrogen': 20 },
+    'research-fluids': { 'science2': 20 },
+    'research-natural-gas': { 'science3': 50, 'nitrogen': 1000 },
     'research-helpers': { 'science3': 20 },
     'research-manufacturer': { 'science3': 20 },
-    'research-studonite': { 'science3': 50 },
-    'research-aluminum': { 'science3': 20 },
+    'research-studonite': { 'science4': 50 },
+    'research-aluminum': { 'science4': 20 },
     'research-adamantium-drill': { 'science4': 20 },
     'research-computer': { 'science4': 50 },
     'research-uranium': { 'science5': 50 },
     'research-oil': { 'science2': 30 },
+    'research-constructor': { 'science1': 3 },
+    'research-miner-mk1': { 'science1': 30 },
+    'research-advanced-circuitry': { science3: 50 },
 
-    "research-science-1": { 'copper-wire': 1, 'gear': 1 },
-    'research-science-2': { 'science1': 2, 'steel': 3 },
-    'research-science-3': { 'science2': 3, 'plastic': 5 },
-    'research-science-4': { 'science3': 4, 'advanced-circuit': 2 },
-    'research-science-5': { 'science4': 5, 'aluminum': 5 },
+    "research-science-1": { 'copper-wire': 10, 'gear': 10 },
+    'research-science-2': { 'science1': 2, 'steel': 50 },
+    'research-science-3': { 'science2': 3, 'plastic': 50, 'basic-circuit': 50 },
+    'research-science-4': { 'science3': 4, 'advanced-circuit': 100 },
+    'research-science-5': { 'science4': 5, 'aluminum': 500, 'computer': 50 },
 
+    'research-box': { 'science1': 1 },
     'research-box2': { 'science1': 1, 'box': 10 },
     'research-box3': { 'science1': 10, 'box': 100 },
     'research-box4': { 'science1': 100, 'box': 1000 },
@@ -450,12 +485,18 @@ const unlockedWith: partialItems<Items[]> = {
     'gas-extractor': ['research-nitrogen'],
     'smelter-mk2': ['research-steel'],
 
+    'iron-frame': ['research-frames'],
+    'gear': ['research-frames'],
     'seed': ['research-arbol'],
-    'water-filter': ['research-water-filter'],
+    'water-filter': ['research-fluids'],
+    'water-pump-mk1': ['research-fluids'],
+    'pipe': ['research-fluids'],
     'gas': ['research-natural-gas'],
     'manufacturer': ['research-manufacturer'],
     'explorer': ['research-helpers'],
     'excavator': ['research-helpers'],
+    'advanced-circuit': ['research-advanced-circuitry'],
+    'gold': ['research-advanced-circuitry'],
 
     'solvent': ['research-studonite'],
     'studonite': ['research-studonite'],
@@ -464,12 +505,19 @@ const unlockedWith: partialItems<Items[]> = {
 
     'computer': ['research-computer'],
 
+    'miner-mk1': ['research-miner-mk1'],
+    'constructer': ['research-constructor'],
+
+    'oil-pump': ['research-oil'],
+    'research-oil': ['research-fluids'],
+
     'science1': ['research-science-1'],
     'science2': ['research-science-2'],
     'science3': ['research-science-3'],
     'science4': ['research-science-4'],
     'science5': ['research-science-5'],
 
+    'box': ['research-box'],
     'box-box': ['research-box2'],
     'box3': ['research-box3'],
     'box4': ['research-box4'],
@@ -525,9 +573,14 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     "research-steel": ['by-hand'],
     "research-studonite": ['by-hand'],
     "research-uranium": ['by-hand'],
-    "research-water-filter": ['by-hand'],
+    "research-fluids": ['by-hand'],
     "research-wire": ['by-hand'],
     'research-oil': ['by-hand'],
+    "research-advanced-circuitry": ['by-hand'],
+    "research-box": ['by-hand'],
+    "research-constructor": ['by-hand'],
+    "research-miner-mk1": ['by-hand'],
+    "research-frames": ['by-hand'],
 
     "research-science-1": ['by-hand'],
     'research-science-2': ['by-hand'],
@@ -539,6 +592,8 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     'research-box3': ['by-hand'],
     'research-box4': ['by-hand'],
     'research-box5': ['by-hand'],
+
+    "gold-filament": ['assembler'],
     aluminum: ['smelter-mk2'],
     computer: ['manufacturer'],
     plastic: ['chemical-plant'],
@@ -552,7 +607,6 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     seed: ['by-hand'],
     u235: ['centrifuge'],
     centrifuge: ['by-hand', 'manufacturer'],
-    'science10': [],
     'u234': [],
     'slag': [],
 
@@ -622,7 +676,7 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     'box3': ['constructer'],
     'box4': ['constructer'],
     'box5': ['constructer'],
-    'tank': ['by-hand'],
+    'tank': ['by-hand', 'assembler'],
 };
 
 /**
@@ -681,7 +735,6 @@ const itemsCanBeStoreIn: { [p in Items]?: (keyof typeof storageSizes)[] | undefi
     sand: [],
     science0: ['box'],
     science1: ['box'],
-    science10: ['box'],
     science2: ['box'],
     science3: ['box'],
     science4: ['box'],
@@ -690,6 +743,8 @@ const itemsCanBeStoreIn: { [p in Items]?: (keyof typeof storageSizes)[] | undefi
     seed: ['box'],
     "rock-crusher": ['box3'],
     centrifuge: ['box3'],
+    "gold-filament": ['box'],
+
     // raw
     'gas': ['tank'],
     'iron-ore': ['box'],
@@ -755,7 +810,7 @@ const itemsCanBeStoreIn: { [p in Items]?: (keyof typeof storageSizes)[] | undefi
     'box-box': ['box3'],
     'box3': ['box4'],
     'box4': ['box5'],
-    'box5': [],
+    'box5': ['box5'],
     'tank': ['box3'],
 };
 

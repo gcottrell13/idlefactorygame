@@ -9,8 +9,7 @@ import Popover from 'react-bootstrap/Popover';
 import Container from 'react-bootstrap/Container';
 import { keys, mapValues } from './smap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-const VERSION = "v1.2";
+import { VERSION } from './version';
 
 function d(n: number | undefined) {
     n ??= 0;
