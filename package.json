@@ -12,7 +12,8 @@
     "react-dom": "^18.2.0"
   },
   "scripts": {
-    "develop": "webpack-dev-server --mode development"
+    "develop": "webpack-dev-server --mode development",
+    "build": "npx webpack -o docs"
   },
   "devDependencies": {
     "@types/jquery": "^3.5.16",
