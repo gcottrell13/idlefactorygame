@@ -254,7 +254,7 @@ export function useProduction(ticksPerSecond: number) {
     const canMakeItemByHand = useCallback(
         (itemName: Items) => {
             if (GAME.requiredBuildings(itemName).includes('by-hand') === false)
-                return false;
+                return null;
 
             const recipe = GAME.recipes(itemName);
             let canMake = true;
@@ -313,6 +313,7 @@ export function useProduction(ticksPerSecond: number) {
         } = stateRef.current;
         
         let discoveredSomething = true;
+        const itemsDiscovered: Items[] = [];
 
         while (discoveredSomething) {
             discoveredSomething = false;
@@ -326,15 +327,21 @@ export function useProduction(ticksPerSecond: number) {
                         const unlockedWith = GAME.unlockedWith(itemName).every(x => amountThatWeHave[x] ?? 0);
                         if (haveBuilding && unlockedWith && (keys(recipe).length === 0 || haveIngredients)) {
                             markVisibility(itemName, true);
+                            itemsDiscovered.push(itemName);
                             discoveredSomething = true;
                         }
                     }
                     else {
                         markVisibility(itemName, true);
                         discoveredSomething = true;
+                        itemsDiscovered.push(itemName);
                     }
                 }
             });
+        }
+
+        if (itemsDiscovered.length > 0 && itemsDiscovered.includes('begin') === false) {
+            alert(`New Items Discovered!:\n${itemsDiscovered.map(GAME.displayNames).join(',\n')}`);
         }
     };
 

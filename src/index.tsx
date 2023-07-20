@@ -37,15 +37,18 @@ function ItemDisplay({
     assemblerCount: partialItems<number>,
     assemblerButtons: JSX.Element[],
     boxButtons: JSX.Element[],
-    makeByHand: null | func,
+    makeByHand: func | false | null,
     progress: partialItems<number | null> | undefined,
     storage: partialItems<number>,
     onMouseover: func | undefined,
     isAcked: boolean,
 }) {
 
-    const makeByHandButton = makeByHand && (
-        <Button className={'make-by-hand'} onClick={makeByHand}>{GAME.byHandVerbs(itemName)}</Button>
+    const byHandCb = makeByHand === false || makeByHand === null ? undefined : makeByHand;
+    const makeByHandButton = makeByHand === null ? undefined : (
+        <Button className={'make-by-hand'} onClick={byHandCb} disabled={makeByHand === false}>
+            {GAME.byHandVerbs(itemName)}
+        </Button>
     );
     const baseCraftTime = GAME.timePerRecipe(itemName);
 
@@ -269,9 +272,11 @@ function App() {
                 boxButtons={boxButtons}
                 itemName={itemName}
                 assemblerButtons={assemblerButtons}
-                makeByHand={makeByHand ? () => {
+                makeByHand={makeByHand === null ? null :
+                    makeByHand === false ? false 
+                    : (() => {
                     makeItemByhand(itemName as Items);
-                } : null}
+                })}
                 progress={prodStatus}
                 storage={storage[itemName] ?? {}}
                 isAcked={isAcked}

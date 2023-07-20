@@ -674,8 +674,8 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     'hydroponics': ['manufacturer'],
     'water-filter': ['by-hand', 'constructer', 'assembler'],
 
-    'explorer': ['by-hand', 'assembler'],
-    'excavator': ['by-hand', 'assembler'],
+    'explorer': ['assembler'],
+    'excavator': ['assembler'],
 
     'box': ['by-hand', 'constructer'],
     'box-box': ['by-hand', 'constructer'],
@@ -840,7 +840,7 @@ keys(unlockedWith).forEach(l => {
 
 const ex = {
     assemblerSpeeds: (item: Items): number => (assemblerSpeeds as SMap<number>)[item] ?? 0,
-    byHandVerbs: (item: Items): string => byHandVerbs[item] ?? 'make',
+    byHandVerbs: (item: Items): string => byHandVerbs[item] ?? 'craft',
     displayNames: (item: Items | 'by-hand'): string => item === 'by-hand' ? 'By Hand' : displayNames[item] ?? item,
     hideOnBuy: (item: Items): boolean => hideOnBuy.includes(item),
     itemsCanBeStoreIn: (item: Items): Items[] => itemsCanBeStoreIn[item] ?? [],
@@ -857,6 +857,12 @@ const ex = {
     allAssemblers: keys(assemblerSpeeds),
     makesAsASideProduct: (item: Items) => makesAsASideProduct[item],
 };
+
+keys(recipes).forEach(item => {
+    if (item.startsWith('research-')) {
+        byHandVerbs[item] = 'research';
+    }
+});
 
 const makesAsASideProduct = mapValues(recipes, (_, item) => {
     return keys(sideProducts).filter(mainOutput => mainOutput !== item && ex.sideProducts(mainOutput).some(p => p[item]));
