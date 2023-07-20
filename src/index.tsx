@@ -82,8 +82,16 @@ function ItemDisplay({
     const maxValue = calculateStorage(itemName as Items, storage);
 
     const assemblerSpeed = GAME.assemblerSpeeds(itemName);
+    const unlocks = GAME.unlocks(itemName).map(GAME.displayNames);
 
     const parts = [
+        (
+            formatIngredients.length > 0 && (
+                <div className={'ingredient-list'}>
+                    Ingredients: <table><tbody>{formatIngredients}</tbody></table>
+                </div>
+            )
+        ),
         (
             storageObjects.length > 0 && (
                 <div className={'storage-options'}>
@@ -106,13 +114,6 @@ function ItemDisplay({
             )
         ),
         (
-            formatIngredients.length > 0 && (
-                <div className={'ingredient-list'}>
-                    Ingredients: <table><tbody>{formatIngredients}</tbody></table>
-                </div>
-            )
-        ),
-        (
             byproducts.length > 0 && (
                 <div className={'byproduct-list'}>Byproducts: {byproducts}</div>
             )
@@ -120,6 +121,11 @@ function ItemDisplay({
         (
             byproductOf.length > 0 && (
                 <div className={'byproduct-of-list'}>Byproduct of: {byproductOf.join(', ')}</div>
+            )
+        ),
+        (
+            unlocks.length > 0 && (
+                <div className={'unlock-list'}>Unlocks: {unlocks.join(', ')}</div>
             )
         ),
     ];

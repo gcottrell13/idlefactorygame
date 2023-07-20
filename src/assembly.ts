@@ -300,10 +300,11 @@ export function useProduction(ticksPerSecond: number) {
             if (visible[itemName] === undefined) {
                 if ((amountThatWeHave[itemName] ?? 0) <= 0) {
                     const required = GAME.requiredBuildings(itemName);
-                    const haveBuilding = required.some(x => amountThatWeHave[x as Items] ?? 0) || required.includes('by-hand');
+                    const haveBuilding = required.some(x => visible[x as Items]) || required.includes('by-hand');
                     const recipe = GAME.recipes(itemName);
                     const haveIngredients = keys(recipe).every(key => (amountThatWeHave[key as Items] ?? 0) > 0);
-                    if (haveBuilding && (keys(recipe).length === 0 || haveIngredients)) {
+                    const unlockedWith = GAME.unlockedWith(itemName).every(x => amountThatWeHave[x] ?? 0);
+                    if (haveBuilding && unlockedWith && (keys(recipe).length === 0 || haveIngredients)) {
                         markVisibility(itemName, true);
                     }
                 }
