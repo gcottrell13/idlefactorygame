@@ -27,7 +27,8 @@ button.make-by-hand {
 }
 
 button.btn {
-    padding: 0;
+    padding: 2px;
+    border-radius: 0;
 }
 
 .item-row {
