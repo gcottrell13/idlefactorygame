@@ -26,6 +26,11 @@ button.make-by-hand {
     white-space: nowrap;
 }
 
+.disabled {
+    margin-left: 2px;
+    color: red;
+}
+
 .item-max {
     color: gray;
     margin-left: 5px;

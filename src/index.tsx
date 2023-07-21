@@ -249,11 +249,16 @@ function ItemDisplay({
                 {!isAcked && <Badge className={"new-item-badge"}>New</Badge>}
                 {makeByHandButton}
             </Col>
-            <Col xs={1}>
+            <Col xs={2}>
                 <OverlayTrigger placement="right" overlay={tooltip}>
-                    <span className="item-name">
-                        {GAME.displayNames(itemName)}
-                    </span>
+                    <div>
+                        <span className="item-name">
+                            {GAME.displayNames(itemName)}
+                        </span>
+                        {recipeDisabled ? (
+                            <Badge bg={"danger"}>DISABLED</Badge>
+                        ) : null}
+                    </div>
                 </OverlayTrigger>
             </Col>
             <Col xs={2}>
@@ -270,7 +275,7 @@ function ItemDisplay({
                 {assemblerDisplay}
             </Col>
             <Col xs={1}>{boxButtons}</Col>
-            <Col xs={4}>{assemblerButtons}</Col>
+            <Col xs={3}>{assemblerButtons}</Col>
         </Row>
     );
 }
