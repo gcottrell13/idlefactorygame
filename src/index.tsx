@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import _ from "lodash";
-import { calculateStorage, useProduction } from "./assembly";
+import { calculateStorage, useProduction, State } from "./assembly";
 import GAME, { Items, partialItems } from "./values";
 import "./css.css";
 import {
@@ -16,9 +16,13 @@ import {
 } from "react-bootstrap";
 import Popover from "react-bootstrap/Popover";
 import Container from "react-bootstrap/Container";
+import {} from "react-bootstrap";
 import { SMap, keys, mapValues } from "./smap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { VERSION } from "./version";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
 function d(n: number | undefined) {
     n ??= 0;
@@ -32,31 +36,23 @@ type func = () => void;
 function ItemDisplay({
     amt,
     itemName,
-    assemblerCount,
     assemblerButtons,
     boxButtons,
     makeByHand,
-    progress = {},
-    storage,
     onMouseover,
-    isAcked,
-    allAmounts,
     disableRecipe,
-    recipeDisabled,
+    assemblersMakingThis,
+    state,
 }: {
     amt: number;
     itemName: Items;
-    assemblerCount: partialItems<number>;
+    state: State;
     assemblerButtons: JSX.Element[];
+    assemblersMakingThis: partialItems<number>;
     boxButtons: JSX.Element[];
     makeByHand: func | false | null;
-    progress: partialItems<number | null> | undefined;
-    storage: partialItems<number>;
     onMouseover: func | undefined;
-    isAcked: boolean;
-    allAmounts: partialItems<number>;
     disableRecipe: func;
-    recipeDisabled: boolean;
 }) {
     const byHandCb =
         makeByHand === false || makeByHand === null ? undefined : makeByHand;
@@ -71,10 +67,13 @@ function ItemDisplay({
             </Button>
         );
 
+    const recipeDisabled = state.disabledRecipes[itemName] === true;
+    const progress = state.productionProgress[itemName] ?? {};
+
     const baseCraftTime = GAME.timePerRecipe(itemName);
 
-    const assemblers = keys(assemblerCount).map((name) => {
-        const no = assemblerCount[name] ?? 0;
+    const assemblers = keys(assemblersMakingThis).map((name) => {
+        const no = assemblersMakingThis[name] ?? 0;
         const speedPer = GAME.assemblerSpeeds(name) / baseCraftTime;
         let label = (
             <span>
@@ -135,9 +134,10 @@ function ItemDisplay({
 
     const speed = d(
         _.sum(
-            keys(assemblerCount).map(
+            keys(assemblersMakingThis).map(
                 (key) =>
-                    (GAME.assemblerSpeeds(key) * (assemblerCount[key] ?? 0)) /
+                    (GAME.assemblerSpeeds(key) *
+                        (assemblersMakingThis[key] ?? 0)) /
                     baseCraftTime,
             ),
         ),
@@ -153,7 +153,7 @@ function ItemDisplay({
                 <td>{GAME.displayNames(name)}</td>
                 <td>
                     <span className={"popover-ingredient-has"}>
-                        ({d(allAmounts[name] ?? 0)})
+                        ({d(state.amountThatWeHave[name] ?? 0)})
                     </span>
                 </td>
             </tr>
@@ -175,11 +175,21 @@ function ItemDisplay({
         .map(GAME.displayNames)
         .join(", ");
 
-    const maxValue = calculateStorage(itemName as Items, storage);
+    const maxValue = calculateStorage(itemName, state.storage[itemName]);
 
     const assemblerSpeed = GAME.assemblerSpeeds(itemName);
     const unlocks = GAME.unlocks(itemName).map(GAME.displayNames);
     const madeIn = GAME.requiredBuildings(itemName).map(GAME.displayNames);
+
+    const amountHistory = state.itemAmountHistory[itemName] ?? [];
+    let historyDisplay: JSX.Element | null = null;
+    if (amountHistory.length >= 2 && assemblers.length > 0) {
+        const diff = amountHistory[amountHistory.length - 1] - amountHistory[0];
+        const g = (
+            <FontAwesomeIcon icon={diff >= 0 ? faChevronUp : faChevronDown} />
+        );
+        historyDisplay = <span className={"history-display"}>{g}</span>;
+    }
 
     const parts = [
         madeIn.length > 0 && (
@@ -246,7 +256,9 @@ function ItemDisplay({
     return (
         <Row className="item-row" onMouseEnter={onMouseover}>
             <Col xs={1}>
-                {!isAcked && <Badge className={"new-item-badge"}>New</Badge>}
+                {!state.acknowledged[itemName] && (
+                    <Badge className={"new-item-badge"}>New</Badge>
+                )}
                 {makeByHandButton}
             </Col>
             <Col xs={2}>
@@ -262,7 +274,9 @@ function ItemDisplay({
                 </OverlayTrigger>
             </Col>
             <Col xs={2}>
-                <span className="item-count">{d(amt)}</span>
+                <span className="item-count">
+                    {d(amt)} {historyDisplay}
+                </span>
                 <span className="item-max">
                     {maxValue === Number.MAX_SAFE_INTEGER
                         ? ""
@@ -284,8 +298,6 @@ function App() {
     const {
         assemblers,
         amountThatWeHave,
-        productionProgress,
-        storage,
         visible,
         acknowledgeItem,
         acknowledged,
@@ -296,6 +308,7 @@ function App() {
         addContainer,
         disableRecipe,
         disabledRecipes,
+        state,
     } = useProduction(TICKS_PER_SECOND);
 
     const haveAssemblers = GAME.allAssemblers.filter(
@@ -376,15 +389,14 @@ function App() {
                 );
             });
 
-            const prodStatus = productionProgress[itemName];
-
             const isAcked = acknowledged[itemName] === true;
 
             thisSectionItems.push(
                 <ItemDisplay
                     key={itemName}
                     amt={amt ?? 0}
-                    assemblerCount={assemblersMakingThis}
+                    state={state}
+                    assemblersMakingThis={assemblersMakingThis}
                     boxButtons={boxButtons}
                     itemName={itemName}
                     assemblerButtons={assemblerButtons}
@@ -398,12 +410,11 @@ function App() {
                               }
                     }
                     disableRecipe={() =>
-                        disableRecipe(itemName, !disabledRecipes[itemName])
+                        disableRecipe(
+                            itemName,
+                            !(disabledRecipes[itemName] ?? false),
+                        )
                     }
-                    progress={prodStatus}
-                    storage={storage[itemName] ?? {}}
-                    isAcked={isAcked}
-                    recipeDisabled={!!disabledRecipes[itemName]}
                     onMouseover={
                         !isAcked
                             ? () => {
@@ -411,7 +422,6 @@ function App() {
                               }
                             : undefined
                     }
-                    allAmounts={amountThatWeHave}
                 />,
             );
         });

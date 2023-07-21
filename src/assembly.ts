@@ -3,6 +3,10 @@ import GAME, { partialItems, Items } from "./values";
 import _ from "lodash";
 import { SMap, forEach, keys, values } from "./smap";
 import { VERSION } from "./version";
+import { Queue } from "./queue";
+
+const AMOUNT_HISTORY_LENGTH_SECONDS = 60;
+const AMOUNT_HISTORY_INTERVAL_SECONDS = 1;
 
 const PRECISION = 1e5;
 function round(n: number) {
@@ -17,7 +21,7 @@ export function getByItem<T>(
     return dict[item] ?? _default;
 }
 
-interface State {
+export interface State {
     version: typeof VERSION;
 
     /**
@@ -26,6 +30,11 @@ interface State {
     assemblers: partialItems<partialItems<number>>;
     displayAmount: partialItems<number>;
     amountThatWeHave: partialItems<number>;
+
+    /**
+     * a history of each item's value at regular intervals, up to a limit.
+     */
+    itemAmountHistory: partialItems<number[]>;
 
     /**
      * all buildings making these recipes should not do so
@@ -62,6 +71,7 @@ const defaultState = {
     amountCreated: {},
     acknowledged: {},
     disabledRecipes: {},
+    itemAmountHistory: {},
 } satisfies State;
 
 const ex = localStorage.getItem("state");
@@ -135,6 +145,13 @@ function saveGame(state: State) {
 export function useProduction(ticksPerSecond: number) {
     const stateRef = useRef<State>(existingStorage);
 
+    const setState = (state: Partial<State> = {}) => {
+        stateRef.current = { ...stateRef.current, ...state };
+    };
+
+    const [c, setCounter] = useState<number>(0);
+    const [historyTicks, setHistoryTicks] = useState(0);
+
     function hasStorageCapacity(item: Items, amt: number) {
         const currentAmount = stateRef.current.amountThatWeHave[item] ?? 0;
         return (
@@ -186,7 +203,7 @@ export function useProduction(ticksPerSecond: number) {
             .sort()
             .forEach((level) => {
                 forEach(assemblers[level], (assemblerCount, itemName) => {
-                    if (stateRef.current.disabledRecipes[itemName]) {
+                    if (stateRef.current.disabledRecipes[itemName] === true) {
                         return;
                     }
 
@@ -242,12 +259,6 @@ export function useProduction(ticksPerSecond: number) {
             amountThatWeHave,
         };
     }
-
-    const setState = (state: Partial<State> = {}) => {
-        stateRef.current = { ...stateRef.current, ...state };
-    };
-
-    const [c, setCounter] = useState<number>(0);
 
     const addAmount = useCallback((itemName: Items, amount: number) => {
         const k = stateRef.current.amountThatWeHave[itemName] ?? 0;
@@ -394,11 +405,35 @@ export function useProduction(ticksPerSecond: number) {
         });
     };
 
+    function addItemHistory() {
+        const { itemAmountHistory, amountThatWeHave } = stateRef.current;
+        keys(amountThatWeHave).forEach((itemName) => {
+            const h = itemAmountHistory[itemName] ?? [];
+            itemAmountHistory[itemName] = h;
+            const amt = amountThatWeHave[itemName] ?? 0;
+            new Queue(
+                h,
+                1 +
+                    AMOUNT_HISTORY_LENGTH_SECONDS /
+                        AMOUNT_HISTORY_INTERVAL_SECONDS,
+            ).push(amt);
+        });
+    }
+
     useEffect(() => {
         const i = setTimeout(() => {
             checkVisible();
             setState(doProduction(1 / ticksPerSecond));
             setCounter(c + 1);
+            setHistoryTicks(historyTicks + 1);
+
+            if (
+                historyTicks >
+                AMOUNT_HISTORY_INTERVAL_SECONDS * ticksPerSecond
+            ) {
+                addItemHistory();
+                setHistoryTicks(0);
+            }
         }, 1000 / ticksPerSecond);
         return () => {
             clearTimeout(i);
@@ -415,6 +450,7 @@ export function useProduction(ticksPerSecond: number) {
 
     return {
         ...stateRef.current,
+        state: stateRef.current,
         addAmount,
         addAssemblers,
         resetAll,

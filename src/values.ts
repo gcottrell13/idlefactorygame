@@ -655,7 +655,7 @@ const requiredBuildings: {
     aluminum: ["smelter-mk2"],
     computer: ["manufacturer"],
     plastic: ["chemical-plant"],
-    sand: ['miner-mk1'],
+    sand: ["miner-mk1"],
     science0: ["by-hand", "constructer"],
     science1: ["by-hand", "constructer", "assembler"],
     science2: ["by-hand", "assembler"],
@@ -948,7 +948,7 @@ const sections: {
         SubSections: [
             {
                 Name: "Raw Materials",
-                Items: ["water", "silt", "nitrogen", "oil", "dirt", 'sand'],
+                Items: ["water", "silt", "nitrogen", "oil", "dirt", "sand"],
             },
             {
                 Name: "Processed Materials",
@@ -970,7 +970,7 @@ const sections: {
                     "hydroponics",
                     "oil-pump",
                     "chemical-plant",
-                    'gas-extractor',
+                    "gas-extractor",
                 ],
             },
             {
@@ -1004,11 +1004,7 @@ const sections: {
             },
             {
                 Name: "Buildings",
-                Items: [
-                    "manufacturer",
-                    "excavator",
-                    "explorer",
-                ],
+                Items: ["manufacturer", "excavator", "explorer"],
             },
             {
                 Name: "Research",
