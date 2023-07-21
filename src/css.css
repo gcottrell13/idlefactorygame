@@ -12,12 +12,23 @@
     display: inline-block;
 }
 
+.per-click-amount-buttons {
+    position: fixed;
+    top: 0;
+    right: 100px;
+    z-index: 1000;
+}
+.per-click-amount-buttons button {
+    margin-left: 5px;
+    min-width: 50px;
+}
+
 button.assembler-disable-button {
     float: left;
 }
 
 button.add-assembler {
-    margin-left: 20px;
+    margin-left: 5px;
 }
 
 button.make-by-hand {
@@ -51,11 +62,15 @@ button.make-by-hand {
     background-color: rgb(236, 236, 236);
 }
 
-.section-tabs {
+.sticky {
     position: sticky;
     position: -webkit-sticky;
     top: 0;
+}
+
+.nav-tabs.section-tabs {
     background-color: white;
+    z-index: 999;
 }
 
 .subsection-header {

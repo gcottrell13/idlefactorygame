@@ -80,15 +80,14 @@ const existingStorage = {
     ...((ex ? JSON.parse(ex) : {}) as State),
 };
 
-function consumeMaterials(
+export function howManyCanBeMade(
     itemName: Items,
     amounts: SMap<number>,
-): number | null {
+): number {
     const recipe = GAME.recipes(itemName);
     if (recipe === undefined) return 0;
-    // not producing, so let's try to grab materials
 
-    let numberOfRecipesToMake = 1;
+    let numberOfRecipesToMake = Number.MAX_SAFE_INTEGER;
 
     _.toPairs(recipe).forEach((pair) => {
         const [ingredientName, requiredCount] = pair;
@@ -103,17 +102,26 @@ function consumeMaterials(
         }
     });
 
-    if (numberOfRecipesToMake <= 0) return null;
+    return numberOfRecipesToMake;
+}
+
+function consumeMaterials(
+    itemName: Items,
+    amounts: SMap<number>,
+): number | null {
+    const recipe = GAME.recipes(itemName);
+    if (recipe === undefined) return 0;
+    // not producing, so let's try to grab materials
+
+    if (howManyCanBeMade(itemName, amounts) <= 0) return null;
 
     _.toPairs(recipe).forEach((pair) => {
         const [ingredientName, requiredCount] = pair;
-        const toGrab = numberOfRecipesToMake * requiredCount;
+        const toGrab = requiredCount;
 
         const weHave = amounts[ingredientName] ?? 0;
         amounts[ingredientName] = round(Math.max(0, weHave - toGrab));
     });
-
-    if (numberOfRecipesToMake <= 0) return null;
     return 0;
 }
 
@@ -276,41 +284,33 @@ export function useProduction(ticksPerSecond: number) {
         setState();
     }, []);
 
-    const makeItemByhand = useCallback((itemName: Items) => {
-        if (addToTotal(itemName, 1)) {
-            const recipe = GAME.recipes(itemName);
-            _.toPairs(recipe).forEach((pair) => {
-                const [ingredientName, requiredCount] = pair;
-                addAmount(ingredientName as Items, -requiredCount);
-            });
-            setState();
+    const makeItemByhand = useCallback((itemName: Items, count: number) => {
+        for (let i = 0; i < count; i++) {
+            if (addToTotal(itemName, 1)) {
+                consumeMaterials(itemName, stateRef.current.amountThatWeHave);
+                setState();
+            }
         }
     }, []);
 
     const canMakeItemByHand = useCallback((itemName: Items) => {
         if (GAME.requiredBuildings(itemName).includes("by-hand") === false)
             return null;
-
-        const recipe = GAME.recipes(itemName);
-        let canMake = true;
-        _.toPairs(recipe).forEach((pair) => {
-            const [ingredientName, requiredCount] = pair;
-            const weHave =
-                stateRef.current.amountThatWeHave[ingredientName as Items] ?? 0;
-            if (weHave < requiredCount) canMake = false;
-        });
-        return canMake && hasStorageCapacity(itemName, 1);
+        if (howManyCanBeMade(itemName, stateRef.current.amountThatWeHave) <= 0)
+            return false;
+        return hasStorageCapacity(itemName, 1);
     }, []);
 
     const addAssemblers = useCallback(
         (level: Items, itemName: Items, amount: number) => {
             const k = stateRef.current.assemblers[level] ?? {};
-            const current = k[itemName] ?? 0;
-            k[itemName] = current + amount;
+            const appliedAssemblers = k[itemName] ?? 0;
+            const haveAssemblers =
+                stateRef.current.amountThatWeHave[level] ?? 0;
+            amount = Math.min(amount, haveAssemblers);
+            k[itemName] = appliedAssemblers + amount;
             stateRef.current.assemblers[level] = k;
-            stateRef.current.amountThatWeHave[level]! -= 1;
-            stateRef.current.displayAmount[level] =
-                stateRef.current.amountThatWeHave[level];
+            stateRef.current.amountThatWeHave[level] = haveAssemblers - amount;
             setState();
         },
         [],
@@ -319,9 +319,15 @@ export function useProduction(ticksPerSecond: number) {
     const addContainer = useCallback(
         (itemName: Items, container: Items, amount: number) => {
             stateRef.current.storage[itemName] ??= {};
-            const v = stateRef.current.storage[itemName]![container] ?? 0;
-            stateRef.current.storage[itemName]![container] = v + amount;
-            stateRef.current.amountThatWeHave[container]! -= amount;
+            const haveStorage =
+                stateRef.current.storage[itemName]![container] ?? 0;
+            const haveContainers =
+                stateRef.current.amountThatWeHave[container] ?? 0;
+            amount = Math.min(amount, haveContainers);
+            stateRef.current.storage[itemName]![container] =
+                haveStorage + amount;
+            stateRef.current.amountThatWeHave[container] =
+                haveContainers - amount;
         },
         [],
     );

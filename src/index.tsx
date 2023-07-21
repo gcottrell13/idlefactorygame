@@ -6,6 +6,7 @@ import {
     useProduction,
     State,
     AMOUNT_HISTORY_LENGTH_SECONDS,
+    howManyCanBeMade,
 } from "./assembly";
 import GAME, { Items, partialItems } from "./values";
 import "./css.css";
@@ -18,6 +19,8 @@ import {
     Badge,
     Tabs,
     Tab,
+    ButtonToolbar,
+    Nav,
 } from "react-bootstrap";
 import Popover from "react-bootstrap/Popover";
 import Container from "react-bootstrap/Container";
@@ -47,6 +50,7 @@ function ItemDisplay({
     disableRecipe,
     assemblersMakingThis,
     state,
+    currentClickAmount,
 }: {
     amt: number;
     itemName: Items;
@@ -57,9 +61,16 @@ function ItemDisplay({
     makeByHand: func | false | null;
     onMouseover: func | undefined;
     disableRecipe: func;
+    currentClickAmount: number;
 }) {
     const byHandCb =
         makeByHand === false || makeByHand === null ? undefined : makeByHand;
+    const canMakeByHand = Math.min(
+        currentClickAmount,
+        howManyCanBeMade(itemName, state.amountThatWeHave),
+        calculateStorage(itemName, state.storage[itemName]) - amt,
+        GAME.maxCraftAtATime(itemName),
+    );
     const makeByHandButton =
         makeByHand === null ? undefined : (
             <Button
@@ -67,7 +78,8 @@ function ItemDisplay({
                 onClick={byHandCb}
                 disabled={makeByHand === false}
             >
-                {GAME.byHandVerbs(itemName)}
+                {GAME.byHandVerbs(itemName)}{" "}
+                {canMakeByHand > 1 ? Math.floor(canMakeByHand) : ""}
             </Button>
         );
 
@@ -192,10 +204,14 @@ function ItemDisplay({
     const diff = historyVisible
         ? lastHistory - _.sum(amountHistory) / amountHistory.length
         : 0;
+
+    // we don't want it to flip if we're just dancing around the average
+    const isDiff = Math.abs(diff) > 1 ? diff : 0;
+
     const g = (
         <FontAwesomeIcon
-            icon={diff >= 0 ? faChevronUp : faChevronDown}
-            className={diff >= 0 ? "" : "text-danger"}
+            icon={isDiff >= 0 ? faChevronUp : faChevronDown}
+            className={isDiff >= 0 ? "" : "text-danger"}
         />
     );
     let historyDisplay = (
@@ -341,11 +357,28 @@ function App() {
         state,
     } = useProduction(TICKS_PER_SECOND);
 
+    function calculateMaxMake(itemName: Items, n: number) {
+        return Math.min(
+            currentClickAmount,
+            howManyCanBeMade(itemName, state.amountThatWeHave),
+            calculateStorage(itemName, state.storage[itemName]) - n,
+            GAME.maxCraftAtATime(itemName),
+        );
+    }
+
+    function calculateMaxAdd(itemName: Items) {
+        return Math.min(
+            currentClickAmount,
+            state.amountThatWeHave[itemName] ?? 0,
+        );
+    }
+
     const haveAssemblers = GAME.allAssemblers.filter(
         (key) => (amountThatWeHave[key] ?? 0) > 0,
     );
 
     let [currentTab, setCurrentTab] = useState<string | null>(null);
+    const [currentClickAmount, setCurrentClickAmount] = useState<number>(1);
 
     if (currentTab === null) {
         setCurrentTab(
@@ -392,11 +425,16 @@ function App() {
                             className={"add-container"}
                             key={container}
                             onClick={() => {
-                                addContainer(itemName, container, 1);
+                                addContainer(
+                                    itemName,
+                                    container,
+                                    currentClickAmount,
+                                );
                             }}
                             variant="info"
                         >
-                            Add {GAME.displayNames(container)}
+                            Add {calculateMaxAdd(container)}{" "}
+                            {GAME.displayNames(container)}
                         </Button>,
                     );
                 }
@@ -410,11 +448,16 @@ function App() {
                         className={"add-assembler"}
                         key={assemblerName}
                         onClick={() => {
-                            addAssemblers(assemblerName, itemName, 1);
+                            addAssemblers(
+                                assemblerName,
+                                itemName,
+                                currentClickAmount,
+                            );
                         }}
                         variant="secondary"
                     >
-                        Add {GAME.displayNames(assemblerName)}
+                        Add {calculateMaxAdd(assemblerName)}{" "}
+                        {GAME.displayNames(assemblerName)}
                     </Button>,
                 );
             });
@@ -430,13 +473,17 @@ function App() {
                     boxButtons={boxButtons}
                     itemName={itemName}
                     assemblerButtons={assemblerButtons}
+                    currentClickAmount={currentClickAmount}
                     makeByHand={
                         makeByHand === null
                             ? null
                             : makeByHand === false
                             ? false
                             : () => {
-                                  makeItemByhand(itemName as Items);
+                                  makeItemByhand(
+                                      itemName as Items,
+                                      calculateMaxMake(itemName, amt),
+                                  );
                               }
                     }
                     disableRecipe={() =>
@@ -468,14 +515,16 @@ function App() {
 
     return (
         <Container fluid className={"game-container"}>
-            <Button onClick={resetAll} variant={"secondary"}>
-                Reset
-            </Button>{" "}
-            <span>v{VERSION.join(".")}</span>
+            <div className={"sticky"}>
+                <Button onClick={resetAll} variant={"secondary"}>
+                    Reset
+                </Button>{" "}
+                <span>v{VERSION.join(".")}</span>
+            </div>
             <Tabs
                 activeKey={currentTab}
                 onSelect={setCurrentTab}
-                className={"section-tabs"}
+                className={"section-tabs sticky"}
             >
                 {GAME.sections.map((section) => {
                     let title: React.ReactNode = section.Name;
@@ -500,12 +549,41 @@ function App() {
                         );
 
                     return (
-                        <Tab eventKey={section.Name} title={title}>
+                        <Tab
+                            key={section.Name}
+                            eventKey={section.Name}
+                            title={title}
+                        >
                             {sections[section.Name]}
                         </Tab>
                     );
                 })}
             </Tabs>
+            {amountThatWeHave["research-mass-click"] === 1 ? (
+                <ButtonToolbar className={"per-click-amount-buttons"}>
+                    Per Click:
+                    <Button
+                        onClick={() => setCurrentClickAmount(1)}
+                        active={currentClickAmount == 1}
+                    >
+                        1
+                    </Button>
+                    <Button
+                        onClick={() => setCurrentClickAmount(10)}
+                        active={currentClickAmount == 10}
+                    >
+                        10
+                    </Button>
+                    <Button
+                        onClick={() =>
+                            setCurrentClickAmount(Number.MAX_SAFE_INTEGER)
+                        }
+                        active={currentClickAmount == Number.MAX_SAFE_INTEGER}
+                    >
+                        MAX
+                    </Button>
+                </ButtonToolbar>
+            ) : null}
         </Container>
     );
 }

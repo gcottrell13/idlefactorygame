@@ -73,6 +73,7 @@ const timePerRecipe = {
     "research-box3": 0,
     "research-box4": 0,
     "research-box5": 0,
+    "research-mass-click": 0,
     "research-steel": 0, // with science1
     "research-science-2": 0,
 
@@ -275,8 +276,8 @@ const displayNames: { [p in Items]?: string } = {
     "research-steel": "Tech: Steel",
     "research-arbol": "Tech: Arbology",
     box: "Box",
-    "box-box": "Box of Box",
-    box3: "Bigger Box",
+    "box-box": "Box Box",
+    box3: "Big Box",
     box4: "Massive Box",
     box5: "Biggest Box",
     "": "oops!",
@@ -310,6 +311,7 @@ const displayNames: { [p in Items]?: string } = {
     "research-constructor": "Tech: More Automation",
     "research-miner-mk1": "Tech: Auto Mining",
     "research-advanced-circuitry": "Tech: Advanced Circuits",
+    "research-mass-click": "Tech: Mass Click",
     "rock-crusher": "Rock Crusher",
     adamantium: "Adamantium",
     "stony-land": "Stone Land",
@@ -348,6 +350,8 @@ const displayNames: { [p in Items]?: string } = {
     gas: "Natural Gas",
     "gold-filament": "Gold Filament",
 
+    begin: "Start Here",
+
     science0: "Basic Finding",
     science1: "Written Note",
     science2: "Documented Event",
@@ -355,6 +359,8 @@ const displayNames: { [p in Items]?: string } = {
     science4: "Research Paper",
     science5: "A.I. Generated Proof",
 };
+
+const flavorText: partialItems<string> = {};
 
 export type Items = keyof typeof timePerRecipe;
 
@@ -501,6 +507,7 @@ const recipes: Recipes = {
     "research-constructor": { science1: 3 },
     "research-miner-mk1": { science1: 30 },
     "research-advanced-circuitry": { science3: 50 },
+    "research-mass-click": { science1: 10 },
 
     "research-science-1": { "copper-wire": 10, gear: 10 },
     "research-science-2": { science1: 2, steel: 50 },
@@ -637,6 +644,7 @@ const requiredBuildings: {
     "research-constructor": ["by-hand"],
     "research-miner-mk1": ["by-hand"],
     "research-frames": ["by-hand"],
+    "research-mass-click": ["by-hand"],
 
     "research-science-1": ["by-hand"],
     "research-science-2": ["by-hand"],
@@ -932,6 +940,7 @@ const sections: {
                 Items: [
                     "science0",
                     "science1",
+                    "research-mass-click",
                     "research-wire",
                     "research-miner-mk1",
                     "research-frames",
@@ -1101,6 +1110,15 @@ const sections: {
     },
 ];
 
+const ABSOLUTE_MAX_CRAFT = 1000;
+const maxCraftAtATime: partialItems<number> = {
+    "copper-ore": 2,
+    "iron-ore": 2,
+    coal: 2,
+    stone: 2,
+    begin: 1,
+};
+
 const allItemNames = keys(recipes).sort();
 allItemNames.shift();
 const unlocks: partialItems<Items[]> = {};
@@ -1135,11 +1153,15 @@ const ex = {
     allItemNames: allItemNames,
     allAssemblers: keys(assemblerSpeeds),
     makesAsASideProduct: (item: Items) => makesAsASideProduct[item],
+
+    maxCraftAtATime: (item: Items) =>
+        maxCraftAtATime[item] ?? ABSOLUTE_MAX_CRAFT,
 };
 
 keys(recipes).forEach((item) => {
     if (item.startsWith("research-")) {
         byHandVerbs[item] = "research";
+        maxCraftAtATime[item] = 1;
     }
 });
 
