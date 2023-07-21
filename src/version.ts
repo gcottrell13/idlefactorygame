@@ -1,1 +1,1 @@
-export const VERSION = [1, 5, 0] as const;
+export const VERSION = [1, 6, 0] as const;
