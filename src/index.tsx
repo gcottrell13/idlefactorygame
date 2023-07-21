@@ -238,6 +238,7 @@ function ItemDisplay({
     }
 
     const parts = [
+        GAME.flavorText[itemName] && <div>{GAME.flavorText[itemName]}</div>,
         madeIn.length > 0 && (
             <div className={"made-in"}>
                 Made in: <br />

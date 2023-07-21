@@ -360,7 +360,13 @@ const displayNames: { [p in Items]?: string } = {
     science5: "A.I. Generated Proof",
 };
 
-const flavorText: partialItems<string> = {};
+const flavorText: partialItems<React.ReactNode> = {
+    "research-mass-click":
+        "Lets you place Boxes and Buildings 10 times as fast.",
+    begin: <b>The Beginning</b>,
+    prospector: <pre>Lets you find some land!</pre>,
+    land: <pre>Go Prospect that Land!</pre>,
+};
 
 export type Items = keyof typeof timePerRecipe;
 
@@ -1156,6 +1162,8 @@ const ex = {
 
     maxCraftAtATime: (item: Items) =>
         maxCraftAtATime[item] ?? ABSOLUTE_MAX_CRAFT,
+
+    flavorText,
 };
 
 keys(recipes).forEach((item) => {
