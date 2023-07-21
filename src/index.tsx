@@ -41,6 +41,8 @@ function ItemDisplay({
     onMouseover,
     isAcked,
     allAmounts,
+    disableRecipe,
+    recipeDisabled,
 }: {
     amt: number;
     itemName: Items;
@@ -53,6 +55,8 @@ function ItemDisplay({
     onMouseover: func | undefined;
     isAcked: boolean;
     allAmounts: partialItems<number>;
+    disableRecipe: func;
+    recipeDisabled: boolean;
 }) {
     const byHandCb =
         makeByHand === false || makeByHand === null ? undefined : makeByHand;
@@ -66,6 +70,7 @@ function ItemDisplay({
                 {GAME.byHandVerbs(itemName)}
             </Button>
         );
+
     const baseCraftTime = GAME.timePerRecipe(itemName);
 
     const assemblers = keys(assemblerCount).map((name) => {
@@ -80,7 +85,13 @@ function ItemDisplay({
             </span>
         );
         const prog = progress[name] ?? null;
-        if (prog === null) {
+        if (recipeDisabled) {
+            label = (
+                <span>
+                    {label} <Badge bg={"secondary"}>Disabled</Badge>
+                </span>
+            );
+        } else if (prog === null) {
             label = (
                 <span>
                     {label} <Badge bg={"danger"}>No Input</Badge>
@@ -106,11 +117,20 @@ function ItemDisplay({
         );
     });
 
+    const disableButton =
+        assemblers.length > 0 ? (
+            <Button
+                className={"assembler-disable-button"}
+                onClick={disableRecipe}
+                variant={recipeDisabled ? "primary" : "secondary"}
+            >
+                {recipeDisabled ? "Start" : "Stop"}
+            </Button>
+        ) : null;
+
     const assemblerDisplay =
         assemblers.length > 0 ? (
-            <div className="assembler-count">
-                buildings making {GAME.displayNames(itemName)}: {assemblers}
-            </div>
+            <span className="assembler-display">{assemblers}</span>
         ) : null;
 
     const speed = d(
@@ -245,7 +265,10 @@ function ItemDisplay({
                 </span>
                 <span className={"speed"}> (+{speed}/s)</span>
             </Col>
-            <Col xs={3}>{assemblerDisplay}</Col>
+            <Col xs={3}>
+                {disableButton}
+                {assemblerDisplay}
+            </Col>
             <Col xs={1}>{boxButtons}</Col>
             <Col xs={4}>{assemblerButtons}</Col>
         </Row>
@@ -266,6 +289,8 @@ function App() {
         makeItemByhand,
         canMakeItemByHand,
         addContainer,
+        disableRecipe,
+        disabledRecipes,
     } = useProduction(TICKS_PER_SECOND);
 
     const haveAssemblers = GAME.allAssemblers.filter(
@@ -367,9 +392,13 @@ function App() {
                                   makeItemByhand(itemName as Items);
                               }
                     }
+                    disableRecipe={() =>
+                        disableRecipe(itemName, !disabledRecipes[itemName])
+                    }
                     progress={prodStatus}
                     storage={storage[itemName] ?? {}}
                     isAcked={isAcked}
+                    recipeDisabled={!!disabledRecipes[itemName]}
                     onMouseover={
                         !isAcked
                             ? () => {

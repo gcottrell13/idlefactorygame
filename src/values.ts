@@ -936,6 +936,7 @@ const sections: {
                     "research-miner-mk1",
                     "research-frames",
                     "research-science-1",
+                    "research-science-2",
                     "research-constructor",
                     "research-steel",
                 ],

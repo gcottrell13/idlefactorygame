@@ -7,6 +7,15 @@
     margin-left: 10px;
 }
 
+.assembler-display {
+    margin-left: 10px;
+    display: inline-block;
+}
+
+button.assembler-disable-button {
+    float: left;
+}
+
 button.add-assembler {
     margin-left: 20px;
 }

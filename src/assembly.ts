@@ -28,6 +28,11 @@ interface State {
     amountThatWeHave: partialItems<number>;
 
     /**
+     * all buildings making these recipes should not do so
+     */
+    disabledRecipes: partialItems<boolean>;
+
+    /**
      * [whats being made] [the building making it]
      */
     productionProgress: partialItems<partialItems<number | null>>;
@@ -56,6 +61,7 @@ const defaultState = {
     productionProgress: {},
     amountCreated: {},
     acknowledged: {},
+    disabledRecipes: {},
 } satisfies State;
 
 const ex = localStorage.getItem("state");
@@ -180,6 +186,10 @@ export function useProduction(ticksPerSecond: number) {
             .sort()
             .forEach((level) => {
                 forEach(assemblers[level], (assemblerCount, itemName) => {
+                    if (stateRef.current.disabledRecipes[itemName]) {
+                        return;
+                    }
+
                     let time = productionProgress[itemName]?.[level] ?? null;
 
                     if (!storage[itemName]) storage[itemName] = {};
@@ -316,6 +326,11 @@ export function useProduction(ticksPerSecond: number) {
         setState();
     }, []);
 
+    const disableRecipe = useCallback((itemName: Items, disable: boolean) => {
+        stateRef.current.disabledRecipes[itemName] = disable;
+        setState();
+    }, []);
+
     const checkVisible = () => {
         const { visible, amountThatWeHave } = stateRef.current;
 
@@ -407,5 +422,6 @@ export function useProduction(ticksPerSecond: number) {
         canMakeItemByHand,
         addContainer,
         acknowledgeItem,
+        disableRecipe,
     };
 }
