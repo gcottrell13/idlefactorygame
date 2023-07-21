@@ -400,7 +400,7 @@ const recipes: Recipes = {
     'sulfuric-acid': { 'sulfur': 1, 'water': 5 },
     'basic-circuit': { 'copper-wire': 2, 'wood': 0.25 },
     'solvent': { 'sulfuric-acid': 2, 'nitrogen': 1 },
-    plastic: { 'oil': 1 },
+    'plastic': { 'oil': 1 },
     'advanced-circuit': { 'basic-circuit': 1, 'gold-filament': 1, 'plastic': 0.5 },
     'adamantium-frame': { 'adamantium': 2, 'plastic': 1 },
     'computer': { 'advanced-circuit': 5, 'plastic': 1 },
