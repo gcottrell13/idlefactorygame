@@ -915,6 +915,7 @@ const sections: {
                         'research-frames',
                         'research-science-1',
                         'research-constructor',
+                        'research-steel',
                     ],
                 }
             ]

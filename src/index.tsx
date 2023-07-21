@@ -327,6 +327,7 @@ function App() {
             <Tabs
                 activeKey={currentTab}
                 onSelect={setCurrentTab}
+                className={'section-tabs'}
             >
                 {
                     GAME.sections.map(section => {

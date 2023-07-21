@@ -30,6 +30,13 @@ button.make-by-hand {
     background-color: rgb(236, 236, 236);
 }
 
+.section-tabs {
+    position: sticky;
+    position: -webkit-sticky;
+    top: 0;
+    background-color: white;
+}
+
 .subsection-header {
     line-height: 40px;
     border-bottom: 1px lightgray solid;
