@@ -428,7 +428,6 @@ export function useProduction(ticksPerSecond: number) {
 
     useEffect(() => {
         const i = setTimeout(() => {
-            checkVisible();
             setState(doProduction(1 / ticksPerSecond));
             setCounter(c + 1);
             setHistoryTicks(historyTicks + 1);
@@ -453,6 +452,8 @@ export function useProduction(ticksPerSecond: number) {
         (document as any).oneOfEverything = oneOfEverything;
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);
+
+    checkVisible();
 
     return {
         ...stateRef.current,
