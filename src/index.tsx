@@ -324,11 +324,18 @@ function App() {
                 onSelect={setCurrentTab}
             >
                 {
-                    GAME.sections.map(s => s.Name).map(sectionName => (
-                        <Tab eventKey={sectionName} title={sectionName}>
-                            {sections[sectionName]}
-                        </Tab>
-                    ))
+                    GAME.sections.map(section => {
+
+                        let title: React.ReactNode = section.Name;
+                        if (section.SubSections.some(ss => ss.Items.some(j => acknowledged[j] === false)))
+                            title = <span>{title} <Badge className={'new-item-badge'}>New</Badge></span>
+
+                        return (
+                            <Tab eventKey={section.Name} title={title}>
+                                {sections[section.Name]}
+                            </Tab>
+                        );
+                    })
                 }
             </Tabs>
         </Container>

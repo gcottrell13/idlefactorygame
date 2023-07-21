@@ -301,6 +301,7 @@ export function useProduction(ticksPerSecond: number) {
     const markVisibility = useCallback(
         (item: Items, b: boolean) => {
             stateRef.current.visible[item] = b;
+            stateRef.current.acknowledged[item] ??= false;
             setState();
         },
         []
@@ -339,6 +340,10 @@ export function useProduction(ticksPerSecond: number) {
                 }
             });
         }
+
+        itemsDiscovered.forEach(item => {
+            stateRef.current.acknowledged[item] = false;
+        })
 
         if (itemsDiscovered.length > 0 && itemsDiscovered.includes('begin') === false) {
             // alert(`New Items Discovered!:\n${itemsDiscovered.map(GAME.displayNames).join(',\n')}`);
