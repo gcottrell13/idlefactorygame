@@ -22,8 +22,18 @@ button.make-by-hand {
     margin-left: 5px;
 }
 
+.badge.new-item-badge {
+    background-color: orangered !important;
+}
+
 .game-container .item-row:nth-of-type(even) {
     background-color: rgb(236, 236, 236);
+}
+
+.subsection-header {
+    line-height: 40px;
+    border-bottom: 1px lightgray solid;
+    border-top: 3px black solid;
 }
 
 button.btn {
@@ -51,6 +61,11 @@ button.btn {
 .popover-ingredient-count {
     padding-right: 5px;
     font-weight: bold;
+}
+
+.popover-ingredient-has {
+    color: gray;
+    margin-left: 5px;
 }
 @charset "UTF-8";/*!
  * Bootstrap  v5.3.0 (https://getbootstrap.com/)

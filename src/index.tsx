@@ -103,8 +103,16 @@ function ItemDisplay({
 
     const assemblerSpeed = GAME.assemblerSpeeds(itemName);
     const unlocks = GAME.unlocks(itemName).map(GAME.displayNames);
+    const madeIn = GAME.requiredBuildings(itemName).map(GAME.displayNames);
 
     const parts = [
+        (
+            madeIn.length > 0 && (
+                <div className={'made-in'}>
+                    Made in: <br />{madeIn.join(', ')}
+                </div>
+            )
+        ),
         (
             formatIngredients.length > 0 && (
                 <div className={'ingredient-list'}>
@@ -153,7 +161,7 @@ function ItemDisplay({
     const displayParts: JSX.Element[] = [];
     parts.forEach(part => {
         if (part) {
-            displayParts.push(<hr />);
+            if (displayParts.length > 0) displayParts.push(<hr />);
             displayParts.push(part);
         }
     })
@@ -164,9 +172,6 @@ function ItemDisplay({
                 <span className={'popover-name'}>{GAME.displayNames(itemName)}</span>
             </Popover.Header>
             <Popover.Body>
-                <div className={'made-in'}>
-                    Made in: <br />{GAME.requiredBuildings(itemName).map(GAME.displayNames).join(', ')}
-                </div>
                 {displayParts}
             </Popover.Body>
         </Popover>
@@ -236,14 +241,14 @@ function App() {
             const amt = amountThatWeHave[itemName] ?? 0;
             const recipe = GAME.recipes(itemName);
             if (recipe === undefined) return;
-    
+
             const buildingsToMakeThis = GAME.requiredBuildings(itemName);
             const makeByHand = canMakeItemByHand(itemName);
             const assemblerCount = _.mapValues(assemblers, (value, key) => value?.[itemName] ?? 0);
             const assemblersMakingThis = _.pickBy(assemblerCount, x => x !== 0);
             const assemblerButtons: JSX.Element[] = [];
             const boxButtons: JSX.Element[] = [];
-    
+
             GAME.itemsCanBeStoreIn(itemName).forEach(container => {
                 if ((amountThatWeHave[container] ?? 0) > 0) {
                     boxButtons.push(
@@ -260,7 +265,7 @@ function App() {
                     );
                 }
             });
-    
+
             haveAssemblers.forEach(assemblerName => {
                 if (buildingsToMakeThis.includes(assemblerName) === false) return;
                 assemblerButtons.push(
@@ -276,11 +281,11 @@ function App() {
                     </Button>
                 );
             });
-    
+
             const prodStatus = productionProgress[itemName];
-    
+
             const isAcked = acknowledged[itemName] === true;
-    
+
             thisSectionItems.push(
                 <ItemDisplay
                     key={itemName}
@@ -290,10 +295,10 @@ function App() {
                     itemName={itemName}
                     assemblerButtons={assemblerButtons}
                     makeByHand={makeByHand === null ? null :
-                        makeByHand === false ? false 
-                        : (() => {
-                        makeItemByhand(itemName as Items);
-                    })}
+                        makeByHand === false ? false
+                            : (() => {
+                                makeItemByhand(itemName as Items);
+                            })}
                     progress={prodStatus}
                     storage={storage[itemName] ?? {}}
                     isAcked={isAcked}

@@ -355,6 +355,12 @@ export function useProduction(ticksPerSecond: number) {
         setState();
     };
 
+    const oneOfEverything = () => {
+        GAME.allItemNames.forEach(itemName => {
+            stateRef.current.amountThatWeHave[itemName] ??= 1;
+        });
+    };
+
     useEffect(
         () => {
             const i = setTimeout(() => {
@@ -373,6 +379,7 @@ export function useProduction(ticksPerSecond: number) {
             if (existingStorage.version !== VERSION) {
                 setState(defaultState);
             }
+            (document as any).oneOfEverything = oneOfEverything;
             setInterval(() => saveGame(stateRef.current), 10 * 1000);
         },
         []

@@ -5,6 +5,8 @@ const timePerRecipe = {
 
     'begin': 0,
 
+    'prospector': 0,
+
     'land': 10,
     'wet-land': 0,
     'dry-land': 0,
@@ -288,7 +290,7 @@ const displayNames: { [p in Items]?: string } = {
     "crushed-uranium": 'Crushed Uranium',
     "dry-land": 'Dry Land',
     "gas-extractor": 'Gas Extractor',
-    "iron-bar": 'Iron Bar',
+    "iron-bar": 'Iron Slab',
     "iron-frame": 'Frame',
     "iron-ore": 'Iron Ore',
     "oil-pump": 'Oil Pump',
@@ -308,6 +310,7 @@ const displayNames: { [p in Items]?: string } = {
     'research-box': 'Tech: Containerization',
     "research-constructor": 'Tech: More Automation',
     "research-miner-mk1": 'Tech: Auto Mining',
+    'research-advanced-circuitry': 'Tech: Advanced Circuits',
     "rock-crusher": 'Rock Crusher',
     'adamantium': 'Adamantium',
     "stony-land": "Stone Land",
@@ -329,6 +332,29 @@ const displayNames: { [p in Items]?: string } = {
     'research-box4': 'Tech: Box of a Bigger Size 3',
     'research-box5': 'Tech: Box of a Bigger Size 4',
     'tank': 'Fluid Tank',
+    'prospector': 'Prospector',
+    'land': 'Survey Land',
+    'explorer': 'Explorer',
+    'steel': 'Steel Ingot',
+    'pipe': 'Steel Pipe',
+    'evaporate-water': 'Recipe: Evaporate Water',
+    'plastic': 'Plastic Rod',
+    'studonite': 'Studo-nite',
+    'bauxite': 'Bauxite',
+    'aluminum': 'Aluminium',
+    'solvent': 'Acidic Solvent',
+    'computer': 'Processor Unit',
+    'stone': 'Stone',
+    'coal': 'Coal',
+    'gas': 'Natural Gas',
+    'gold-filament': 'Gold Filament',
+
+    'science0': 'Basic Finding',
+    'science1': 'Written Note',
+    'science2': 'Documented Event',
+    'science3': 'Intense Study',
+    'science4': 'Research Paper',
+    'science5': 'A.I. Generated Proof',
 };
 
 export type Items = keyof typeof timePerRecipe;
@@ -346,6 +372,7 @@ export type partialItems<T> = { [p in Items]?: T };
 const recipes: Recipes = {
     '': {},
     'begin': {},
+    'prospector': {},
 
     'land': {},
     'wet-land': {},
@@ -393,7 +420,7 @@ const recipes: Recipes = {
 
     // building materials
     'gear': { 'iron-bar': 0.5 },
-    'pipe': { 'iron-bar': 1, 'iron-frame': 1 },
+    'pipe': { 'steel': 2 },
     'iron-frame': { 'iron-bar': 2 },
 
     // advanced materials
@@ -476,7 +503,7 @@ const recipes: Recipes = {
     'research-box2': { 'science1': 1, 'box': 10 },
     'research-box3': { 'science1': 10, 'box': 100 },
     'research-box4': { 'science1': 100, 'box': 1000 },
-    'research-box5': { 'science1': 1000, 'box': 10000 },
+    'research-box5': { 'science1': 1000, 'bauxite': 1000 },
 };
 
 const recipeScaleFactor: partialItems<number> = {
@@ -535,6 +562,9 @@ const unlockedWith: partialItems<Items[]> = {
     'research-box4': ['research-box3'],
     'research-box5': ['research-box4'],
 
+    'centrifuge': ['research-uranium'],
+    'rock-crusher': ['research-uranium'],
+
     'land': ['begin'],
 };
 
@@ -558,7 +588,8 @@ const assemblerSpeeds = {
     'water-filter': 1,
     'greenhouse': 0.5,
     'hydroponics': 1.5,
-    'explorer': 1,
+    'explorer': 2,
+    'prospector': 1,
     'excavator': 1,
     'adamantium-drill': 1,
     'rock-crusher': 1,
@@ -568,6 +599,7 @@ const assemblerSpeeds = {
 
 const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-hand')[] } = {
     'begin': ['by-hand'],
+    'prospector': [],
     "adamantium-drill": ['manufacturer'],
     "advanced-circuit": ['assembler'],
     "crushed-uranium": ['rock-crusher'],
@@ -625,7 +657,7 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     'u234': [],
     'slag': [],
 
-    'land': ['explorer'],
+    'land': ['explorer', 'prospector'],
     'wet-land': [],
     'dry-land': [],
     'rocky-land': [],
@@ -708,7 +740,7 @@ const sideProducts: partialItems<partialItems<number>[]> = {
     ],
     'begin': [
         { 'begin': 1, },
-        { 'explorer': 1 },
+        { 'prospector': 1 },
     ],
     'water': [
         { 'water': 1 },
@@ -855,7 +887,7 @@ const sections: {
                 },
                 {
                     Name: 'Land',
-                    Items: ['explorer', 'land', 'dry-land', 'wet-land', 'rocky-land', 'stony-land'],
+                    Items: ['prospector', 'land', 'dry-land', 'wet-land', 'rocky-land', 'stony-land'],
                 }
             ],
         },
@@ -896,7 +928,7 @@ const sections: {
                 },
                 {
                     Name: 'Processed Materials',
-                    Items: ['clean-water', 'plastic', 'evaporate-water'],
+                    Items: ['clean-water', 'plastic', 'evaporate-water', 'pipe'],
                 },
                 {
                     Name: 'Botanicals',
