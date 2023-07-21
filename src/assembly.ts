@@ -307,6 +307,7 @@ export function useProduction(ticksPerSecond: number) {
 
     const resetAll = useCallback(() => {
         setState(defaultState);
+        saveGame(defaultState);
     }, []);
 
     const markVisibility = useCallback((item: Items, b: boolean) => {
