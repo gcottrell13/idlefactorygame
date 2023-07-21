@@ -14,7 +14,7 @@ export function getByItem<T>(dict: { [p in Items]?: T }, item: Items, _default: 
 }
 
 interface State {
-    version: string;
+    version: typeof VERSION;
 
     /**
      * [the building][what its making]
@@ -376,7 +376,7 @@ export function useProduction(ticksPerSecond: number) {
 
     useEffect(
         () => {
-            if (existingStorage.version !== VERSION) {
+            if (existingStorage.version[0] !== VERSION[0]) {
                 setState(defaultState);
             }
             (document as any).oneOfEverything = oneOfEverything;

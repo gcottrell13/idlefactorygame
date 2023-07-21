@@ -323,7 +323,7 @@ function App() {
 
     return (
         <Container fluid className={'game-container'}>
-            <Button onClick={resetAll} variant={'secondary'}>Reset</Button> <span>{VERSION}</span>
+            <Button onClick={resetAll} variant={'secondary'}>Reset</Button> <span>v{VERSION.join('.')}</span>
             <Tabs
                 activeKey={currentTab}
                 onSelect={setCurrentTab}
@@ -351,4 +351,4 @@ function App() {
 const root = createRoot(document.getElementById("view")!);
 root.render(<App />);
 
-document.title = "idlefactorygame " + VERSION;
+document.title = "idlefactorygame v" + VERSION.join('.');

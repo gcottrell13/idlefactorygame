@@ -1,3 +1,3 @@
 
 
-export const VERSION = "v1.4.1";
+export const VERSION = [1, 4, 1] as const;
