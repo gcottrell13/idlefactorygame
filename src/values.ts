@@ -328,6 +328,7 @@ const displayNames: { [p in Items]?: string } = {
     'research-box3': 'Tech: Box of a Bigger Size 2',
     'research-box4': 'Tech: Box of a Bigger Size 3',
     'research-box5': 'Tech: Box of a Bigger Size 4',
+    'tank': 'Fluid Tank',
 };
 
 export type Items = keyof typeof timePerRecipe;
@@ -714,8 +715,7 @@ const sideProducts: partialItems<partialItems<number>[]> = {
         { 'silt': 0.001, 'sand': 0.1 }
     ],
     'clean-water': [{ 'clean-water': 1 }, { 'silt': 0.1, 'sand': 0.2 }],
-    'wood': [{ 'wood': 1 }, { 'seed': 0.25, 'dust': 0.001 }],
-    'studonite': [{ 'studonite': 1 }, { 'dirt': 1, 'dust': 0.1 }],
+    'wood': [{ 'wood': 1 }, { 'seed': 0.25 }],
     'excavate-dirt': [{ 'dirt': 1 }],
     'u235': [
         { 'u235': 0.1, 'u234': 0.9 },
@@ -839,6 +839,190 @@ const itemsCanBeStoreIn: { [p in Items]?: (keyof typeof storageSizes)[] | undefi
     'tank': ['box3'],
 };
 
+const sections: {
+    Name: string,
+    SubSections: {
+        Name: string;
+        Items: Items[];
+    }[];
+}[] = [
+        {
+            Name: 'Beginning',
+            SubSections: [
+                {
+                    Name: 'Start',
+                    Items: ['begin'],
+                },
+                {
+                    Name: 'Land',
+                    Items: ['explorer', 'land', 'dry-land', 'wet-land', 'rocky-land', 'stony-land'],
+                }
+            ],
+        },
+        {
+            Name: 'Tier 1 - Iron, Copper, Steel',
+            SubSections: [
+                {
+                    Name: 'Raw Materials',
+                    Items: ['iron-ore', 'copper-ore', 'coal', 'stone'],
+                },
+                {
+                    Name: 'Materials',
+                    Items: ['iron-bar', 'copper-bar', 'iron-frame', 'gear', 'copper-wire', 'steel'],
+                },
+                {
+                    Name: 'Buildings',
+                    Items: ['smelter-mk1', 'miner-mk1', 'smelter-mk2', 'constructer'],
+                },
+                {
+                    Name: 'Research',
+                    Items: [
+                        'science0', "science1",
+                        'research-wire',
+                        'research-miner-mk1',
+                        'research-frames',
+                        'research-science-1',
+                        'research-constructor',
+                    ],
+                }
+            ]
+        },
+        {
+            Name: 'Tier 2 - Circuits',
+            SubSections: [
+                {
+                    Name: 'Raw Materials',
+                    Items: ['water', 'silt', 'nitrogen', 'oil', 'silt', 'dirt'],
+                },
+                {
+                    Name: 'Processed Materials',
+                    Items: ['clean-water', 'plastic', 'evaporate-water'],
+                },
+                {
+                    Name: 'Botanicals',
+                    Items: ['fertilizer', 'seed', 'tree', 'wood'],
+                },
+                {
+                    Name: 'Buildings',
+                    Items: [
+                        'assembler', 'water-evaporator', 
+                        'water-filter', 'water-pump-mk1', 
+                        'water-pump-mk2', 
+                        'greenhouse', 'hydroponics',
+                        'oil-pump'],
+                },
+                {
+                    Name: 'Research',
+                    Items: [
+                        'science2',
+                        'research-assembler',
+                        'research-nitrogen',
+                        'research-fluids',
+                        'research-arbol',
+                        'research-oil',
+                        'research-science-3',
+                    ]
+                }
+            ]
+        },
+        {
+            Name: 'Tier 3 - Advanced Circuitry',
+            SubSections: [
+                {
+                    Name: 'Materials',
+                    Items: ['gas', 'sulfur', 'sulfuric-acid', 'gold', 'gold-filament', 'excavate-dirt', 'advanced-circuit'],
+                },
+                {
+                    Name: 'Buildings',
+                    Items: ['manufacturer', 'chemical-plant', 'excavator', 'explorer'],
+                },
+                {
+                    Name: 'Research',
+                    Items: [
+                        'science3',
+                        'research-advanced-circuitry',
+                        'research-natural-gas',
+                        'research-manufacturer',
+                        'research-helpers',
+                        'research-science-4',
+                    ],
+                }
+            ],
+        },
+        {
+            Name: 'Tier 4 - Computing',
+            SubSections: [
+                {
+                    Name: 'Materials',
+                    Items: ['studonite', 'solvent', 'adamantium', 'bauxite', 'aluminum']
+                },
+                {
+                    Name: 'High-Tech Materials',
+                    Items: ['adamantium-frame', 'computer'],
+                },
+                {
+                    Name: 'Research',
+                    Items: [
+                        'science4',
+                        'research-studonite',
+                        'research-aluminum',
+                        'research-adamantium-drill',
+                        'research-computer',
+                        'research-science-5',
+                    ],
+                },
+                {
+                    Name: 'Buildings',
+                    Items: ['adamantium-drill'],
+                }
+            ]
+        },
+        {
+            Name: 'Tier 5',
+            SubSections: [
+                {
+                    Name: 'Uranium',
+                    Items: ['uranium-ore', 'crushed-uranium', 'u234', 'u235', 'slag'],
+                },
+                {
+                    Name: 'Buildings',
+                    Items: ['rock-crusher', 'centrifuge'],
+                },
+                {
+                    Name: 'Research',
+                    Items: [
+                        'science5',
+                        'research-uranium',
+                    ]
+                }
+            ]
+        },
+        {
+            Name: 'Containers',
+            SubSections: [
+                {
+                    Name: 'Solids',
+                    Items: ['box', 'box-box', 'box3', 'box4', 'box5'],
+                },
+                {
+                    Name: 'Fluids',
+                    Items: ['tank'],
+                },
+                {
+                    Name: 'Research',
+                    Items: [
+                        'research-box',
+                        'research-box2',
+                        'research-box3',
+                        'research-box4',
+                        'research-box5',
+                    ]
+                }
+            ]
+        }
+    ];
+
+
 const allItemNames = keys(recipes).sort();
 allItemNames.shift();
 const unlocks: partialItems<Items[]> = {};
@@ -850,6 +1034,7 @@ keys(unlockedWith).forEach(l => {
 });
 
 const ex = {
+    sections,
     assemblerSpeeds: (item: Items): number => (assemblerSpeeds as SMap<number>)[item] ?? 0,
     byHandVerbs: (item: Items): string => byHandVerbs[item] ?? 'craft',
     displayNames: (item: Items | 'by-hand'): string => item === 'by-hand' ? 'By Hand' : displayNames[item] ?? item,

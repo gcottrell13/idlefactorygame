@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import _ from 'lodash';
 import { calculateStorage, useProduction } from "./assembly";
 import GAME, { Items, partialItems } from './values';
 import './css.css';
-import { Button, Row, Col, OverlayTrigger, ButtonGroup, Badge } from 'react-bootstrap';
+import { Button, Row, Col, OverlayTrigger, ButtonGroup, Badge, Tabs, Tab } from 'react-bootstrap';
 import Popover from 'react-bootstrap/Popover';
 import Container from 'react-bootstrap/Container';
-import { keys, mapValues } from './smap';
+import { SMap, keys, mapValues } from './smap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { VERSION } from './version';
 
@@ -213,90 +213,124 @@ function App() {
         addContainer,
     } = useProduction(TICKS_PER_SECOND);
 
-    const parts: JSX.Element[] = [];
-
     const haveAssemblers = GAME.allAssemblers.filter(key => (amountThatWeHave[key] ?? 0) > 0);
 
-    GAME.allItemNames.forEach(itemName => {
-        if (!visible[itemName]) return;
+    let [currentTab, setCurrentTab] = useState<string | null>(null);
 
-        const amt = amountThatWeHave[itemName] ?? 0;
-        const recipe = GAME.recipes(itemName);
-        if (recipe === undefined) return;
+    if (currentTab === null) {
+        setCurrentTab(_.values(GAME.sections).filter(x => x.SubSections.some(ss => ss.Items.some(item => visible[item])))[0].Name);
+        return null;
+    }
 
-        const buildingsToMakeThis = GAME.requiredBuildings(itemName);
-        const makeByHand = canMakeItemByHand(itemName);
-        const assemblerCount = _.mapValues(assemblers, (value, key) => value?.[itemName] ?? 0);
-        const assemblersMakingThis = _.pickBy(assemblerCount, x => x !== 0);
-        const assemblerButtons: JSX.Element[] = [];
-        const boxButtons: JSX.Element[] = [];
+    const sections: SMap<JSX.Element[]> = {};
+    const sectionData = GAME.sections.find(x => x.Name == currentTab);
 
-        GAME.itemsCanBeStoreIn(itemName).forEach(container => {
-            if ((amountThatWeHave[container] ?? 0) > 0) {
-                boxButtons.push(
+    sectionData?.SubSections.forEach(subSection => {
+        sections[currentTab!] ??= [];
+        const elements = sections[currentTab!];
+        const thisSectionItems: JSX.Element[] = [];
+        subSection.Items.forEach(itemName => {
+
+            if (!visible[itemName]) return;
+
+            const amt = amountThatWeHave[itemName] ?? 0;
+            const recipe = GAME.recipes(itemName);
+            if (recipe === undefined) return;
+    
+            const buildingsToMakeThis = GAME.requiredBuildings(itemName);
+            const makeByHand = canMakeItemByHand(itemName);
+            const assemblerCount = _.mapValues(assemblers, (value, key) => value?.[itemName] ?? 0);
+            const assemblersMakingThis = _.pickBy(assemblerCount, x => x !== 0);
+            const assemblerButtons: JSX.Element[] = [];
+            const boxButtons: JSX.Element[] = [];
+    
+            GAME.itemsCanBeStoreIn(itemName).forEach(container => {
+                if ((amountThatWeHave[container] ?? 0) > 0) {
+                    boxButtons.push(
+                        <Button
+                            className={'add-container'}
+                            key={container}
+                            onClick={() => {
+                                addContainer(itemName, container, 1);
+                            }}
+                            variant="info"
+                        >
+                            Add {GAME.displayNames(container)}
+                        </Button>
+                    );
+                }
+            });
+    
+            haveAssemblers.forEach(assemblerName => {
+                if (buildingsToMakeThis.includes(assemblerName) === false) return;
+                assemblerButtons.push(
                     <Button
-                        className={'add-container'}
-                        key={container}
+                        className={'add-assembler'}
+                        key={assemblerName}
                         onClick={() => {
-                            addContainer(itemName, container, 1);
+                            addAssemblers(assemblerName, itemName, 1);
                         }}
-                        variant="info"
+                        variant="secondary"
                     >
-                        Add {GAME.displayNames(container)}
+                        Add {GAME.displayNames(assemblerName)}
                     </Button>
                 );
-            }
-        });
-
-        haveAssemblers.forEach(assemblerName => {
-            if (buildingsToMakeThis.includes(assemblerName) === false) return;
-            assemblerButtons.push(
-                <Button
-                    className={'add-assembler'}
-                    key={assemblerName}
-                    onClick={() => {
-                        addAssemblers(assemblerName, itemName, 1);
-                    }}
-                    variant="secondary"
-                >
-                    Add {GAME.displayNames(assemblerName)}
-                </Button>
+            });
+    
+            const prodStatus = productionProgress[itemName];
+    
+            const isAcked = acknowledged[itemName] === true;
+    
+            thisSectionItems.push(
+                <ItemDisplay
+                    key={itemName}
+                    amt={amt ?? 0}
+                    assemblerCount={assemblersMakingThis}
+                    boxButtons={boxButtons}
+                    itemName={itemName}
+                    assemblerButtons={assemblerButtons}
+                    makeByHand={makeByHand === null ? null :
+                        makeByHand === false ? false 
+                        : (() => {
+                        makeItemByhand(itemName as Items);
+                    })}
+                    progress={prodStatus}
+                    storage={storage[itemName] ?? {}}
+                    isAcked={isAcked}
+                    onMouseover={!isAcked ? (() => {
+                        acknowledgeItem(itemName);
+                    }) : undefined}
+                    allAmounts={amountThatWeHave}
+                />
             );
         });
 
-        const prodStatus = productionProgress[itemName];
-
-        const isAcked = acknowledged[itemName] === true;
-
-        parts.push(
-            <ItemDisplay
-                key={itemName}
-                amt={amt ?? 0}
-                assemblerCount={assemblersMakingThis}
-                boxButtons={boxButtons}
-                itemName={itemName}
-                assemblerButtons={assemblerButtons}
-                makeByHand={makeByHand === null ? null :
-                    makeByHand === false ? false 
-                    : (() => {
-                    makeItemByhand(itemName as Items);
-                })}
-                progress={prodStatus}
-                storage={storage[itemName] ?? {}}
-                isAcked={isAcked}
-                onMouseover={!isAcked ? (() => {
-                    acknowledgeItem(itemName);
-                }) : undefined}
-                allAmounts={amountThatWeHave}
-            />
-        );
+        if (thisSectionItems.length > 0) {
+            elements.push(
+                <Row className='subsection-header'>
+                    <Col xs={12}>{subSection.Name}</Col>
+                </Row>
+            );
+            elements.push(...thisSectionItems);
+        }
     });
 
 
     return (
         <Container fluid className={'game-container'}>
             <Button onClick={resetAll} variant={'secondary'}>Reset</Button> <span>{VERSION}</span>
-            {parts}
+            <Tabs
+                activeKey={currentTab}
+                onSelect={setCurrentTab}
+            >
+                {
+                    GAME.sections.map(s => s.Name).map(sectionName => (
+                        <Tab eventKey={sectionName} title={sectionName}>
+                            {sections[sectionName]}
+                        </Tab>
+                    ))
+                }
+            </Tabs>
         </Container>
     );
 }
