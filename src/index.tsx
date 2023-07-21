@@ -405,6 +405,14 @@ function App() {
             >
                 {GAME.sections.map((section) => {
                     let title: React.ReactNode = section.Name;
+
+                    if (
+                        section.SubSections.every((ss) =>
+                            ss.Items.every((j) => !visible[j]),
+                        )
+                    )
+                        return null;
+
                     if (
                         section.SubSections.some((ss) =>
                             ss.Items.some((j) => acknowledged[j] === false),
