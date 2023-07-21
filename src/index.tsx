@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import _ from "lodash";
-import { calculateStorage, useProduction, State } from "./assembly";
+import {
+    calculateStorage,
+    useProduction,
+    State,
+    AMOUNT_HISTORY_LENGTH_SECONDS,
+} from "./assembly";
 import GAME, { Items, partialItems } from "./values";
 import "./css.css";
 import {
@@ -16,7 +21,6 @@ import {
 } from "react-bootstrap";
 import Popover from "react-bootstrap/Popover";
 import Container from "react-bootstrap/Container";
-import {} from "react-bootstrap";
 import { SMap, keys, mapValues } from "./smap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { VERSION } from "./version";
@@ -78,9 +82,9 @@ function ItemDisplay({
         let label = (
             <span>
                 <span className={"assembler-count-name"}>
-                    {GAME.displayNames(name)} ({d(speedPer)}/s):
+                    {no} {GAME.displayNames(name)} ({d(speedPer)}/s):
                 </span>{" "}
-                {no} ({d(speedPer * no)}/s)
+                ({d(speedPer * no)}/s)
             </span>
         );
         const prog = progress[name] ?? null;
@@ -182,13 +186,39 @@ function ItemDisplay({
     const madeIn = GAME.requiredBuildings(itemName).map(GAME.displayNames);
 
     const amountHistory = state.itemAmountHistory[itemName] ?? [];
-    let historyDisplay: JSX.Element | null = null;
-    if (amountHistory.length >= 2 && assemblers.length > 0) {
-        const diff = amountHistory[amountHistory.length - 1] - amountHistory[0];
-        const g = (
-            <FontAwesomeIcon icon={diff >= 0 ? faChevronUp : faChevronDown} />
+    const historyVisible =
+        amountHistory.length >= 2 && assemblers.length > 0 ? "visible" : "";
+    const lastHistory = amountHistory[amountHistory.length - 1];
+    const diff = historyVisible
+        ? lastHistory - _.sum(amountHistory) / amountHistory.length
+        : 0;
+    const g = (
+        <FontAwesomeIcon
+            icon={diff >= 0 ? faChevronUp : faChevronDown}
+            className={diff >= 0 ? "" : "text-danger"}
+        />
+    );
+    let historyDisplay = (
+        <span className={`history-display ${historyVisible}`}>{g}</span>
+    );
+
+    if (historyVisible) {
+        const overlay = (
+            <Popover>
+                <Popover.Body>
+                    <pre>
+                        avg: {d(_.sum(amountHistory) / amountHistory.length)}
+                        <br />
+                        over {AMOUNT_HISTORY_LENGTH_SECONDS} seconds
+                    </pre>
+                </Popover.Body>
+            </Popover>
         );
-        historyDisplay = <span className={"history-display"}>{g}</span>;
+        historyDisplay = (
+            <OverlayTrigger placement="left" overlay={overlay}>
+                {historyDisplay}
+            </OverlayTrigger>
+        );
     }
 
     const parts = [
@@ -263,19 +293,19 @@ function ItemDisplay({
             </Col>
             <Col xs={2}>
                 <OverlayTrigger placement="right" overlay={tooltip}>
-                    <div>
+                    <span>
                         <span className="item-name">
                             {GAME.displayNames(itemName)}
                         </span>
                         {recipeDisabled ? (
                             <Badge bg={"danger"}>DISABLED</Badge>
                         ) : null}
-                    </div>
+                    </span>
                 </OverlayTrigger>
             </Col>
             <Col xs={2}>
                 <span className="item-count">
-                    {d(amt)} {historyDisplay}
+                    {historyDisplay} {d(amt)}
                 </span>
                 <span className="item-max">
                     {maxValue === Number.MAX_SAFE_INTEGER

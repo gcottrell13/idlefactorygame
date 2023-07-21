@@ -5,7 +5,7 @@ import { SMap, forEach, keys, values } from "./smap";
 import { VERSION } from "./version";
 import { Queue } from "./queue";
 
-const AMOUNT_HISTORY_LENGTH_SECONDS = 60;
+export const AMOUNT_HISTORY_LENGTH_SECONDS = 60;
 const AMOUNT_HISTORY_INTERVAL_SECONDS = 1;
 
 const PRECISION = 1e5;

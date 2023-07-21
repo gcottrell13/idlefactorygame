@@ -26,6 +26,13 @@ button.make-by-hand {
     white-space: nowrap;
 }
 
+.history-display.visible {
+    visibility: visible;
+}
+.history-display {
+    visibility: hidden;
+}
+
 .disabled {
     margin-left: 2px;
     color: red;
