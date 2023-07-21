@@ -136,6 +136,9 @@ const timePerRecipe = {
     "gas-extractor": 30,
     'greenhouse': 10,
     'water-filter': 10,
+    'water-evaporator': 10,
+
+    'evaporate-water': 1,
 
     // containers
     'tank': 10,
@@ -389,7 +392,7 @@ const recipes: Recipes = {
 
     // building materials
     'gear': { 'iron-bar': 0.5 },
-    'pipe': { 'iron-bar': 5 },
+    'pipe': { 'iron-bar': 1, 'iron-frame': 1 },
     'iron-frame': { 'iron-bar': 2 },
 
     // advanced materials
@@ -417,6 +420,8 @@ const recipes: Recipes = {
     'greenhouse': { 'steel': 10, 'glass': 20 },
     'hydroponics': { 'steel': 50, 'basic-circuit': 20, 'iron-frame': 2 },
     'water-filter': { 'steel': 5, 'pipe': 5 },
+    'water-evaporator': { 'steel': 5, 'pipe': 5 },
+    'evaporate-water': { 'water': 50, 'clean-water': 50 },
 
     'explorer': { 'steel': 10, 'basic-circuit': 8 },
     'excavator': { 'steel': 20, 'basic-circuit': 8 },
@@ -557,6 +562,7 @@ const assemblerSpeeds = {
     'adamantium-drill': 1,
     'rock-crusher': 1,
     'centrifuge': 1,
+    'water-evaporator': 1,
 } satisfies { [p in Items]?: number };
 
 const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-hand')[] } = {
@@ -599,6 +605,8 @@ const requiredBuildings: { [p in Items]: (keyof typeof assemblerSpeeds | 'by-han
     'research-box4': ['by-hand'],
     'research-box5': ['by-hand'],
 
+    'water-evaporator': ['by-hand', 'assembler'],
+    'evaporate-water': ['water-evaporator'],
     "gold-filament": ['assembler'],
     aluminum: ['smelter-mk2'],
     computer: ['manufacturer'],
@@ -712,7 +720,10 @@ const sideProducts: partialItems<partialItems<number>[]> = {
     'u235': [
         { 'u235': 0.1, 'u234': 0.9 },
         { 'slag': 1 },
-    ]
+    ],
+    'evaporate-water': [
+        { 'wet-land': 1 },
+    ],
 };
 
 const byHandVerbs: { [p in Items]?: string } = {

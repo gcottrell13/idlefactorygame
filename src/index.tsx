@@ -31,6 +31,7 @@ function ItemDisplay({
     storage,
     onMouseover,
     isAcked,
+    allAmounts,
 }: {
     amt: number,
     itemName: Items,
@@ -42,6 +43,7 @@ function ItemDisplay({
     storage: partialItems<number>,
     onMouseover: func | undefined,
     isAcked: boolean,
+    allAmounts: partialItems<number>,
 }) {
 
     const byHandCb = makeByHand === false || makeByHand === null ? undefined : makeByHand;
@@ -83,7 +85,9 @@ function ItemDisplay({
     const formatIngredients = keys(recipe).map(name => [name, recipe[name]!] as const).filter(([_name, count]) => count > 0).map(
         ([name, count]) => (
             <tr key={name}>
-                <td className={'popover-ingredient-count'}>{count}</td><td>{GAME.displayNames(name)}</td>
+                <td className={'popover-ingredient-count'}>{count}</td>
+                <td>{GAME.displayNames(name)}</td>
+                <td><span className={'popover-ingredient-has'}>({d(allAmounts[name] ?? 0)})</span></td>
             </tr>
         )
     );
@@ -283,6 +287,7 @@ function App() {
                 onMouseover={!isAcked ? (() => {
                     acknowledgeItem(itemName);
                 }) : undefined}
+                allAmounts={amountThatWeHave}
             />
         );
     });
