@@ -1,7 +1,7 @@
 on:
     push:
-#         paths:
-#             - src/version.ts
+        paths:
+            - src/version.ts
 
 permissions:
     id-token: write
