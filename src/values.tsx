@@ -967,7 +967,13 @@ const sections: {
             },
             {
                 Name: "Processed Materials",
-                Items: ["clean-water", "plastic", "evaporate-water", "pipe"],
+                Items: [
+                    "glass",
+                    "clean-water",
+                    "plastic",
+                    "evaporate-water",
+                    "pipe",
+                ],
             },
             {
                 Name: "Botanicals",
