@@ -1,4 +1,5 @@
-import { SMap, keys, mapValues } from "./smap";
+import _ from "lodash";
+import { SMap, keys, mapValues, values } from "./smap";
 
 const timePerRecipe = {
     "": 0,
@@ -764,8 +765,8 @@ const sideProducts: partialItems<partialItems<number>[]> = {
         { "dry-land": 1 },
     ],
     begin: [{ begin: 1 }, { prospector: 1 }],
-    water: [{ water: 1 }, { silt: 0.001, sand: 0.1 }],
-    "clean-water": [{ "clean-water": 1 }, { silt: 0.1, sand: 0.2 }],
+    water: [{ water: 1 }, { silt: 0.01, sand: 0.1 }],
+    "clean-water": [{ "clean-water": 1 }, { silt: 1 }],
     wood: [{ wood: 1 }, { seed: 0.25 }],
     "excavate-dirt": [{ dirt: 1 }],
     u235: [{ u235: 0.1, u234: 0.9 }, { slag: 1 }],
@@ -1132,6 +1133,8 @@ const maxCraftAtATime: partialItems<number> = {
     begin: 1,
 };
 
+const byproductRatesPerSecond: partialItems<partialItems<number>> = {};
+
 const allItemNames = keys(recipes).sort();
 allItemNames.shift();
 const unlocks: partialItems<Items[]> = {};
@@ -1171,12 +1174,29 @@ const ex = {
         maxCraftAtATime[item] ?? ABSOLUTE_MAX_CRAFT,
 
     flavorText,
+    byproductRatesPerSecond: (item: Items) =>
+        byproductRatesPerSecond[item] ?? {},
 };
 
 keys(recipes).forEach((item) => {
     if (item.startsWith("research-")) {
         byHandVerbs[item] = "research";
         maxCraftAtATime[item] = 1;
+    }
+
+    // calculate side product rates per second (assuming constructor rate 1x)
+    if (sideProducts[item]) {
+        const rate = timePerRecipe[item];
+        sideProducts[item]?.forEach((pool) => {
+            const sum = _.sum(values(pool));
+            keys(pool).forEach((byproduct) => {
+                byproductRatesPerSecond[byproduct] ??= {};
+                byproductRatesPerSecond[byproduct]![item] ??= 0;
+                const chance = pool[byproduct] ?? 0;
+                byproductRatesPerSecond[byproduct]![item]! +=
+                    chance / sum / rate;
+            });
+        });
     }
 });
 

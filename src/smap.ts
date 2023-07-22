@@ -26,3 +26,10 @@ export function forEach<T extends string, K>(
 ): void {
     _.forEach(dict, fn as any);
 }
+
+export function mapPairs<T extends string, K, ReturnType>(
+    dict: { [p in T]?: K } | undefined,
+    fn: (value: K, key: T) => ReturnType,
+): ReturnType[] {
+    return values(mapValues(dict, fn));
+}

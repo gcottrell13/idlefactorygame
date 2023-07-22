@@ -25,7 +25,7 @@ export interface State {
     version: typeof VERSION;
 
     /**
-     * [the building][what its making]
+     * [what its making][the building]
      */
     assemblers: partialItems<partialItems<number>>;
     displayAmount: partialItems<number>;
@@ -209,8 +209,8 @@ export function useProduction(ticksPerSecond: number) {
 
         keys(assemblers)
             .sort()
-            .forEach((level) => {
-                forEach(assemblers[level], (assemblerCount, itemName) => {
+            .forEach((itemName) => {
+                forEach(assemblers[itemName], (assemblerCount, level) => {
                     if (stateRef.current.disabledRecipes[itemName] === true) {
                         return;
                     }
@@ -303,13 +303,13 @@ export function useProduction(ticksPerSecond: number) {
 
     const addAssemblers = useCallback(
         (level: Items, itemName: Items, amount: number) => {
-            const k = stateRef.current.assemblers[level] ?? {};
-            const appliedAssemblers = k[itemName] ?? 0;
+            const k = stateRef.current.assemblers[itemName] ?? {};
+            const appliedAssemblers = k[level] ?? 0;
             const haveAssemblers =
                 stateRef.current.amountThatWeHave[level] ?? 0;
             amount = Math.min(amount, haveAssemblers);
-            k[itemName] = appliedAssemblers + amount;
-            stateRef.current.assemblers[level] = k;
+            k[level] = appliedAssemblers + amount;
+            stateRef.current.assemblers[itemName] = k;
             stateRef.current.amountThatWeHave[level] = haveAssemblers - amount;
             setState();
         },

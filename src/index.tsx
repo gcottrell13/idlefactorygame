@@ -24,7 +24,7 @@ import {
 } from "react-bootstrap";
 import Popover from "react-bootstrap/Popover";
 import Container from "react-bootstrap/Container";
-import { SMap, keys, mapValues } from "./smap";
+import { SMap, keys, mapValues, values, mapPairs } from "./smap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { VERSION } from "./version";
 
@@ -148,6 +148,27 @@ function ItemDisplay({
             <span className="assembler-display">{assemblers}</span>
         ) : null;
 
+    const byproducts = _.uniq(
+        GAME.sideProducts(itemName).flatMap((x) => keys(x)),
+    ).filter((x) => x != itemName);
+    const speedFromByproducts = _.sum(
+        mapPairs(GAME.byproductRatesPerSecond(itemName), (rate, producer) => {
+            return _.sum(
+                mapPairs(
+                    state.assemblers[producer],
+                    (assemblerNumber, assemblerName) => {
+                        return (
+                            GAME.assemblerSpeeds(assemblerName) *
+                            assemblerNumber *
+                            rate
+                        );
+                    },
+                ),
+            );
+        }),
+    );
+    const byproductString = byproducts.map(GAME.displayNames).join(", ");
+
     const speed = d(
         _.sum(
             keys(assemblersMakingThis).map(
@@ -156,7 +177,7 @@ function ItemDisplay({
                         (assemblersMakingThis[key] ?? 0)) /
                     baseCraftTime,
             ),
-        ),
+        ) + speedFromByproducts,
     );
 
     const recipe = GAME.recipes(itemName);
@@ -183,13 +204,6 @@ function ItemDisplay({
     );
 
     const storageValueIfContainer = GAME.storageSizes(itemName);
-
-    const byproducts = _.uniq(
-        GAME.sideProducts(itemName).flatMap((x) => keys(x)),
-    )
-        .filter((x) => x != itemName)
-        .map(GAME.displayNames)
-        .join(", ");
 
     const maxValue = calculateStorage(itemName, state.storage[itemName]);
 
@@ -269,7 +283,9 @@ function ItemDisplay({
             </div>
         ),
         byproducts.length > 0 && (
-            <div className={"byproduct-list"}>Byproducts: {byproducts}</div>
+            <div className={"byproduct-list"}>
+                Byproducts: {byproductString}
+            </div>
         ),
         byproductOf.length > 0 && (
             <div className={"byproduct-of-list"}>
@@ -408,10 +424,7 @@ function App() {
 
             const buildingsToMakeThis = GAME.requiredBuildings(itemName);
             const makeByHand = canMakeItemByHand(itemName);
-            const assemblerCount = _.mapValues(
-                assemblers,
-                (value, key) => value?.[itemName] ?? 0,
-            );
+            const assemblerCount = assemblers[itemName];
             const assemblersMakingThis = _.pickBy(
                 assemblerCount,
                 (x) => x !== 0,
