@@ -1,18 +1,39 @@
 import _ from "lodash";
 import { SMap, keys, mapValues, values } from "./smap";
 
+// do not add zero
+type allowedRecipeTimes =
+    | 0.5
+    | 1
+    | 2
+    | 3
+    | 4
+    | 5
+    | 6
+    | 8
+    | 10
+    | 12
+    | 15
+    | 20
+    | 25
+    | 30
+    | 45
+    | 50
+    | 60
+    | 75;
+
 const timePerRecipe = {
-    "": 0,
+    "": 1,
 
-    begin: 0,
+    begin: 1,
 
-    prospector: 0,
+    prospector: 1,
 
     land: 10,
-    "wet-land": 0,
-    "dry-land": 0,
-    "rocky-land": 0,
-    "stony-land": 0,
+    "wet-land": 1,
+    "dry-land": 1,
+    "rocky-land": 1,
+    "stony-land": 1,
 
     //region : science 0 -----------------------------------------------------------------
     //                           ___
@@ -38,9 +59,9 @@ const timePerRecipe = {
     pipe: 0.5,
 
     // research
-    "research-science-1": 0,
-    "research-frames": 0,
-    "research-box": 0,
+    "research-science-1": 1,
+    "research-frames": 1,
+    "research-box": 1,
 
     // science
     science0: 1,
@@ -67,16 +88,16 @@ const timePerRecipe = {
     "copper-wire": 0.5,
 
     // research
-    "research-constructor": 0,
-    "research-miner-mk1": 0,
-    "research-wire": 0,
-    "research-box2": 0,
-    "research-box3": 0,
-    "research-box4": 0,
-    "research-box5": 0,
-    "research-mass-click": 0,
-    "research-steel": 0, // with science1
-    "research-science-2": 0,
+    "research-constructor": 1,
+    "research-miner-mk1": 1,
+    "research-wire": 1,
+    "research-box2": 1,
+    "research-box3": 1,
+    "research-box4": 1,
+    "research-box5": 1,
+    "research-mass-click": 1,
+    "research-steel": 1,
+    "research-science-2": 1,
 
     // science
     science1: 1,
@@ -105,7 +126,7 @@ const timePerRecipe = {
     "water-pump-mk1": 15,
     "miner-mk1": 10,
     water: 1,
-    silt: 0,
+    silt: 1,
     nitrogen: 1,
     gold: 10,
     oil: 1,
@@ -116,7 +137,7 @@ const timePerRecipe = {
 
     fertilizer: 1,
     dirt: 4,
-    seed: 0,
+    seed: 1,
     tree: 10,
     wood: 2,
 
@@ -126,12 +147,12 @@ const timePerRecipe = {
     science2: 2,
 
     // research
-    "research-assembler": 0, // science2
-    "research-nitrogen": 0, // science2
-    "research-fluids": 0, // science2
-    "research-arbol": 0, // science2
-    "research-oil": 0, // science 2
-    "research-science-3": 0,
+    "research-assembler": 1,
+    "research-nitrogen": 1,
+    "research-fluids": 1,
+    "research-arbol": 1,
+    "research-oil": 1,
+    "research-science-3": 1,
 
     // buildings
     "oil-pump": 15,
@@ -181,11 +202,11 @@ const timePerRecipe = {
     "excavate-dirt": 3,
 
     // research
-    "research-advanced-circuitry": 0, // science3
-    "research-natural-gas": 0, // science3
-    "research-manufacturer": 0, // science3
-    "research-helpers": 0, // science3
-    "research-science-4": 0,
+    "research-advanced-circuitry": 1,
+    "research-natural-gas": 1,
+    "research-manufacturer": 1,
+    "research-helpers": 1,
+    "research-science-4": 1,
 
     // endregion : science 3 -----------------------------------------------------------------
 
@@ -200,7 +221,7 @@ const timePerRecipe = {
     // raw
     bauxite: 1,
     studonite: 3,
-    dust: 0,
+    dust: 1,
 
     // processed
     solvent: 4,
@@ -214,11 +235,11 @@ const timePerRecipe = {
     // containers
 
     // research
-    "research-studonite": 0, // science 4
-    "research-aluminum": 0, // science 4
-    "research-adamantium-drill": 0, // science 4
-    "research-computer": 0, // science 4
-    "research-science-5": 0,
+    "research-studonite": 1,
+    "research-aluminum": 1,
+    "research-adamantium-drill": 1,
+    "research-computer": 1,
+    "research-science-5": 1,
 
     // science
     science4: 4,
@@ -245,7 +266,7 @@ const timePerRecipe = {
     "crushed-uranium": 2,
     u235: 10,
     u234: 10,
-    slag: 0,
+    slag: 1,
 
     // materials
 
@@ -253,13 +274,13 @@ const timePerRecipe = {
     science5: 5,
 
     // research
-    "research-uranium": 0, // science 5
+    "research-uranium": 1, // science 5
 
     // buildings
     hydroponics: 20,
     "rock-crusher": 10,
     centrifuge: 10,
-} satisfies SMap<number>;
+} satisfies SMap<allowedRecipeTimes>;
 
 const displayNames: { [p in Items]?: string } = {
     assembler: "Assembler",
