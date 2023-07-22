@@ -968,6 +968,7 @@ const sections: {
             {
                 Name: "Processed Materials",
                 Items: [
+                    "basic-circuit",
                     "glass",
                     "clean-water",
                     "plastic",
