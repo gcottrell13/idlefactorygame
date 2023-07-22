@@ -193,7 +193,8 @@ function ItemDisplay({
     const unlocks = GAME.unlocks(itemName).map(GAME.displayNames);
     const madeIn = GAME.requiredBuildings(itemName).map(GAME.displayNames);
 
-    const historyVisible = assemblers.length > 0 || producingRate > 0 ? "visible" : "";
+    const historyVisible =
+        assemblers.length > 0 || producingRate > 0 ? "visible" : "";
     const netRate = producingRate - othersConsumingRate;
 
     const othersConsumingThis = GAME.recipesConsumingThis(itemName)
@@ -346,11 +347,9 @@ function ItemDisplay({
                         ? ""
                         : `/ ${maxValue}`}
                 </span>
-                {
-                    producingRate > 0 && (
-                        <span className={"speed"}> (+{d(producingRate)}/s)</span>
-                    )
-                }
+                {producingRate > 0 && (
+                    <span className={"speed"}> (+{d(producingRate)}/s)</span>
+                )}
             </Col>
             <Col xs={3}>
                 {disableButton}
