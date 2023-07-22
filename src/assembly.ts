@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import GAME, { partialItems, Items } from "./values";
 import _ from "lodash";
-import { SMap, forEach, keys, values } from "./smap";
+import { SMap, forEach, keys, mapPairs, values } from "./smap";
 import { VERSION } from "./version";
 import { Queue } from "./queue";
-
-export const AMOUNT_HISTORY_LENGTH_SECONDS = 60;
-const AMOUNT_HISTORY_INTERVAL_SECONDS = 1;
 
 const PRECISION = 1e5;
 function round(n: number) {
@@ -30,11 +27,6 @@ export interface State {
     assemblers: partialItems<partialItems<number>>;
     displayAmount: partialItems<number>;
     amountThatWeHave: partialItems<number>;
-
-    /**
-     * a history of each item's value at regular intervals, up to a limit.
-     */
-    itemAmountHistory: partialItems<number[]>;
 
     /**
      * all buildings making these recipes should not do so
@@ -71,7 +63,6 @@ const defaultState = {
     amountCreated: {},
     acknowledged: {},
     disabledRecipes: {},
-    itemAmountHistory: {},
 } satisfies State;
 
 const ex = localStorage.getItem("state");
@@ -158,13 +149,12 @@ export function useProduction(ticksPerSecond: number) {
     };
 
     const [c, setCounter] = useState<number>(0);
-    const [historyTicks, setHistoryTicks] = useState(0);
 
     function hasStorageCapacity(item: Items, amt: number) {
         const currentAmount = stateRef.current.amountThatWeHave[item] ?? 0;
         return (
             calculateStorage(item, stateRef.current.storage[item]) -
-                currentAmount >=
+            currentAmount >=
             amt
         );
     }
@@ -411,34 +401,11 @@ export function useProduction(ticksPerSecond: number) {
         });
     };
 
-    function addItemHistory() {
-        const { itemAmountHistory, amountThatWeHave } = stateRef.current;
-        keys(amountThatWeHave).forEach((itemName) => {
-            const h = itemAmountHistory[itemName] ?? [];
-            itemAmountHistory[itemName] = h;
-            const amt = amountThatWeHave[itemName] ?? 0;
-            new Queue(
-                h,
-                1 +
-                    AMOUNT_HISTORY_LENGTH_SECONDS /
-                        AMOUNT_HISTORY_INTERVAL_SECONDS,
-            ).push(amt);
-        });
-    }
-
     useEffect(() => {
         const i = setTimeout(() => {
             setState(doProduction(1 / ticksPerSecond));
             setCounter(c + 1);
-            setHistoryTicks(historyTicks + 1);
 
-            if (
-                historyTicks >
-                AMOUNT_HISTORY_INTERVAL_SECONDS * ticksPerSecond
-            ) {
-                addItemHistory();
-                setHistoryTicks(0);
-            }
         }, 1000 / ticksPerSecond);
         return () => {
             clearTimeout(i);
@@ -455,9 +422,83 @@ export function useProduction(ticksPerSecond: number) {
 
     checkVisible();
 
+
+    const effectiveProductionRates: partialItems<partialItems<number>> = {};
+    const effectiveConsumptionRates: partialItems<partialItems<number>> = {};
+    const {
+        assemblers,
+        disabledRecipes,
+        productionProgress,
+    } = stateRef.current;
+
+    function assemblerIsStuckOrDisabled(itemName: Items, assembler: Items) {
+        if (disabledRecipes[itemName]) return 'disabled';
+        if ((productionProgress[itemName] ?? {})[assembler] === -1) return 'full';
+        return false;
+    }
+
+    GAME.allItemNames.forEach(itemName => {
+        const production: partialItems<number> = {};
+        effectiveProductionRates[itemName] = production;
+
+        mapPairs(
+            GAME.byproductRatesPerSecond(itemName),
+            (rate, producer) => {
+                const speeds = mapPairs(
+                    assemblers[producer],
+                    (assemblerNumber, assemblerName) => (
+                        (producer != itemName) 
+                            && assemblerIsStuckOrDisabled(producer, assemblerName)
+                            ? 0
+                            : (
+                                GAME.assemblerSpeeds(assemblerName) *
+                                assemblerNumber *
+                                rate
+                            )
+                    ),
+                );
+                production[producer] = _.sum(speeds);
+            },
+        );
+
+        if (GAME.sideProducts(itemName).length === 0) {
+            const assemblersMakingThis = assemblers[itemName] ?? {};
+            const baseCraftTime = GAME.timePerRecipe(itemName);
+            mapPairs(assemblersMakingThis,
+                (assemblerCount, key) => {
+                    const speed = GAME.assemblerSpeeds(key) * assemblerCount / baseCraftTime;
+                    production[key] = speed;
+                }
+            );
+        }
+    });
+
+    keys(stateRef.current.assemblers).forEach(itemName => {
+        if (disabledRecipes[itemName])
+            return;
+        const recipe = GAME.recipes(itemName);
+        const baseCraftTime = GAME.timePerRecipe(itemName);
+        mapPairs(recipe, (count, ingredient) => {
+            let rate = 0;
+
+            mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
+                if (assemblerIsStuckOrDisabled(itemName, assemblerName)) 
+                    return;
+                rate += GAME.assemblerSpeeds(assemblerName) * assemblerCount / baseCraftTime;
+            });
+
+            (effectiveConsumptionRates[ingredient] ??= {})[itemName] = count * rate;
+        });
+    });
+
     return {
         ...stateRef.current,
-        state: stateRef.current,
+        state: {
+            ...stateRef.current,
+            effectiveConsumptionRates,
+            effectiveProductionRates,
+            assemblerIsStuckOrDisabled,
+        },
         addAmount,
         addAssemblers,
         resetAll,

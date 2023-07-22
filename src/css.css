@@ -1,6 +1,6 @@
 .item-name {
     margin-right: 10px;
-    text-decoration: underline;
+    border-bottom: 1px lightgray dashed;
 }
 
 .assembler-count {
@@ -39,9 +39,15 @@ button.make-by-hand {
 
 .history-display.visible {
     visibility: visible;
+    border-bottom: 1px lightgray dashed;
+    padding: 2px;
 }
 .history-display {
     visibility: hidden;
+}
+
+.popover-no-max-width {
+    max-width: unset !important;
 }
 
 .disabled {
