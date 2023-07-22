@@ -29,7 +29,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { VERSION } from "./version";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faThumbsUp, faChevronCircleDown } from "@fortawesome/free-solid-svg-icons";
+import {
+    faThumbsUp,
+    faChevronCircleDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 function d(n: number | undefined) {
     n ??= 0;
@@ -54,7 +57,7 @@ function ItemDisplay({
 }: {
     amt: number;
     itemName: Items;
-    state: ReturnType<typeof useProduction>['state'];
+    state: ReturnType<typeof useProduction>["state"];
     assemblerButtons: JSX.Element[];
     assemblersMakingThis: partialItems<number>;
     boxButtons: JSX.Element[];
@@ -153,7 +156,9 @@ function ItemDisplay({
     ).filter((x) => x != itemName);
     const byproductString = byproducts.map(GAME.displayNames).join(", ");
 
-    const producingRate = _.sum(values(state.effectiveProductionRates[itemName]));
+    const producingRate = _.sum(
+        values(state.effectiveProductionRates[itemName]),
+    );
     const othersConsuming = state.effectiveConsumptionRates[itemName] ?? {};
     const othersConsumingRate = _.sum(values(othersConsuming));
 
@@ -188,36 +193,35 @@ function ItemDisplay({
     const unlocks = GAME.unlocks(itemName).map(GAME.displayNames);
     const madeIn = GAME.requiredBuildings(itemName).map(GAME.displayNames);
 
-    const historyVisible = producingRate > 0 || othersConsumingRate > 0 ? 'visible' : '';
+    const historyVisible =
+        producingRate > 0 || othersConsumingRate > 0 ? "visible" : "";
     const netRate = producingRate - othersConsumingRate;
 
     const othersConsumingThis = GAME.recipesConsumingThis(itemName)
-        .filter(recipeName => state.assemblers[recipeName])
-        .map(
-            recipeName => {
-                const states = keys(state.assemblers[recipeName])
-                    .map(an => state.assemblerIsStuckOrDisabled(recipeName, an));
-                const fullness = states.filter(x => x === 'full');
-                let s = '';
-                let color = '';
-                const rate = othersConsuming[recipeName];
-                if (state.disabledRecipes[recipeName]) {
-                    s = 'disabled';
-                    color = 'text-danger';
-                }
-                else if (fullness.length > 0) {
-                    s = 'full'
-                    color = 'text-warning';
-                }
-                return (
-                    <tr key={recipeName}>
-                        <td>{GAME.displayNames(recipeName)}</td>
-                        <td>({d(rate)}/s)</td>
-                        <td className={color}>{s}</td>
-                    </tr>
-                );
-            },
-        );
+        .filter((recipeName) => state.assemblers[recipeName])
+        .map((recipeName) => {
+            const states = keys(state.assemblers[recipeName]).map((an) =>
+                state.assemblerIsStuckOrDisabled(recipeName, an),
+            );
+            const fullness = states.filter((x) => x === "full");
+            let s = "";
+            let color = "";
+            const rate = othersConsuming[recipeName];
+            if (state.disabledRecipes[recipeName]) {
+                s = "disabled";
+                color = "text-danger";
+            } else if (fullness.length > 0) {
+                s = "full";
+                color = "text-warning";
+            }
+            return (
+                <tr key={recipeName}>
+                    <td>{GAME.displayNames(recipeName)}</td>
+                    <td>({d(rate)}/s)</td>
+                    <td className={color}>{s}</td>
+                </tr>
+            );
+        });
 
     const g = (
         <FontAwesomeIcon
@@ -231,12 +235,14 @@ function ItemDisplay({
 
     if (historyVisible) {
         const overlay = (
-            <Popover className={'popover-no-max-width'}>
+            <Popover className={"popover-no-max-width"}>
                 <Popover.Body>
                     producing: {d(producingRate)}/s
                     <br />
                     consumed: {d(othersConsumingRate)}/s
-                    <Table><tbody>{othersConsumingThis}</tbody></Table>
+                    <Table>
+                        <tbody>{othersConsumingThis}</tbody>
+                    </Table>
                 </Popover.Body>
             </Popover>
         );
@@ -488,13 +494,13 @@ function App() {
                         makeByHand === null
                             ? null
                             : makeByHand === false
-                                ? false
-                                : () => {
-                                    makeItemByhand(
-                                        itemName as Items,
-                                        calculateMaxMake(itemName, amt),
-                                    );
-                                }
+                            ? false
+                            : () => {
+                                  makeItemByhand(
+                                      itemName as Items,
+                                      calculateMaxMake(itemName, amt),
+                                  );
+                              }
                     }
                     disableRecipe={() =>
                         disableRecipe(
@@ -505,8 +511,8 @@ function App() {
                     onMouseover={
                         !isAcked
                             ? () => {
-                                acknowledgeItem(itemName);
-                            }
+                                  acknowledgeItem(itemName);
+                              }
                             : undefined
                     }
                 />,

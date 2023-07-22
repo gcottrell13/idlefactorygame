@@ -1177,8 +1177,8 @@ const ex = {
     flavorText,
     byproductRatesPerSecond: (item: Items) =>
         byproductRatesPerSecond[item] ?? {},
-    
-        recipesConsumingThis: (item: Items) => recipesConsumingThis[item] ?? [],
+
+    recipesConsumingThis: (item: Items) => recipesConsumingThis[item] ?? [],
 };
 
 keys(recipes).forEach((item) => {
@@ -1203,7 +1203,7 @@ keys(recipes).forEach((item) => {
     }
 
     const recipe = recipes[item];
-    keys(recipe).forEach(ingredient => {
+    keys(recipe).forEach((ingredient) => {
         (recipesConsumingThis[ingredient] ??= []).push(item);
     });
 });
