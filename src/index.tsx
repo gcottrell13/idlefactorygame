@@ -6,6 +6,8 @@ import {
     useProduction,
     State,
     howManyCanBeMade,
+    PRODUCTION_OUTPUT_BLOCKED,
+    PRODUCTION_NO_INPUT,
 } from "./assembly";
 import GAME, { Items, partialItems } from "./values";
 import "./css.css";
@@ -109,13 +111,17 @@ function ItemDisplay({
                     {label} <Badge bg={"secondary"}>Disabled</Badge>
                 </span>
             );
-        } else if (prog === null) {
+        } else if (
+            prog === null ||
+            prog === PRODUCTION_NO_INPUT ||
+            (typeof prog === "number" && prog < 0)
+        ) {
             label = (
                 <span>
                     {label} <Badge bg={"danger"}>No Input</Badge>
                 </span>
             );
-        } else if (prog < 0) {
+        } else if (prog === PRODUCTION_OUTPUT_BLOCKED) {
             label = (
                 <span>
                     {label} <Badge bg={"warning"}>Output Blocked</Badge>
@@ -124,7 +130,7 @@ function ItemDisplay({
         } else {
             label = (
                 <span>
-                    {label} <Badge>Working {d(prog * 100)}%</Badge>
+                    {label} <Badge>Working {d((prog as any) * 100)}%</Badge>
                 </span>
             );
         }

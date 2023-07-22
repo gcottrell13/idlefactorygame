@@ -3,7 +3,9 @@ import GAME, { partialItems, Items } from "./values";
 import _ from "lodash";
 import { SMap, forEach, keys, mapPairs, values } from "./smap";
 import { VERSION } from "./version";
-import { Queue } from "./queue";
+
+export const PRODUCTION_OUTPUT_BLOCKED = "blocked";
+export const PRODUCTION_NO_INPUT = "noinput";
 
 const PRECISION = 1e5;
 function round(n: number) {
@@ -36,7 +38,14 @@ export interface State {
     /**
      * [whats being made] [the building making it]
      */
-    productionProgress: partialItems<partialItems<number | null>>;
+    productionProgress: partialItems<
+        partialItems<
+            | number
+            | null
+            | typeof PRODUCTION_OUTPUT_BLOCKED
+            | typeof PRODUCTION_NO_INPUT
+        >
+    >;
 
     // for each item, how many storage containers are there.
     // this storage is a soft limit, the actual values may go over via direct production, but not from byproducts
@@ -204,14 +213,20 @@ export function useProduction(ticksPerSecond: number) {
                     if (stateRef.current.disabledRecipes[itemName] === true) {
                         return;
                     }
+                    const amountAddPerTick =
+                        (GAME.assemblerSpeeds(level) *
+                            assemblerCount *
+                            timeStep) /
+                        GAME.timePerRecipe(itemName);
+                    let time = productionProgress[itemName]?.[level];
 
-                    let time = productionProgress[itemName]?.[level] ?? null;
+                    if (Number.isNaN(time) || time === undefined) time = null;
 
                     if (!storage[itemName]) storage[itemName] = {};
 
                     // there's probably a better way to organize this code
 
-                    if (time === -1) {
+                    if (time === PRODUCTION_OUTPUT_BLOCKED) {
                         if (addToTotal(itemName, 1)) {
                             time = null;
                         } else {
@@ -219,31 +234,37 @@ export function useProduction(ticksPerSecond: number) {
                         }
                     }
 
-                    if (time === null) {
-                        time = consumeMaterials(itemName, amountThatWeHave);
+                    const hadNoInput = time === PRODUCTION_NO_INPUT;
 
-                        if (time === null) return;
+                    if (time === null || hadNoInput) {
+                        time = consumeMaterials(itemName, amountThatWeHave);
+                        if (time === null) time = PRODUCTION_NO_INPUT;
+                        else if (hadNoInput)
+                            time = -amountAddPerTick * ticksPerSecond * 0.5;
                     }
 
-                    time +=
-                        (GAME.assemblerSpeeds(level) *
-                            assemblerCount *
-                            timeStep) /
-                        GAME.timePerRecipe(itemName);
+                    if (typeof time === "number") {
+                        let t: number = time as any;
+                        t += amountAddPerTick;
+                        time = t;
 
-                    while (time >= 1) {
-                        if (addToTotal(itemName, 1)) {
-                            time -= 1;
-                            if (
-                                consumeMaterials(itemName, amountThatWeHave) ===
-                                null
-                            ) {
-                                time = null;
+                        while (t >= 1) {
+                            if (addToTotal(itemName, 1)) {
+                                t -= 1;
+                                time = t;
+                                if (
+                                    consumeMaterials(
+                                        itemName,
+                                        amountThatWeHave,
+                                    ) === null
+                                ) {
+                                    time = PRODUCTION_NO_INPUT;
+                                    break;
+                                }
+                            } else {
+                                time = PRODUCTION_OUTPUT_BLOCKED;
                                 break;
                             }
-                        } else {
-                            time = -1;
-                            break;
                         }
                     }
 
