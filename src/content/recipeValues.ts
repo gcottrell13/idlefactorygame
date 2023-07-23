@@ -36,6 +36,10 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     begin: 1,
 
     prospector: 1,
+    lumberjack: 1,
+    "lumberjack-school": 1,
+    electricity: 1,
+    food: 1,
 
     land: 10,
     "wet-land": 1,
@@ -170,7 +174,6 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
 
     // buildings
     "oil-pump": 15,
-    "water-pump-mk2": 30,
     assembler: 15,
     "gas-extractor": 30,
     greenhouse: 10,
@@ -279,6 +282,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     slag: 1,
 
     // materials
+    "nuclear-fuel": 10,
 
     // science
     science5: 5,
@@ -295,7 +299,12 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
 const recipes: Recipes = {
     "": {},
     begin: {},
-    prospector: {},
+    prospector: { food: 1 },
+    lumberjack: { food: 1 },
+    "lumberjack-school": { wood: 500 },
+
+    electricity: {}, // byproduct only
+    food: {}, // byproduct only
 
     land: {},
     "wet-land": {},
@@ -337,8 +346,8 @@ const recipes: Recipes = {
     slag: {},
 
     // processed raw
-    "iron-bar": { "iron-ore": 1, wood: 0.01 },
-    "copper-bar": { "copper-ore": 1, wood: 0.01 },
+    "iron-bar": { "iron-ore": 1 },
+    "copper-bar": { "copper-ore": 1 },
     sulfur: { gas: 0.5 },
     steel: { "iron-bar": 1, coal: 1 },
 
@@ -381,7 +390,6 @@ const recipes: Recipes = {
     "smelter-mk2": { "iron-frame": 10, "copper-wire": 10, "smelter-mk1": 1 },
     "oil-pump": { steel: 10, pipe: 10, "iron-frame": 10 },
     "water-pump-mk1": { "iron-bar": 15, pipe: 5 },
-    "water-pump-mk2": { steel: 15, pipe: 10 },
     greenhouse: { steel: 10, glass: 20 },
     hydroponics: { steel: 50, "basic-circuit": 20, "iron-frame": 2 },
     "water-filter": { steel: 5, pipe: 5 },
@@ -393,6 +401,7 @@ const recipes: Recipes = {
     "adamantium-drill": { "adamantium-frame": 20, computer: 5 },
     "rock-crusher": { aluminum: 10, "advanced-circuit": 5 },
     centrifuge: { "adamantium-frame": 50, "chemical-plant": 2 },
+    "nuclear-fuel": { "adamantium-frame": 1, u235: 10 },
 
     box: { "iron-frame": 1, "iron-bar": 3 },
     "box-box": { box: 5 },

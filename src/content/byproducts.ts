@@ -14,6 +14,7 @@ const byproducts: partialItems<partialItems<number>[]> = {
         { "coal-node": 1 },
         { "sandy-land": 1 },
         { wood: 1 },
+        { food: 1 },
     ],
     begin: [{ begin: 1 }, { prospector: 1 }],
     u235: [{ u235: 0.1, u234: 0.9 }, { slag: 1 }],

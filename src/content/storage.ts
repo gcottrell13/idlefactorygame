@@ -21,7 +21,6 @@ const storageSizes = {
     "water-evaporator": 0,
     "water-filter": 0,
     "water-pump-mk1": 0,
-    "water-pump-mk2": 0,
     assembler: 5,
     centrifuge: 5,
     constructer: 5,
@@ -30,6 +29,8 @@ const storageSizes = {
     hydroponics: 3,
     manufacturer: 5,
     prospector: 0,
+    lumberjack: 0,
+    "lumberjack-school": 10,
 } satisfies partialItems<number> & { [p in Buildings]: number };
 
 // these items impose a limit on how much we can have.
@@ -91,7 +92,6 @@ const itemsCanBeStoreIn: partialItems<(keyof typeof storageSizes)[]> = {
     "chemical-plant": ["box3"],
     "miner-mk1": ["box3"],
     "water-pump-mk1": ["box3"],
-    "water-pump-mk2": ["box3"],
     "oil-pump": ["box3"],
     "smelter-mk1": ["box3"],
     "smelter-mk2": ["box3"],

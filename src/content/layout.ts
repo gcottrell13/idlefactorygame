@@ -43,6 +43,15 @@ const sections: Sections = [
         ],
     },
     {
+        Name: "Power",
+        SubSections: [
+            {
+                Name: "Consumed By Buildings",
+                Items: ["wood", "food", "electricity", "coal", "nuclear-fuel"],
+            },
+        ],
+    },
+    {
         Name: "Iron and Copper",
         SubSections: [
             {
@@ -115,7 +124,6 @@ const sections: Sections = [
                     "water-evaporator",
                     "water-filter",
                     "water-pump-mk1",
-                    "water-pump-mk2",
                     "greenhouse",
                     "hydroponics",
                     "oil-pump",

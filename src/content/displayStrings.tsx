@@ -12,6 +12,9 @@ const byHandVerbs: partialItems<string> = {
 };
 
 const displayNames: partialItems<string> = {
+    lumberjack: "Lumberjack",
+    "lumberjack-school": "Lumberjack School",
+    food: "Meal",
     assembler: "Assembler",
     constructer: "Constructor",
     "miner-mk1": "Miner Mark I",
@@ -42,6 +45,7 @@ const displayNames: partialItems<string> = {
     "iron-frame": "Frame",
     "iron-ore": "Iron Ore",
     "oil-pump": "Oil Pump",
+    "research-basic-circuit": "Tech: Basic Circuit",
     "research-adamantium-drill": "Tech: Adamantium Drill",
     "research-aluminum": "Tech: Aluminium",
     "research-assembler": "Tech: Assembler",
@@ -64,9 +68,9 @@ const displayNames: partialItems<string> = {
     adamantium: "Adamantium",
     "sulfuric-acid": "Sulfuric Acid",
     "uranium-ore": "Uranium Ore",
+    "nuclear-fuel": "Nuclear Fuel Rod",
     "water-filter": "Water Filter",
     "water-pump-mk1": "Water Pump",
-    "water-pump-mk2": "Fast Water Pump",
     gold: "Gold!",
     gear: "Iron Gear",
     "research-science-1": "Tech: Science 1",
@@ -112,6 +116,7 @@ const displayNames: partialItems<string> = {
     "coal-node": "Coal Deposit",
     "stony-land": "Stony Land",
     "oil-node": "Oil Well",
+    "gold-node": "Gold Deposit",
     "studonite-node": "Studonite Deposit",
     "bauxite-node": "Bauxite Deposit",
     "uranium-node": "Uranium Deposit",
@@ -125,8 +130,14 @@ const flavorText: partialItems<React.ReactNode> = {
     land: <pre>Go Prospect that Land!</pre>,
 };
 
+const units: partialItems<string> = {
+    electricity: "J",
+    water: "m³",
+};
+
 export default {
     byHandVerbs,
     displayNames,
     flavorText,
+    units,
 };
