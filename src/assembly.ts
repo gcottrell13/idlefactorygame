@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import GAME, { partialItems, Items } from "./values";
+import GAME from "./values";
+import { Items, partialItems } from "./content/itemNames";
 import _ from "lodash";
 import { SMap, forEach, keys, mapPairs, values } from "./smap";
 import { VERSION } from "./version";
@@ -125,27 +126,6 @@ function consumeMaterials(
     return 0;
 }
 
-export function calculateStorage(
-    itemName: Items,
-    storage?: partialItems<number>,
-) {
-    const canBeStoredIn = GAME.itemsCanBeStoreIn(itemName);
-    if (canBeStoredIn.length === 0) return Number.MAX_SAFE_INTEGER;
-    if (storage === undefined) return 10;
-    return (
-        Math.max(
-            _.sumBy(keys(storage), (key) => {
-                return (
-                    (canBeStoredIn.includes(key)
-                        ? GAME.storageSizes(key) ?? 0
-                        : 0) * (storage[key] ?? 0)
-                );
-            }),
-            0,
-        ) + 10
-    );
-}
-
 function saveGame(state: State) {
     localStorage.setItem("state", JSON.stringify(state));
 }
@@ -159,13 +139,37 @@ export function useProduction(ticksPerSecond: number) {
 
     const [c, setCounter] = useState<number>(0);
 
+    function calculateStorage(itemName: Items) {
+        const canBeStoredIn = GAME.itemsCanBeStoreIn(itemName);
+        if (canBeStoredIn.length === 0) return Number.MAX_SAFE_INTEGER;
+        const storage = stateRef.current.storage[itemName];
+        if (storage === undefined) return GAME.MIN_STORAGE;
+        const assemblers = stateRef.current.assemblers[itemName] ?? {};
+        return (
+            Math.max(
+                _.sumBy(
+                    keys(assemblers),
+                    (key) => GAME.storageSizes(key) * (assemblers[key] ?? 0),
+                ),
+                0,
+            ) +
+            Math.max(
+                _.sumBy(
+                    keys(storage),
+                    (key) =>
+                        (canBeStoredIn.includes(key)
+                            ? GAME.storageSizes(key) ?? 0
+                            : 0) * (storage[key] ?? 0),
+                ),
+                0,
+            ) +
+            GAME.MIN_STORAGE
+        );
+    }
+
     function hasStorageCapacity(item: Items, amt: number) {
         const currentAmount = stateRef.current.amountThatWeHave[item] ?? 0;
-        return (
-            calculateStorage(item, stateRef.current.storage[item]) -
-                currentAmount >=
-            amt
-        );
+        return calculateStorage(item) - currentAmount >= amt;
     }
 
     function addToTotal(itemName: Items, recipeCount: number): boolean {
@@ -240,7 +244,7 @@ export function useProduction(ticksPerSecond: number) {
                         time = consumeMaterials(itemName, amountThatWeHave);
                         if (time === null) time = PRODUCTION_NO_INPUT;
                         else if (hadNoInput)
-                            time = -amountAddPerTick * ticksPerSecond * 0.5;
+                            time = -ticksPerSecond * 0.5 * amountAddPerTick;
                     }
 
                     if (typeof time === "number") {
@@ -513,6 +517,7 @@ export function useProduction(ticksPerSecond: number) {
             effectiveConsumptionRates,
             effectiveProductionRates,
             assemblerIsStuckOrDisabled,
+            calculateStorage,
         },
         addAmount,
         addAssemblers,

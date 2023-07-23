@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import _ from "lodash";
 import {
-    calculateStorage,
     useProduction,
     State,
     howManyCanBeMade,
     PRODUCTION_OUTPUT_BLOCKED,
     PRODUCTION_NO_INPUT,
 } from "./assembly";
-import GAME, { Items, partialItems } from "./values";
+import GAME from "./values";
+import { Items, partialItems } from "./content/itemNames";
 import "./css.css";
 import {
     Button,
@@ -73,7 +73,7 @@ function ItemDisplay({
     const canMakeByHand = Math.min(
         currentClickAmount,
         howManyCanBeMade(itemName, state.amountThatWeHave),
-        calculateStorage(itemName, state.storage[itemName]) - amt,
+        state.calculateStorage(itemName) - amt,
         GAME.maxCraftAtATime(itemName),
     );
     const makeByHandButton =
@@ -193,7 +193,7 @@ function ItemDisplay({
 
     const storageValueIfContainer = GAME.storageSizes(itemName);
 
-    const maxValue = calculateStorage(itemName, state.storage[itemName]);
+    const maxValue = state.calculateStorage(itemName);
 
     const assemblerSpeed = GAME.assemblerSpeeds(itemName);
     const unlocks = GAME.unlocks(itemName).map(GAME.displayNames);
@@ -388,7 +388,7 @@ function App() {
         return Math.min(
             currentClickAmount,
             howManyCanBeMade(itemName, state.amountThatWeHave),
-            calculateStorage(itemName, state.storage[itemName]) - n,
+            state.calculateStorage(itemName) - n,
             GAME.maxCraftAtATime(itemName),
         );
     }
