@@ -449,7 +449,10 @@ export function useProduction(ticksPerSecond: number) {
 
     function assemblerIsStuckOrDisabled(itemName: Items, assembler: Items) {
         if (disabledRecipes[itemName]) return "disabled";
-        if ((productionProgress[itemName] ?? {})[assembler] === -1)
+        if (
+            (productionProgress[itemName] ?? {})[assembler] ===
+            PRODUCTION_OUTPUT_BLOCKED
+        )
             return "full";
         return false;
     }
