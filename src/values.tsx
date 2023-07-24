@@ -64,6 +64,8 @@ const ex = {
 
     recipesConsumingThis: (item: Items) => recipesConsumingThis[item] ?? [],
     MIN_STORAGE: storage.MIN_STORAGE,
+    buildingPowerRequirementsPerSecond: (item: Items) =>
+        buildings.buildingPowerRequirementsPerSecond[item] ?? {},
 };
 
 keys(recipeValues.recipes).forEach((item) => {

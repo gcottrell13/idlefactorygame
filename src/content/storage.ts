@@ -39,6 +39,7 @@ const itemsCanBeStoreIn: partialItems<(keyof typeof storageSizes)[]> = {
     "": [],
     "stony-land": [],
     "wet-land": [],
+    food: ["box"],
     explorer: ["box4"],
     land: [],
     sand: ["box"],

@@ -13,10 +13,10 @@ const byproducts: partialItems<partialItems<number>[]> = {
         { "copper-node": 1 },
         { "coal-node": 1 },
         { "sandy-land": 1 },
-        { wood: 1 },
+        { tree: 1 },
         { food: 1 },
     ],
-    begin: [{ begin: 1 }, { prospector: 1 }],
+    begin: [{ begin: 1 }, { prospector: 1 }, { food: 1 }, { lumberjack: 1 }],
     u235: [{ u235: 0.1, u234: 0.9 }, { slag: 1 }],
     "evaporate-water": [{ "wet-land": 1 }],
 };

@@ -7,6 +7,7 @@ import { VERSION } from "./version";
 
 export const PRODUCTION_OUTPUT_BLOCKED = "blocked";
 export const PRODUCTION_NO_INPUT = "noinput";
+export const PRODUCTION_NO_POWER = "nopower";
 
 const PRECISION = 1e5;
 function round(n: number) {
@@ -48,6 +49,13 @@ export interface State {
         >
     >;
 
+    /**
+     * [whats being made] [the building making it]
+     */
+    powerConsumptionProgress: partialItems<
+        partialItems<number | typeof PRODUCTION_NO_POWER>
+    >;
+
     // for each item, how many storage containers are there.
     // this storage is a soft limit, the actual values may go over via direct production, but not from byproducts
     storage: partialItems<partialItems<number>>;
@@ -73,6 +81,7 @@ const defaultState = {
     amountCreated: {},
     acknowledged: {},
     disabledRecipes: {},
+    powerConsumptionProgress: {},
 } satisfies State;
 
 const ex = localStorage.getItem("state");
@@ -81,7 +90,14 @@ const existingStorage = {
     ...((ex ? JSON.parse(ex) : {}) as State),
 };
 
-export function howManyCanBeMade(
+function checkAmounts(amounts: SMap<number>, requirements: SMap<number>) {
+    return mapPairs(
+        requirements,
+        (amt, key) => (amounts[key] ?? 0) >= amt,
+    ).every((x) => x === true);
+}
+
+export function howManyRecipesCanBeMade(
     itemName: Items,
     amounts: SMap<number>,
 ): number {
@@ -106,7 +122,17 @@ export function howManyCanBeMade(
     return numberOfRecipesToMake;
 }
 
-function consumeMaterials(
+function consumeMaterials(amountWeHave: SMap<number>, recipe: SMap<number>) {
+    _.toPairs(recipe).forEach((pair) => {
+        const [ingredientName, requiredCount] = pair;
+        const toGrab = requiredCount;
+
+        const weHave = amountWeHave[ingredientName] ?? 0;
+        amountWeHave[ingredientName] = round(Math.max(0, weHave - toGrab));
+    });
+}
+
+function consumeMaterialsFromRecipe(
     itemName: Items,
     amounts: SMap<number>,
 ): number | null {
@@ -114,15 +140,9 @@ function consumeMaterials(
     if (recipe === undefined) return 0;
     // not producing, so let's try to grab materials
 
-    if (howManyCanBeMade(itemName, amounts) <= 0) return null;
+    if (howManyRecipesCanBeMade(itemName, amounts) <= 0) return null;
 
-    _.toPairs(recipe).forEach((pair) => {
-        const [ingredientName, requiredCount] = pair;
-        const toGrab = requiredCount;
-
-        const weHave = amounts[ingredientName] ?? 0;
-        amounts[ingredientName] = round(Math.max(0, weHave - toGrab));
-    });
+    consumeMaterials(amounts, recipe);
     return 0;
 }
 
@@ -206,6 +226,30 @@ export function useProduction(ticksPerSecond: number) {
         return false;
     }
 
+    function checkPowerConsumption(itemName: Items, building: Items): boolean {
+        const power = ((stateRef.current.powerConsumptionProgress[itemName] ??=
+            {})[building] ??= PRODUCTION_NO_POWER);
+        if (power === PRODUCTION_NO_POWER) {
+            const r = GAME.buildingPowerRequirementsPerSecond(building);
+            if (checkAmounts(stateRef.current.amountThatWeHave, r)) {
+                consumeMaterials(stateRef.current.amountThatWeHave, r);
+                stateRef.current.powerConsumptionProgress[itemName]![
+                    building
+                ] = 0;
+                return true;
+            }
+            return false;
+        } else if (power >= ticksPerSecond) {
+            stateRef.current.powerConsumptionProgress[itemName]![building] =
+                PRODUCTION_NO_POWER;
+            return checkPowerConsumption(itemName, building);
+        } else {
+            stateRef.current.powerConsumptionProgress[itemName]![building]! =
+                power + 1;
+            return true;
+        }
+    }
+
     function doProduction(timeStep: number) {
         const { assemblers, amountThatWeHave, productionProgress, storage } =
             stateRef.current;
@@ -217,6 +261,7 @@ export function useProduction(ticksPerSecond: number) {
                     if (stateRef.current.disabledRecipes[itemName] === true) {
                         return;
                     }
+
                     const amountAddPerTick =
                         (GAME.assemblerSpeeds(level) *
                             assemblerCount *
@@ -239,15 +284,23 @@ export function useProduction(ticksPerSecond: number) {
                     }
 
                     const hadNoInput = time === PRODUCTION_NO_INPUT;
+                    const hasPower = checkPowerConsumption(itemName, level);
 
-                    if (time === null || hadNoInput) {
-                        time = consumeMaterials(itemName, amountThatWeHave);
+                    if (hasPower && (time === null || hadNoInput)) {
+                        time = consumeMaterialsFromRecipe(
+                            itemName,
+                            amountThatWeHave,
+                        );
                         if (time === null) time = PRODUCTION_NO_INPUT;
                         else if (hadNoInput)
                             time = -ticksPerSecond * 0.5 * amountAddPerTick;
                     }
 
                     if (typeof time === "number") {
+                        if (!hasPower) {
+                            return;
+                        }
+
                         let t: number = time as any;
                         t += amountAddPerTick;
                         time = t;
@@ -257,7 +310,7 @@ export function useProduction(ticksPerSecond: number) {
                                 t -= 1;
                                 time = t;
                                 if (
-                                    consumeMaterials(
+                                    consumeMaterialsFromRecipe(
                                         itemName,
                                         amountThatWeHave,
                                     ) === null
@@ -302,7 +355,10 @@ export function useProduction(ticksPerSecond: number) {
     const makeItemByhand = useCallback((itemName: Items, count: number) => {
         for (let i = 0; i < count; i++) {
             if (addToTotal(itemName, 1)) {
-                consumeMaterials(itemName, stateRef.current.amountThatWeHave);
+                consumeMaterialsFromRecipe(
+                    itemName,
+                    stateRef.current.amountThatWeHave,
+                );
                 setState();
             }
         }
@@ -311,7 +367,12 @@ export function useProduction(ticksPerSecond: number) {
     const canMakeItemByHand = useCallback((itemName: Items) => {
         if (GAME.requiredBuildings(itemName).includes("by-hand") === false)
             return null;
-        if (howManyCanBeMade(itemName, stateRef.current.amountThatWeHave) <= 0)
+        if (
+            howManyRecipesCanBeMade(
+                itemName,
+                stateRef.current.amountThatWeHave,
+            ) <= 0
+        )
             return false;
         return hasStorageCapacity(itemName, 1);
     }, []);
@@ -448,16 +509,26 @@ export function useProduction(ticksPerSecond: number) {
 
     const effectiveProductionRates: partialItems<partialItems<number>> = {};
     const effectiveConsumptionRates: partialItems<partialItems<number>> = {};
+
+    /**
+     * [what's being consumed][the building]
+     */
+    const powerConsumptionRates: partialItems<
+        partialItems<[count: number, total: number, consumption: number]>
+    > = {};
+
     const { assemblers, disabledRecipes, productionProgress } =
         stateRef.current;
 
-    function assemblerIsStuckOrDisabled(itemName: Items, assembler: Items) {
-        if (disabledRecipes[itemName]) return "disabled";
-        if (
+    function assemblerStuck(itemName: Items, assembler: Items) {
+        return (
             (productionProgress[itemName] ?? {})[assembler] ===
             PRODUCTION_OUTPUT_BLOCKED
-        )
-            return "full";
+        );
+    }
+    function assemblerIsStuckOrDisabled(itemName: Items, assembler: Items) {
+        if (disabledRecipes[itemName]) return "disabled";
+        if (assemblerStuck(itemName, assembler)) return "full";
         return false;
     }
 
@@ -469,8 +540,7 @@ export function useProduction(ticksPerSecond: number) {
             const speeds = mapPairs(
                 assemblers[producer],
                 (assemblerNumber, assemblerName) =>
-                    producer != itemName &&
-                    assemblerIsStuckOrDisabled(producer, assemblerName)
+                    producer != itemName && disabledRecipes[producer]
                         ? 0
                         : GAME.assemblerSpeeds(assemblerName) *
                           assemblerNumber *
@@ -491,6 +561,27 @@ export function useProduction(ticksPerSecond: number) {
         }
     });
 
+    function addAssemblerPowerConsumption(
+        assemblerName: Items,
+        count: number,
+        recipeName: Items,
+    ) {
+        const power = GAME.buildingPowerRequirementsPerSecond(assemblerName);
+        const counted = !assemblerIsStuckOrDisabled(recipeName, assemblerName);
+        mapPairs(power, (requiredCount, ingredient) => {
+            (powerConsumptionRates[ingredient] ??= {})[assemblerName] ??= [
+                0, 0, 0,
+            ];
+            const k = powerConsumptionRates[ingredient]![assemblerName]!;
+
+            k[1] += count;
+            if (counted) {
+                k[0] += count;
+                k[2] += requiredCount * count;
+            }
+        });
+    }
+
     keys(stateRef.current.assemblers).forEach((itemName) => {
         if (disabledRecipes[itemName]) return;
         const recipe = GAME.recipes(itemName);
@@ -504,9 +595,15 @@ export function useProduction(ticksPerSecond: number) {
                     (GAME.assemblerSpeeds(assemblerName) * assemblerCount) /
                     baseCraftTime;
             });
-
             (effectiveConsumptionRates[ingredient] ??= {})[itemName] =
                 count * rate;
+        });
+        mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
+            addAssemblerPowerConsumption(
+                assemblerName,
+                assemblerCount,
+                itemName,
+            );
         });
     });
 
@@ -518,6 +615,7 @@ export function useProduction(ticksPerSecond: number) {
             effectiveProductionRates,
             assemblerIsStuckOrDisabled,
             calculateStorage,
+            powerConsumptionRates,
         },
         addAmount,
         addAssemblers,

@@ -126,8 +126,10 @@ const flavorText: partialItems<React.ReactNode> = {
     "research-mass-click":
         "Lets you place Boxes and Buildings 10 times as fast.",
     begin: <b>The Beginning</b>,
-    prospector: <pre>Lets you find some land!</pre>,
-    land: <pre>Go Prospect that Land!</pre>,
+    prospector: <i>Lets you find some land!</i>,
+    land: <i>Go Prospect that Land!</i>,
+    food: <i>A good meal for a hard worker</i>,
+    electricity: <i>Power is Knowledge</i>,
 };
 
 const units: partialItems<string> = {

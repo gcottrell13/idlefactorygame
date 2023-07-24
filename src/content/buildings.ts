@@ -25,9 +25,7 @@ const assemblerSpeeds = {
 
 export type Buildings = keyof typeof assemblerSpeeds;
 
-const buildingPowerRequirementsPerSecond: {
-    [p in Buildings]: partialItems<number>;
-} = {
+const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     "adamantium-drill": { electricity: 100 },
     "chemical-plant": { electricity: 10 },
     "gas-extractor": { electricity: 15 },
@@ -48,6 +46,8 @@ const buildingPowerRequirementsPerSecond: {
     manufacturer: { electricity: 10 },
     prospector: { food: 0.05 },
     lumberjack: { food: 0.05 },
+} satisfies {
+    [p in Buildings]: partialItems<number>;
 };
 
 const requiredBuildings: {
@@ -154,7 +154,7 @@ const requiredBuildings: {
     "copper-wire": ["by-hand", "constructer"],
     "clean-water": ["water-filter"],
     tree: ["greenhouse"],
-    wood: ["constructer"],
+    wood: ["lumberjack"],
     fertilizer: ["assembler"],
     nitrogen: ["gas-extractor"],
     // building materials

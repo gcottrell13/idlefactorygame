@@ -20,6 +20,7 @@ const sections: Sections = [
                 Name: "Land",
                 Items: [
                     "prospector",
+                    "lumberjack",
                     "land",
                     "wet-land",
                     "stony-land",
@@ -29,7 +30,9 @@ const sections: Sections = [
             {
                 Name: "Resources",
                 Items: [
+                    "tree",
                     "wood",
+                    "food",
                     "iron-node",
                     "copper-node",
                     "coal-node",
@@ -46,8 +49,8 @@ const sections: Sections = [
         Name: "Power",
         SubSections: [
             {
-                Name: "Consumed By Buildings",
-                Items: ["wood", "food", "electricity", "coal", "nuclear-fuel"],
+                Name: "",
+                Items: ["electricity", "coal", "nuclear-fuel"],
             },
         ],
     },
@@ -115,7 +118,7 @@ const sections: Sections = [
             },
             {
                 Name: "Botanicals",
-                Items: ["fertilizer", "seed", "tree"],
+                Items: ["fertilizer", "seed"],
             },
             {
                 Name: "Buildings",

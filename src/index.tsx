@@ -4,9 +4,10 @@ import _ from "lodash";
 import {
     useProduction,
     State,
-    howManyCanBeMade,
+    howManyRecipesCanBeMade,
     PRODUCTION_OUTPUT_BLOCKED,
     PRODUCTION_NO_INPUT,
+    PRODUCTION_NO_POWER,
 } from "./assembly";
 import GAME from "./values";
 import { Items, partialItems } from "./content/itemNames";
@@ -72,7 +73,7 @@ function ItemDisplay({
         makeByHand === false || makeByHand === null ? undefined : makeByHand;
     const canMakeByHand = Math.min(
         currentClickAmount,
-        howManyCanBeMade(itemName, state.amountThatWeHave),
+        howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
         state.calculateStorage(itemName) - amt,
         GAME.maxCraftAtATime(itemName),
     );
@@ -92,6 +93,7 @@ function ItemDisplay({
     const progress = state.productionProgress[itemName] ?? {};
 
     const baseCraftTime = GAME.timePerRecipe(itemName);
+    const thisPower = state.powerConsumptionProgress[itemName] ?? {};
 
     const assemblers = keys(assemblersMakingThis).map((name) => {
         const no = assemblersMakingThis[name] ?? 0;
@@ -105,7 +107,13 @@ function ItemDisplay({
             </span>
         );
         const prog = progress[name] ?? null;
-        if (recipeDisabled) {
+        if (thisPower[name] === PRODUCTION_NO_POWER) {
+            label = (
+                <span>
+                    {label} <Badge bg={"danger"}>No Power</Badge>
+                </span>
+            );
+        } else if (recipeDisabled) {
             label = (
                 <span>
                     {label} <Badge bg={"secondary"}>Disabled</Badge>
@@ -134,6 +142,46 @@ function ItemDisplay({
                 </span>
             );
         }
+
+        const powerRequirements = GAME.buildingPowerRequirementsPerSecond(name);
+        if (keys(powerRequirements).length > 0) {
+            const overlay = (
+                <Popover className={"popover-no-max-width"}>
+                    <Popover.Body>
+                        Consuming as power:
+                        <Table>
+                            <tbody>
+                                {keys(powerRequirements)
+                                    .sort()
+                                    .map((requirement) => {
+                                        const rate =
+                                            powerRequirements[requirement] ?? 0;
+                                        return (
+                                            <tr key={requirement}>
+                                                <td>
+                                                    {GAME.displayNames(
+                                                        requirement,
+                                                    )}
+                                                </td>
+                                                <td className="assembler-count-name">
+                                                    ({rate}/s)
+                                                </td>
+                                                <td>{no * rate}/s</td>
+                                            </tr>
+                                        );
+                                    })}
+                            </tbody>
+                        </Table>
+                    </Popover.Body>
+                </Popover>
+            );
+            label = (
+                <OverlayTrigger placement={"left"} overlay={overlay}>
+                    {label}
+                </OverlayTrigger>
+            );
+        }
+
         return (
             <div className={"assembler-count"} key={name}>
                 {label}
@@ -166,7 +214,13 @@ function ItemDisplay({
         values(state.effectiveProductionRates[itemName]),
     );
     const othersConsuming = state.effectiveConsumptionRates[itemName] ?? {};
-    const othersConsumingRate = _.sum(values(othersConsuming));
+    const othersConsumingAsPower = state.powerConsumptionRates[itemName] ?? {};
+    const othersConsumingAsPowerRate = _.sumBy(
+        values(othersConsumingAsPower),
+        (k) => k[2],
+    );
+    const othersConsumingRate =
+        _.sum(values(othersConsuming)) + othersConsumingAsPowerRate;
 
     const recipe = GAME.recipes(itemName);
     const formatIngredients = keys(recipe)
@@ -200,7 +254,11 @@ function ItemDisplay({
     const madeIn = GAME.requiredBuildings(itemName).map(GAME.displayNames);
 
     const historyVisible =
-        assemblers.length > 0 || producingRate > 0 ? "visible" : "";
+        assemblers.length > 0 ||
+        producingRate > 0 ||
+        keys(othersConsumingAsPower).length > 0
+            ? "visible"
+            : "";
     const netRate = producingRate - othersConsumingRate;
 
     const othersConsumingThis = GAME.recipesConsumingThis(itemName)
@@ -228,6 +286,26 @@ function ItemDisplay({
                 </tr>
             );
         });
+
+    othersConsumingThis.push(
+        ...mapPairs(
+            othersConsumingAsPower,
+            ([count, total, consumption], name) => {
+                const color = count < total ? "text-warning" : "";
+                return (
+                    <tr key={`power-${name}`}>
+                        <td>
+                            {total} {GAME.displayNames(name)}
+                        </td>
+                        <td>({d(consumption)}/s)</td>
+                        <td className={color}>
+                            {count} / {total}
+                        </td>
+                    </tr>
+                );
+            },
+        ),
+    );
 
     const g = (
         <FontAwesomeIcon
@@ -263,7 +341,7 @@ function ItemDisplay({
         GAME.flavorText[itemName] && <div>{GAME.flavorText[itemName]}</div>,
         madeIn.length > 0 && (
             <div className={"made-in"}>
-                Made in: <br />
+                Made with: <br />
                 {madeIn.join(", ")}
             </div>
         ),
@@ -387,7 +465,7 @@ function App() {
     function calculateMaxMake(itemName: Items, n: number) {
         return Math.min(
             currentClickAmount,
-            howManyCanBeMade(itemName, state.amountThatWeHave),
+            howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
             state.calculateStorage(itemName) - n,
             GAME.maxCraftAtATime(itemName),
         );
