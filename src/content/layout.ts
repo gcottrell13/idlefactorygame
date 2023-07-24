@@ -50,7 +50,23 @@ const sections: Sections = [
         SubSections: [
             {
                 Name: "",
-                Items: ["electricity", "coal", "nuclear-fuel"],
+                Items: ["electricity"],
+            },
+            {
+                Name: "Fuel",
+                Items: ["coal", "nuclear-fuel"],
+            },
+            {
+                Name: "Buildings",
+                Items: ["wind-turbine"],
+            },
+            {
+                Name: "Storage",
+                Items: ["small-battery"],
+            },
+            {
+                Name: "Research",
+                Items: ["research-small-battery"],
             },
         ],
     },

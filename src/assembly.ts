@@ -226,13 +226,21 @@ export function useProduction(ticksPerSecond: number) {
         return false;
     }
 
+    function doPowerConsumption(itemName: Items, building: Items) {
+        const power = ((stateRef.current.powerConsumptionProgress[itemName] ??=
+            {})[building] ??= PRODUCTION_NO_POWER);
+        if (typeof power === "number" && power >= ticksPerSecond) {
+            const r = GAME.buildingPowerRequirementsPerSecond(building);
+            consumeMaterials(stateRef.current.amountThatWeHave, r);
+        }
+    }
+
     function checkPowerConsumption(itemName: Items, building: Items): boolean {
         const power = ((stateRef.current.powerConsumptionProgress[itemName] ??=
             {})[building] ??= PRODUCTION_NO_POWER);
         if (power === PRODUCTION_NO_POWER) {
             const r = GAME.buildingPowerRequirementsPerSecond(building);
             if (checkAmounts(stateRef.current.amountThatWeHave, r)) {
-                consumeMaterials(stateRef.current.amountThatWeHave, r);
                 stateRef.current.powerConsumptionProgress[itemName]![
                     building
                 ] = 0;
@@ -300,6 +308,7 @@ export function useProduction(ticksPerSecond: number) {
                         if (!hasPower) {
                             return;
                         }
+                        doPowerConsumption(itemName, level);
 
                         let t: number = time as any;
                         t += amountAddPerTick;
@@ -583,6 +592,13 @@ export function useProduction(ticksPerSecond: number) {
     }
 
     keys(stateRef.current.assemblers).forEach((itemName) => {
+        mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
+            addAssemblerPowerConsumption(
+                assemblerName,
+                assemblerCount,
+                itemName,
+            );
+        });
         if (disabledRecipes[itemName]) return;
         const recipe = GAME.recipes(itemName);
         const baseCraftTime = GAME.timePerRecipe(itemName);
@@ -597,13 +613,6 @@ export function useProduction(ticksPerSecond: number) {
             });
             (effectiveConsumptionRates[ingredient] ??= {})[itemName] =
                 count * rate;
-        });
-        mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
-            addAssemblerPowerConsumption(
-                assemblerName,
-                assemblerCount,
-                itemName,
-            );
         });
     });
 

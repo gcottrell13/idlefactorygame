@@ -4,6 +4,10 @@ const unlockedWith: partialItems<Items[]> = {
     "copper-wire": ["research-wire"],
     assembler: ["research-assembler"],
 
+    "small-battery": ["research-small-battery"],
+    electricity: ["research-small-battery"],
+    "wind-turbine": ["research-small-battery"],
+
     "gas-extractor": ["research-nitrogen"],
     coal: ["research-steel"],
     "smelter-mk2": ["research-steel"],
@@ -18,6 +22,7 @@ const unlockedWith: partialItems<Items[]> = {
     manufacturer: ["research-manufacturer"],
     explorer: ["research-explorer"],
     "basic-circuit": ["research-basic-circuit"],
+    sand: ["research-basic-circuit"],
     "advanced-circuit": ["research-advanced-circuitry"],
 
     "gold-node": ["research-advanced-circuitry"],

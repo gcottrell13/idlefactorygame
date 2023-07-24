@@ -17,6 +17,13 @@ const displayNames: partialItems<string> = {
     food: "Meal",
     assembler: "Assembler",
     constructer: "Constructor",
+
+    electricity: "Electricity",
+
+    "small-battery": "Small Battery",
+    "research-small-battery": "Tech: Electricity",
+    "wind-turbine": "Wind Turbine",
+
     "miner-mk1": "Miner Mark I",
     "smelter-mk1": "Smelter",
     "smelter-mk2": "Foundry",

@@ -35,6 +35,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faThumbsUp,
     faChevronCircleDown,
+    faBolt,
 } from "@fortawesome/free-solid-svg-icons";
 
 function d(n: number | undefined) {
@@ -110,7 +111,10 @@ function ItemDisplay({
         if (thisPower[name] === PRODUCTION_NO_POWER) {
             label = (
                 <span>
-                    {label} <Badge bg={"danger"}>No Power</Badge>
+                    {label}{" "}
+                    <Badge bg={"danger"}>
+                        <FontAwesomeIcon icon={faBolt} /> No Power
+                    </Badge>
                 </span>
             );
         } else if (recipeDisabled) {
@@ -119,11 +123,7 @@ function ItemDisplay({
                     {label} <Badge bg={"secondary"}>Disabled</Badge>
                 </span>
             );
-        } else if (
-            prog === null ||
-            prog === PRODUCTION_NO_INPUT ||
-            (typeof prog === "number" && prog < 0)
-        ) {
+        } else if (prog === null || prog === PRODUCTION_NO_INPUT) {
             label = (
                 <span>
                     {label} <Badge bg={"danger"}>No Input</Badge>
@@ -132,7 +132,13 @@ function ItemDisplay({
         } else if (prog === PRODUCTION_OUTPUT_BLOCKED) {
             label = (
                 <span>
-                    {label} <Badge bg={"warning"}>Output Blocked</Badge>
+                    {label} <Badge bg={"warning"}>Output Full</Badge>
+                </span>
+            );
+        } else if (typeof prog === "number" && prog < 0) {
+            label = (
+                <span>
+                    {label} <Badge>Starting...</Badge>
                 </span>
             );
         } else {
@@ -163,6 +169,11 @@ function ItemDisplay({
                                                         requirement,
                                                     )}
                                                 </td>
+                                                <td>
+                                                    {state.amountThatWeHave[
+                                                        requirement
+                                                    ] ?? 0}
+                                                </td>
                                                 <td className="assembler-count-name">
                                                     ({rate}/s)
                                                 </td>
@@ -176,7 +187,7 @@ function ItemDisplay({
                 </Popover>
             );
             label = (
-                <OverlayTrigger placement={"left"} overlay={overlay}>
+                <OverlayTrigger placement={"right"} overlay={overlay}>
                     {label}
                 </OverlayTrigger>
             );

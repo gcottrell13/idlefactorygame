@@ -1,6 +1,6 @@
 import { partialItems } from "./itemNames";
 
-const ABSOLUTE_MAX_CRAFT = 1000;
+const ABSOLUTE_MAX_CRAFT = 2;
 const maxCraftAtATime: partialItems<number> = {
     "copper-ore": 2,
     "iron-ore": 2,

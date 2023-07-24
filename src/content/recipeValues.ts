@@ -77,11 +77,13 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     // materials
     gear: 0.5,
     pipe: 0.5,
+    "small-battery": 1,
 
     // research
     "research-science-1": 1,
     "research-frames": 1,
     "research-box": 1,
+    "research-small-battery": 1,
 
     // science
     science0: 1,
@@ -131,6 +133,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     // buildings
     constructer: 10,
     "smelter-mk2": 15,
+    "wind-turbine": 10,
 
     //endregion : science 1 -----------------------------------------------------------------
 
@@ -303,8 +306,13 @@ const recipes: Recipes = {
     lumberjack: { food: 1 },
     "lumberjack-school": { wood: 500 },
 
-    electricity: {}, // byproduct only
-    food: {}, // byproduct only
+    electricity: {}, // attach buildings that consume different kinds of fuel
+
+    "research-small-battery": { "copper-wire": 5, science1: 5 },
+    "small-battery": { "copper-wire": 3, "iron-frame": 1 },
+    "wind-turbine": { "iron-frame": 2, "copper-wire": 5, "iron-bar": 2 },
+
+    food: {}, // attach buildings that consume different kinds of fuel
 
     land: {},
     "wet-land": {},
@@ -420,7 +428,7 @@ const recipes: Recipes = {
     // research
     "research-frames": { science0: 5 },
     "research-wire": { science0: 10, "iron-frame": 5 },
-    "research-steel": { science1: 50, coal: 200 },
+    "research-steel": { science1: 50 },
     "research-arbol": { science2: 200 },
     "research-basic-circuit": { science2: 200, wood: 100 },
     "research-assembler": { science2: 15, gear: 50 },

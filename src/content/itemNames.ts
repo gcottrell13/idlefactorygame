@@ -1,6 +1,9 @@
 export type Items =
     | ""
     | "electricity"
+    | "small-battery"
+    | "research-small-battery"
+    | "wind-turbine"
     | "food"
     | "lumberjack"
     | "lumberjack-school"
