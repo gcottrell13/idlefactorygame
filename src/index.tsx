@@ -95,6 +95,8 @@ function ItemDisplay({
 
     const baseCraftTime = GAME.timePerRecipe(itemName);
     const thisPower = state.powerConsumptionProgress[itemName] ?? {};
+    const thisPowerRequirements =
+        GAME.buildingPowerRequirementsPerSecond(itemName);
 
     const assemblers = keys(assemblersMakingThis).map((name) => {
         const no = assemblersMakingThis[name] ?? 0;
@@ -154,7 +156,7 @@ function ItemDisplay({
             const overlay = (
                 <Popover className={"popover-no-max-width"}>
                     <Popover.Body>
-                        Consuming as power:
+                        {Math.floor(no)} {GAME.displayNames(name)} consuming:
                         <Table>
                             <tbody>
                                 {keys(powerRequirements)
@@ -175,9 +177,9 @@ function ItemDisplay({
                                                     ] ?? 0}
                                                 </td>
                                                 <td className="assembler-count-name">
-                                                    ({rate}/s)
+                                                    ({d(rate)}/s)
                                                 </td>
-                                                <td>{no * rate}/s</td>
+                                                <td>{d(no * rate)}/s</td>
                                             </tr>
                                         );
                                     })}
@@ -348,21 +350,38 @@ function ItemDisplay({
         );
     }
 
+    const powerRequirementDisplay = mapPairs(
+        thisPowerRequirements,
+        (value, item) => (
+            <tr key={item}>
+                <td>
+                    <FontAwesomeIcon icon={faBolt} />
+                </td>
+                <td style={{ paddingRight: "10px" }}>
+                    {GAME.displayNames(item)}
+                </td>
+                <td>{d(value)}/s</td>
+            </tr>
+        ),
+    );
+
     const parts = [
         GAME.flavorText[itemName] && <div>{GAME.flavorText[itemName]}</div>,
         madeIn.length > 0 && (
-            <div className={"made-in"}>
-                Made with: <br />
-                {madeIn.join(", ")}
-            </div>
+            <div className={"made-in"}>Made with: {madeIn.join(", ")}</div>
         ),
         formatIngredients.length > 0 && (
             <div className={"ingredient-list"}>
-                Ingredients:{" "}
+                Ingredients:
                 <table>
                     <tbody>{formatIngredients}</tbody>
                 </table>
             </div>
+        ),
+        powerRequirementDisplay.length > 0 && (
+            <Table className={"power-requirement-display"}>
+                <tbody>{powerRequirementDisplay}</tbody>
+            </Table>
         ),
         storageObjects.length > 0 && (
             <div className={"storage-options"}>
@@ -395,10 +414,13 @@ function ItemDisplay({
     ];
 
     const displayParts: JSX.Element[] = [];
-    parts.forEach((part) => {
+    parts.forEach((part, i) => {
         if (part) {
-            if (displayParts.length > 0) displayParts.push(<hr />);
-            displayParts.push(part);
+            displayParts.push(
+                <div key={i} className={"item-popup-detail"}>
+                    {part}
+                </div>,
+            );
         }
     });
 

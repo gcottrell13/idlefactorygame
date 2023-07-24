@@ -95,8 +95,18 @@ button.btn {
     min-height: 50px;
 }
 
+.item-popup-detail {
+    border-bottom: 1px lightgray solid;
+    margin: 1px;
+    padding: 5px;
+}
+
 .game-container .item-row:hover {
     background-color: rgb(212, 208, 208);
+}
+
+.power-requirement-display {
+    margin-bottom: 0 !important;
 }
 
 .assembler-count-name {

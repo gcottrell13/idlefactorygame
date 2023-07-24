@@ -21,7 +21,6 @@ const sections: Sections = [
                 Items: [
                     "prospector",
                     "lumberjack",
-                    "land",
                     "wet-land",
                     "stony-land",
                     "sandy-land",
@@ -42,6 +41,10 @@ const sections: Sections = [
                     "studonite-node",
                     "uranium-node",
                 ],
+            },
+            {
+                Name: "Research",
+                Items: ["research-woodcutting"],
             },
         ],
     },
@@ -100,6 +103,7 @@ const sections: Sections = [
             {
                 Name: "Research",
                 Items: [
+                    "research-metal",
                     "science0",
                     "science1",
                     "research-mass-click",

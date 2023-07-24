@@ -39,21 +39,21 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     lumberjack: 1,
     "lumberjack-school": 1,
     electricity: 1,
-    food: 1,
-
-    land: 10,
+    food: 10,
     "wet-land": 1,
-    "bauxite-node": 1,
-    "coal-node": 1,
-    "copper-node": 1,
-    "gold-node": 1,
-    "iron-node": 1,
-    "oil-node": 1,
-    "sandy-land": 1,
-    "stony-land": 1,
-    "studonite-node": 1,
-    "uranium-node": 1,
+    "coal-node": 10,
+    "copper-node": 10,
+    "iron-node": 10,
+    "gold-node": 10,
+    "oil-node": 10,
+    "sandy-land": 10,
+    "stony-land": 10,
+    "bauxite-node": 10,
+    "studonite-node": 10,
+    "uranium-node": 10,
     wood: 2,
+    "research-metal": 1,
+    "research-woodcutting": 1,
 
     //region : science 0 -----------------------------------------------------------------
     //                           ___
@@ -302,8 +302,8 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
 const recipes: Recipes = {
     "": {},
     begin: {},
-    prospector: { food: 1 },
-    lumberjack: { food: 1 },
+    prospector: { food: 2 },
+    lumberjack: { food: 2 },
     "lumberjack-school": { wood: 500 },
 
     electricity: {}, // attach buildings that consume different kinds of fuel
@@ -314,7 +314,6 @@ const recipes: Recipes = {
 
     food: {}, // attach buildings that consume different kinds of fuel
 
-    land: {},
     "wet-land": {},
     "sandy-land": {},
     "copper-node": {},
@@ -339,7 +338,7 @@ const recipes: Recipes = {
     coal: { "coal-node": 0.01 },
     wood: { tree: 0.25 },
     seed: { wood: 1 },
-    tree: { fertilizer: 5, seed: 1, "clean-water": 5 },
+    tree: {},
     fertilizer: { nitrogen: 10, "wet-land": 0.01 },
     nitrogen: {},
     sand: { "sandy-land": 0.01 },
@@ -398,7 +397,7 @@ const recipes: Recipes = {
     "smelter-mk2": { "iron-frame": 10, "copper-wire": 10, "smelter-mk1": 1 },
     "oil-pump": { steel: 10, pipe: 10, "iron-frame": 10 },
     "water-pump-mk1": { "iron-bar": 15, pipe: 5 },
-    greenhouse: { steel: 10, glass: 20 },
+    greenhouse: { steel: 10, glass: 20, seed: 1 },
     hydroponics: { steel: 50, "basic-circuit": 20, "iron-frame": 2 },
     "water-filter": { steel: 5, pipe: 5 },
     "water-evaporator": { steel: 5, pipe: 5 },
@@ -426,6 +425,8 @@ const recipes: Recipes = {
     science5: { science4: 5, aluminum: 5 },
 
     // research
+    "research-woodcutting": { food: 10 },
+    "research-metal": { food: 10, wood: 10 },
     "research-frames": { science0: 5 },
     "research-wire": { science0: 10, "iron-frame": 5 },
     "research-steel": { science1: 50 },

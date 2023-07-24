@@ -7,14 +7,13 @@ const byHandVerbs: partialItems<string> = {
     stone: "gather",
     coal: "gather",
     seed: "gather",
-    land: "explore",
     begin: "Begin",
 };
 
 const displayNames: partialItems<string> = {
     lumberjack: "Lumberjack",
     "lumberjack-school": "Lumberjack School",
-    food: "Meal",
+    food: "Basic Food",
     assembler: "Assembler",
     constructer: "Constructor",
 
@@ -71,6 +70,8 @@ const displayNames: partialItems<string> = {
     "research-miner-mk1": "Tech: Auto Mining",
     "research-advanced-circuitry": "Tech: Advanced Circuits",
     "research-mass-click": "Tech: Mass Click",
+    "research-woodcutting": "Tech: Wood",
+    "research-metal": "Tech: Metals",
     "rock-crusher": "Rock Crusher",
     adamantium: "Adamantium",
     "sulfuric-acid": "Sulfuric Acid",
@@ -91,7 +92,6 @@ const displayNames: partialItems<string> = {
     "research-box5": "Tech: Box of a Bigger Size 4",
     tank: "Fluid Tank",
     prospector: "Prospector",
-    land: "Survey Land",
     explorer: "Explorer",
     steel: "Steel Ingot",
     pipe: "Steel Pipe",
@@ -134,8 +134,6 @@ const flavorText: partialItems<React.ReactNode> = {
         "Lets you place Boxes and Buildings 10 times as fast.",
     begin: <b>The Beginning</b>,
     prospector: <i>Lets you find some land!</i>,
-    land: <i>Go Prospect that Land!</i>,
-    food: <i>A good meal for a hard worker</i>,
     electricity: <i>Power is Knowledge</i>,
 };
 

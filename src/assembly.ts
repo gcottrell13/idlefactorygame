@@ -438,36 +438,41 @@ export function useProduction(ticksPerSecond: number) {
 
         let discoveredSomething = true;
         const itemsDiscovered: Items[] = [];
+        function _visible(itemName: Items) {
+            markVisibility(itemName, true);
+            itemsDiscovered.push(itemName);
+            discoveredSomething = true;
+        }
 
         while (discoveredSomething) {
             discoveredSomething = false;
             GAME.allItemNames.forEach((itemName) => {
                 if (visible[itemName] === undefined) {
-                    if ((amountThatWeHave[itemName] ?? 0) <= 0) {
-                        const required = GAME.requiredBuildings(itemName);
-                        const haveBuilding =
-                            required.some((x) => visible[x as Items]) ||
-                            required.includes("by-hand");
-                        const recipe = GAME.recipes(itemName);
-                        const haveIngredients = keys(recipe).every(
-                            (key) => visible[key as Items],
-                        );
-                        const unlockedWith = GAME.unlockedWith(itemName).every(
-                            (x) => amountThatWeHave[x] ?? 0,
-                        );
-                        if (
-                            haveBuilding &&
-                            unlockedWith &&
-                            (keys(recipe).length === 0 || haveIngredients)
-                        ) {
-                            markVisibility(itemName, true);
-                            itemsDiscovered.push(itemName);
-                            discoveredSomething = true;
-                        }
-                    } else {
-                        markVisibility(itemName, true);
-                        discoveredSomething = true;
-                        itemsDiscovered.push(itemName);
+                    const unlockedWith = GAME.unlockedWith(itemName).every(
+                        (x) => amountThatWeHave[x] ?? 0,
+                    );
+                    if (
+                        GAME.unlockedWith(itemName).length > 0 &&
+                        unlockedWith
+                    ) {
+                        _visible(itemName);
+                        return;
+                    }
+
+                    const required = GAME.requiredBuildings(itemName);
+                    const haveBuilding =
+                        required.some((x) => visible[x as Items]) ||
+                        required.includes("by-hand");
+                    const recipe = GAME.recipes(itemName);
+                    const haveIngredients = keys(recipe).every(
+                        (key) => visible[key as Items],
+                    );
+                    if (
+                        haveBuilding &&
+                        unlockedWith &&
+                        (keys(recipe).length === 0 || haveIngredients)
+                    ) {
+                        _visible(itemName);
                     }
                 }
             });

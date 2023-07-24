@@ -4,25 +4,33 @@ const unlockedWith: partialItems<Items[]> = {
     "copper-wire": ["research-wire"],
     assembler: ["research-assembler"],
 
+    prospector: ["begin"],
+
     "small-battery": ["research-small-battery"],
     electricity: ["research-small-battery"],
     "wind-turbine": ["research-small-battery"],
+    tree: ["research-woodcutting"],
+    lumberjack: ["research-woodcutting"],
 
     "gas-extractor": ["research-nitrogen"],
-    coal: ["research-steel"],
+    "coal-node": ["research-steel"],
     "smelter-mk2": ["research-steel"],
 
+    "iron-node": ["research-metal"],
+    "copper-node": ["research-metal"],
+    "stony-land": ["research-metal"],
     "iron-frame": ["research-frames"],
     gear: ["research-frames"],
     seed: ["research-arbol"],
     "water-filter": ["research-fluids"],
     "water-pump-mk1": ["research-fluids"],
     pipe: ["research-fluids"],
+    "wet-land": ["research-fluids"],
     gas: ["research-natural-gas"],
     manufacturer: ["research-manufacturer"],
     explorer: ["research-explorer"],
     "basic-circuit": ["research-basic-circuit"],
-    sand: ["research-basic-circuit"],
+    "sandy-land": ["research-basic-circuit"],
     "advanced-circuit": ["research-advanced-circuitry"],
 
     "gold-node": ["research-advanced-circuitry"],
@@ -62,8 +70,6 @@ const unlockedWith: partialItems<Items[]> = {
     "uranium-node": ["research-uranium"],
     centrifuge: ["research-uranium"],
     "rock-crusher": ["research-uranium"],
-
-    land: ["begin"],
 };
 
 export default {
