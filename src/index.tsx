@@ -37,11 +37,7 @@ import {
     faChevronCircleDown,
     faBolt,
 } from "@fortawesome/free-solid-svg-icons";
-
-function d(n: number | undefined) {
-    n ??= 0;
-    return (Math.round(n * 100) / 100).toFixed(2);
-}
+import { formatNumber as d } from "./numberFormatter";
 
 const TICKS_PER_SECOND = 20;
 

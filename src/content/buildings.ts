@@ -64,7 +64,7 @@ const requiredBuildings: {
     "small-battery": ["by-hand", "constructer"],
     electricity: ["wind-turbine"],
     "wind-turbine": ["by-hand", "constructer"],
-    food: ["prospector"],
+    food: ["by-hand", "prospector"],
 
     "adamantium-drill": ["manufacturer"],
     "advanced-circuit": ["assembler"],
