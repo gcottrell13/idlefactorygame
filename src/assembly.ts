@@ -230,8 +230,10 @@ export function useProduction(ticksPerSecond: number) {
         const power = ((stateRef.current.powerConsumptionProgress[itemName] ??=
             {})[building] ??= PRODUCTION_NO_POWER);
         if (typeof power === "number" && power >= ticksPerSecond) {
+            let amount = stateRef.current.assemblers[itemName]![building]!;
             const r = GAME.buildingPowerRequirementsPerSecond(building);
-            consumeMaterials(stateRef.current.amountThatWeHave, r);
+            while (amount-- > 0)
+                consumeMaterials(stateRef.current.amountThatWeHave, r);
         }
     }
 
