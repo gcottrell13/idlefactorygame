@@ -464,12 +464,14 @@ function ItemDisplay({
                     <span className={"speed"}> (+{d(producingRate)}/s)</span>
                 )}
             </Col>
-            <Col xs={3}>
+            <Col xs={7}>
                 {disableButton}
                 {assemblerDisplay}
+                <div className={"buttons-display"}>
+                    {boxButtons}
+                    {assemblerButtons}
+                </div>
             </Col>
-            <Col xs={1}>{boxButtons}</Col>
-            <Col xs={3}>{assemblerButtons}</Col>
         </Row>
     );
 }

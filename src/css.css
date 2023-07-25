@@ -18,6 +18,7 @@
     right: 100px;
     z-index: 1000;
 }
+
 .per-click-amount-buttons button {
     margin-left: 5px;
     min-width: 50px;
@@ -42,6 +43,7 @@ button.make-by-hand {
     border-bottom: 1px lightgray dashed;
     padding: 2px;
 }
+
 .history-display {
     visibility: hidden;
 }
@@ -72,6 +74,10 @@ button.make-by-hand {
     position: sticky;
     position: -webkit-sticky;
     top: 0;
+}
+
+.buttons-display {
+    float: right;
 }
 
 .nav-tabs.section-tabs {
