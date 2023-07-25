@@ -135,6 +135,7 @@ const flavorText: partialItems<React.ReactNode> = {
     begin: <b>The Beginning</b>,
     prospector: <i>Lets you find some land!</i>,
     electricity: <i>Power is Knowledge</i>,
+    "lumberjack-school": <i>They learn all night, and they sleep all day.</i>,
 };
 
 const units: partialItems<string> = {

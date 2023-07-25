@@ -43,6 +43,10 @@ const sections: Sections = [
                 ],
             },
             {
+                Name: "Buildings",
+                Items: ["lumberjack-school"],
+            },
+            {
                 Name: "Research",
                 Items: ["research-woodcutting"],
             },
@@ -158,6 +162,7 @@ const sections: Sections = [
                 Name: "Research",
                 Items: [
                     "science2",
+                    "research-basic-circuit",
                     "research-assembler",
                     "research-nitrogen",
                     "research-fluids",

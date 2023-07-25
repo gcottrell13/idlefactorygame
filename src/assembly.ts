@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import GAME from "./values";
-import { Items, partialItems } from "./content/itemNames";
+import { Items, itemsMap, partialItems } from "./content/itemNames";
 import _ from "lodash";
 import { SMap, forEach, keys, mapPairs, values } from "./smap";
 import { VERSION } from "./version";
@@ -84,11 +84,14 @@ const defaultState = {
     powerConsumptionProgress: {},
 } satisfies State;
 
-const ex = localStorage.getItem("state");
-const existingStorage = {
-    ...defaultState,
-    ...((ex ? JSON.parse(ex) : {}) as State),
-};
+function loadStorage() {
+    const ex = localStorage.getItem("state");
+    const existingStorage = {
+        ...defaultState,
+        ...((ex ? JSON.parse(ex) : {}) as State),
+    };
+    return existingStorage;
+}
 
 function checkAmounts(amounts: SMap<number>, requirements: SMap<number>) {
     return mapPairs(
@@ -150,7 +153,66 @@ function saveGame(state: State) {
     localStorage.setItem("state", JSON.stringify(state));
 }
 
+export function checkVisible(state: State) {
+    const { visible, amountThatWeHave, acknowledged } = state;
+    let discoveredSomething = true;
+    const itemsDiscovered: Items[] = [];
+    function _visible(itemName: Items) {
+        visible[itemName] = true;
+        acknowledged[itemName] ??= false;
+        itemsDiscovered.push(itemName);
+        discoveredSomething = true;
+    }
+
+    while (discoveredSomething) {
+        discoveredSomething = false;
+        GAME.allItemNames.forEach((itemName) => {
+            if (visible[itemName] === undefined) {
+                const unlockedWith = GAME.unlockedWith(itemName).every(
+                    (x) => amountThatWeHave[x] ?? 0,
+                );
+                if (GAME.unlockedWith(itemName).length > 0 && unlockedWith) {
+                    _visible(itemName);
+                    return;
+                }
+
+                const required = GAME.requiredBuildings(itemName);
+                const haveBuilding =
+                    required.some((x) => visible[x as Items]) ||
+                    required.includes("by-hand");
+                const recipe = GAME.recipes(itemName);
+                const haveIngredients = keys(recipe).every(
+                    (key) => visible[key as Items],
+                );
+                if (
+                    haveBuilding &&
+                    unlockedWith &&
+                    (keys(recipe).length === 0 || haveIngredients)
+                ) {
+                    _visible(itemName);
+                    return;
+                }
+
+                if (
+                    GAME.makesAsASideProduct(itemName).some((x) => visible[x])
+                ) {
+                    _visible(itemName);
+                    return;
+                }
+            }
+        });
+    }
+
+    if (
+        itemsDiscovered.length > 0 &&
+        itemsDiscovered.includes("begin") === false
+    ) {
+        // alert(`New Items Discovered!:\n${itemsDiscovered.map(GAME.displayNames).join(',\n')}`);
+    }
+}
+
 export function useProduction(ticksPerSecond: number) {
+    const existingStorage = useMemo(loadStorage, []);
     const stateRef = useRef<State>(existingStorage);
 
     const setState = (state: Partial<State> = {}) => {
@@ -435,63 +497,6 @@ export function useProduction(ticksPerSecond: number) {
         setState();
     }, []);
 
-    const checkVisible = () => {
-        const { visible, amountThatWeHave } = stateRef.current;
-
-        let discoveredSomething = true;
-        const itemsDiscovered: Items[] = [];
-        function _visible(itemName: Items) {
-            markVisibility(itemName, true);
-            itemsDiscovered.push(itemName);
-            discoveredSomething = true;
-        }
-
-        while (discoveredSomething) {
-            discoveredSomething = false;
-            GAME.allItemNames.forEach((itemName) => {
-                if (visible[itemName] === undefined) {
-                    const unlockedWith = GAME.unlockedWith(itemName).every(
-                        (x) => amountThatWeHave[x] ?? 0,
-                    );
-                    if (
-                        GAME.unlockedWith(itemName).length > 0 &&
-                        unlockedWith
-                    ) {
-                        _visible(itemName);
-                        return;
-                    }
-
-                    const required = GAME.requiredBuildings(itemName);
-                    const haveBuilding =
-                        required.some((x) => visible[x as Items]) ||
-                        required.includes("by-hand");
-                    const recipe = GAME.recipes(itemName);
-                    const haveIngredients = keys(recipe).every(
-                        (key) => visible[key as Items],
-                    );
-                    if (
-                        haveBuilding &&
-                        unlockedWith &&
-                        (keys(recipe).length === 0 || haveIngredients)
-                    ) {
-                        _visible(itemName);
-                    }
-                }
-            });
-        }
-
-        itemsDiscovered.forEach((item) => {
-            stateRef.current.acknowledged[item] = false;
-        });
-
-        if (
-            itemsDiscovered.length > 0 &&
-            itemsDiscovered.includes("begin") === false
-        ) {
-            // alert(`New Items Discovered!:\n${itemsDiscovered.map(GAME.displayNames).join(',\n')}`);
-        }
-    };
-
     const acknowledgeItem = (item: Items) => {
         stateRef.current.acknowledged[item] = true;
         setState();
@@ -521,7 +526,7 @@ export function useProduction(ticksPerSecond: number) {
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);
 
-    checkVisible();
+    checkVisible(stateRef.current);
 
     const effectiveProductionRates: partialItems<partialItems<number>> = {};
     const effectiveConsumptionRates: partialItems<partialItems<number>> = {};

@@ -150,7 +150,6 @@ const requiredBuildings: {
     coal: ["miner-mk1"],
     stone: ["miner-mk1", "by-hand"],
     studonite: ["miner-mk1"],
-    dust: [],
     // processed raw
     "iron-bar": ["smelter-mk1"],
     "copper-bar": ["smelter-mk1"],
@@ -159,7 +158,7 @@ const requiredBuildings: {
     glass: ["smelter-mk1"],
     "copper-wire": ["by-hand", "constructer"],
     "clean-water": ["water-filter"],
-    tree: ["prospector"],
+    tree: ["prospector", "greenhouse"],
     wood: ["lumberjack"],
     fertilizer: ["assembler"],
     nitrogen: ["gas-extractor"],

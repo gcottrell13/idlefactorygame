@@ -70,7 +70,6 @@ const itemsCanBeStoreIn: partialItems<(keyof typeof storageSizes)[]> = {
     coal: ["box"],
     stone: ["box"],
     studonite: ["box"],
-    dust: ["box"],
     // processed raw
     "iron-bar": ["box"],
     "copper-bar": ["box"],

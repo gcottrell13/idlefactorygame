@@ -237,7 +237,6 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     // raw
     bauxite: 1,
     studonite: 3,
-    dust: 1,
 
     // processed
     solvent: 4,
@@ -303,8 +302,8 @@ const recipes: Recipes = {
     "": {},
     begin: {},
     prospector: { food: 2 },
-    lumberjack: { food: 2 },
-    "lumberjack-school": { wood: 500 },
+    lumberjack: { food: 2, "iron-bar": 1 },
+    "lumberjack-school": { wood: 500, steel: 30 },
 
     electricity: {}, // attach buildings that consume different kinds of fuel
 
@@ -343,7 +342,6 @@ const recipes: Recipes = {
     nitrogen: {},
     sand: { "sandy-land": 0.01 },
     studonite: { solvent: 0.1, "studonite-node": 0.02 },
-    dust: {},
     bauxite: { "bauxite-node": 0.01 },
     adamantium: { studonite: 1 },
     aluminum: { bauxite: 1, "clean-water": 1 },

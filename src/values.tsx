@@ -53,6 +53,12 @@ const ex = {
 
     allItemNames: allItemNames,
     allAssemblers: keys(buildings.assemblerSpeeds),
+
+    /**
+     *
+     * @param item the item made as a byproduct
+     * @returns the recipes that make this item as a byproduct
+     */
     makesAsASideProduct: (item: Items) => makesAsASideProduct[item],
 
     maxCraftAtATime: (item: Items) =>

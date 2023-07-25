@@ -35,7 +35,6 @@ export type Items =
     | "copper-ore"
     | "copper-wire"
     | "crushed-uranium"
-    | "dust"
     | "evaporate-water"
     | "explorer"
     | "fertilizer"
