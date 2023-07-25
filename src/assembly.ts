@@ -203,12 +203,7 @@ export function checkVisible(state: State) {
         });
     }
 
-    if (
-        itemsDiscovered.length > 0 &&
-        itemsDiscovered.includes("begin") === false
-    ) {
-        // alert(`New Items Discovered!:\n${itemsDiscovered.map(GAME.displayNames).join(',\n')}`);
-    }
+    return itemsDiscovered;
 }
 
 export function useProduction(ticksPerSecond: number) {

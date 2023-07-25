@@ -175,7 +175,7 @@ const requiredBuildings: {
     manufacturer: ["by-hand", "manufacturer"],
     assembler: ["by-hand", "assembler"],
     constructer: ["constructer", "by-hand"],
-    "chemical-plant": ["manufacturer"],
+    "chemical-plant": ["assembler"],
     "miner-mk1": ["constructer"],
     "water-pump-mk1": ["constructer"],
     "oil-pump": ["assembler"],

@@ -1,4 +1,6 @@
 import { State, checkVisible } from "../src/assembly";
+import { Items } from "../src/content/itemNames";
+import { Queue } from "../src/queue";
 import GAME from "../src/values";
 
 describe("tree-check", () => {
@@ -20,15 +22,40 @@ describe("tree-check", () => {
             powerConsumptionProgress: {},
         };
 
-        function oneOfEverything() {
-            GAME.allItemNames.forEach((itemName) => {
-                state.amountThatWeHave[itemName] ??= 1;
-            });
+        const discoveryLog: string[] = [];
+
+        const addOneToItemQueue = new Queue<Items>(["begin"]);
+
+        const maxItemLength = Math.max(
+            ...GAME.allItemNames
+                .filter((x) => x.startsWith("research-"))
+                .map((x) => x.length),
+        );
+
+        while (true) {
+            let addOne: Items | undefined;
+            if ((addOne = addOneToItemQueue.pop())) {
+                state.amountThatWeHave[addOne] = 1;
+            } else {
+                break;
+            }
+
+            const itemsDiscovered = checkVisible(state);
+            if (itemsDiscovered.length > 0)
+                discoveryLog.push(
+                    addOne.padEnd(maxItemLength) +
+                        " unlocks: " +
+                        itemsDiscovered.join(", "),
+                );
+            itemsDiscovered
+                .filter((x) => !x.startsWith("research-"))
+                .forEach(addOneToItemQueue.push);
+            itemsDiscovered
+                .filter((x) => x.startsWith("research-"))
+                .forEach(addOneToItemQueue.push);
         }
 
-        oneOfEverything();
-
-        checkVisible(state);
+        console.log("Discovery log:\n" + discoveryLog.join("\n"));
 
         const notMarkedVisible: string[] = [];
         GAME.allItemNames.forEach((itemName) => {
