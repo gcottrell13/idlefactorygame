@@ -1,6 +1,7 @@
-import { State, checkVisible } from "../src/assembly";
+import { checkVisible } from "../src/assembly";
 import { Items } from "../src/content/itemNames";
 import { Queue } from "../src/queue";
+import { State } from "../src/typeDefs/State";
 import GAME from "../src/values";
 
 describe("tree-check", () => {
