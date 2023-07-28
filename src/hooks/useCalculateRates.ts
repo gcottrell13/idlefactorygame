@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { Items, partialItems } from "../content/itemNames";
-import { mapPairs, keys } from "../smap";
+import { mapPairs, keys, fromPairs } from "../smap";
 import { PRODUCTION_OUTPUT_BLOCKED, State } from "../typeDefs/State";
 import GAME from "../values";
 
@@ -29,6 +29,17 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         return false;
     }
 
+    const assemblerBoosts = fromPairs(
+        keys(GAME.buildingBoosts).map((boostedBuilding) => [
+            boostedBuilding,
+            Math.pow(
+                2,
+                state.amountThatWeHave[GAME.buildingBoosts[boostedBuilding]!] ??
+                    0,
+            ),
+        ]),
+    );
+
     itemFilter.forEach((itemName) => {
         const production: partialItems<number> = {};
         effectiveProductionRates[itemName] = production;
@@ -40,6 +51,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
                     producer != itemName && disabledRecipes[producer]
                         ? 0
                         : GAME.assemblerSpeeds(assemblerName) *
+                          (assemblerBoosts[assemblerName] ?? 1) *
                           assemblerNumber *
                           rate,
             );
@@ -49,11 +61,13 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         if (GAME.sideProducts(itemName).length === 0) {
             const assemblersMakingThis = assemblers[itemName] ?? {};
             const baseCraftTime = GAME.timePerRecipe(itemName);
-            mapPairs(assemblersMakingThis, (assemblerCount, key) => {
+            mapPairs(assemblersMakingThis, (assemblerCount, assemblerName) => {
                 const speed =
-                    (GAME.assemblerSpeeds(key) * assemblerCount) /
+                    (GAME.assemblerSpeeds(assemblerName) *
+                        (assemblerBoosts[assemblerName] ?? 1) *
+                        assemblerCount) /
                     baseCraftTime;
-                production[key] = speed;
+                production[assemblerName] = speed;
             });
         }
     });

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import GAME from "../values";
-import { Items, itemsMap, partialItems } from "../content/itemNames";
+import { Items } from "../content/itemNames";
 import _ from "lodash";
-import { forEach, keys, mapPairs, values } from "../smap";
+import { forEach, keys, values } from "../smap";
 import { VERSION } from "../version";
 import { useLocalStorage } from "./useLocalStorage";
 import {
@@ -17,9 +17,7 @@ import {
     consumeMaterials,
     consumeMaterialsFromRecipe,
     howManyRecipesCanBeMade,
-    round,
 } from "../assembly";
-import { useCalculateRates } from "./useCalculateRates";
 
 export function useProduction(ticksPerSecond: number) {
     const { existingStorage, saveGame, resetGame } = useLocalStorage();
@@ -105,7 +103,11 @@ export function useProduction(ticksPerSecond: number) {
             let amount = stateRef.current.assemblers[itemName]![building]!;
             const r = GAME.buildingPowerRequirementsPerSecond(building);
             while (amount-- > 0)
-                consumeMaterials(stateRef.current.amountThatWeHave, r);
+                consumeMaterials(
+                    undefined,
+                    stateRef.current.amountThatWeHave,
+                    r,
+                );
         }
     }
 
@@ -139,79 +141,98 @@ export function useProduction(ticksPerSecond: number) {
         keys(assemblers)
             .sort()
             .forEach((itemName) => {
-                forEach(assemblers[itemName], (assemblerCount, level) => {
-                    if (stateRef.current.disabledRecipes[itemName] === true) {
-                        return;
-                    }
+                forEach(
+                    assemblers[itemName],
+                    (assemblerCount, assemblerName) => {
+                        if (
+                            stateRef.current.disabledRecipes[itemName] === true
+                        ) {
+                            return;
+                        }
 
-                    const amountAddPerTick =
-                        (GAME.assemblerSpeeds(level) *
-                            assemblerCount *
-                            timeStep) /
-                        GAME.timePerRecipe(itemName);
-                    let time = productionProgress[itemName]?.[level];
+                        let amountAddPerTick =
+                            (GAME.assemblerSpeeds(assemblerName) *
+                                assemblerCount *
+                                timeStep) /
+                            GAME.timePerRecipe(itemName);
 
-                    if (Number.isNaN(time) || time === undefined) time = null;
+                        const booster = GAME.buildingBoosts[assemblerName];
+                        if (booster) {
+                            amountAddPerTick *= Math.pow(
+                                2,
+                                amountThatWeHave[booster] ?? 0,
+                            );
+                        }
 
-                    if (!storage[itemName]) storage[itemName] = {};
+                        let time =
+                            productionProgress[itemName]?.[assemblerName];
 
-                    // there's probably a better way to organize this code
-
-                    if (time === PRODUCTION_OUTPUT_BLOCKED) {
-                        if (addToTotal(itemName, 1)) {
+                        if (Number.isNaN(time) || time === undefined)
                             time = null;
-                        } else {
-                            return;
-                        }
-                    }
 
-                    const hadNoInput = time === PRODUCTION_NO_INPUT;
-                    const hasPower = checkPowerConsumption(itemName, level);
+                        if (!storage[itemName]) storage[itemName] = {};
 
-                    if (hasPower && (time === null || hadNoInput)) {
-                        time = consumeMaterialsFromRecipe(
-                            itemName,
-                            amountThatWeHave,
-                        );
-                        if (time === null) time = PRODUCTION_NO_INPUT;
-                        else if (hadNoInput)
-                            time = -ticksPerSecond * 0.5 * amountAddPerTick;
-                    }
+                        // there's probably a better way to organize this code
 
-                    if (typeof time === "number") {
-                        if (!hasPower) {
-                            return;
-                        }
-                        doPowerConsumption(itemName, level);
-
-                        let t: number = time as any;
-                        t += amountAddPerTick;
-                        time = t;
-
-                        while (t >= 1) {
+                        if (time === PRODUCTION_OUTPUT_BLOCKED) {
                             if (addToTotal(itemName, 1)) {
-                                t -= 1;
-                                time = t;
-                                if (
-                                    consumeMaterialsFromRecipe(
-                                        itemName,
-                                        amountThatWeHave,
-                                    ) === null
-                                ) {
-                                    time = PRODUCTION_NO_INPUT;
-                                    break;
-                                }
+                                time = null;
                             } else {
-                                time = PRODUCTION_OUTPUT_BLOCKED;
-                                break;
+                                return;
                             }
                         }
-                    }
 
-                    if (!productionProgress[itemName])
-                        productionProgress[itemName] = {};
-                    productionProgress[itemName]![level] = time;
-                });
+                        const hadNoInput = time === PRODUCTION_NO_INPUT;
+                        const hasPower = checkPowerConsumption(
+                            itemName,
+                            assemblerName,
+                        );
+
+                        if (hasPower && (time === null || hadNoInput)) {
+                            time = consumeMaterialsFromRecipe(
+                                itemName,
+                                amountThatWeHave,
+                            );
+                            if (time === null) time = PRODUCTION_NO_INPUT;
+                            else if (hadNoInput)
+                                time = -ticksPerSecond * 0.5 * amountAddPerTick;
+                        }
+
+                        if (typeof time === "number") {
+                            if (!hasPower) {
+                                return;
+                            }
+                            doPowerConsumption(itemName, assemblerName);
+
+                            let t: number = time as any;
+                            t += amountAddPerTick;
+                            time = t;
+
+                            while (t >= 1) {
+                                if (addToTotal(itemName, 1)) {
+                                    t -= 1;
+                                    time = t;
+                                    if (
+                                        consumeMaterialsFromRecipe(
+                                            itemName,
+                                            amountThatWeHave,
+                                        ) === null
+                                    ) {
+                                        time = PRODUCTION_NO_INPUT;
+                                        break;
+                                    }
+                                } else {
+                                    time = PRODUCTION_OUTPUT_BLOCKED;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!productionProgress[itemName])
+                            productionProgress[itemName] = {};
+                        productionProgress[itemName]![assemblerName] = time;
+                    },
+                );
             });
 
         return {

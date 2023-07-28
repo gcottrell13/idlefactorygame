@@ -1,5 +1,4 @@
 export type Items =
-    | ""
     | "begin"
     | "food"
     | "lumberjack"
@@ -125,7 +124,24 @@ export type Items =
     | "studonite-node"
     | "bauxite-node"
     | "uranium-node"
-    | "gold-node";
+    | "gold-node"
+    | "boost-lumberjack"
+    | "boost-miner-mk1"
+    | "boost-chemical-plant"
+    | "boost-adamantium-drill"
+    | "boost-gas-extractor"
+    | "boost-lumberjack-school"
+    | "boost-oil-pump"
+    | "boost-rock-crusher"
+    | "boost-smelter-mk1"
+    | "boost-smelter-mk2"
+    | "boost-assembler"
+    | "boost-water-pump"
+    | "boost-centrifuge"
+    | "boost-explorer"
+    | "boost-greenhouse"
+    | "boost-manufacturer"
+    | "";
 
 export type itemsMap<T> = { [p in Items]: T };
 export type partialItems<T> = Partial<itemsMap<T>>;

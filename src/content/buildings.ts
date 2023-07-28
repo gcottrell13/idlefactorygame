@@ -52,6 +52,28 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     [p in Buildings]: partialItems<number>;
 };
 
+/**
+ * A list of items that will double building efficiency for each item owned
+ */
+const buildingBoosts: { [p in Buildings]?: Items } = {
+    lumberjack: "boost-lumberjack",
+    "miner-mk1": "boost-miner-mk1",
+    "chemical-plant": "boost-chemical-plant",
+    "adamantium-drill": "boost-adamantium-drill",
+    "gas-extractor": "boost-gas-extractor",
+    "lumberjack-school": "boost-lumberjack-school",
+    "oil-pump": "boost-oil-pump",
+    "rock-crusher": "boost-rock-crusher",
+    "smelter-mk1": "boost-smelter-mk1",
+    "smelter-mk2": "boost-smelter-mk2",
+    assembler: "boost-assembler",
+    "water-pump-mk1": "boost-water-pump",
+    centrifuge: "boost-centrifuge",
+    explorer: "boost-explorer",
+    greenhouse: "boost-greenhouse",
+    manufacturer: "boost-manufacturer",
+};
+
 const requiredBuildings: {
     [p in Items]: (Buildings | "by-hand")[];
 } = {
@@ -96,6 +118,23 @@ const requiredBuildings: {
     "research-mass-click": ["by-hand"],
     "research-basic-circuit": ["by-hand"],
     "research-woodcutting": ["by-hand"],
+
+    "boost-lumberjack": ["manufacturer"],
+    "boost-miner-mk1": ["manufacturer"],
+    "boost-chemical-plant": ["manufacturer"],
+    "boost-adamantium-drill": ["manufacturer"],
+    "boost-gas-extractor": ["manufacturer"],
+    "boost-lumberjack-school": ["manufacturer"],
+    "boost-oil-pump": ["manufacturer"],
+    "boost-rock-crusher": ["manufacturer"],
+    "boost-smelter-mk1": ["manufacturer"],
+    "boost-smelter-mk2": ["manufacturer"],
+    "boost-assembler": ["manufacturer"],
+    "boost-water-pump": ["manufacturer"],
+    "boost-centrifuge": ["manufacturer"],
+    "boost-explorer": ["manufacturer"],
+    "boost-greenhouse": ["manufacturer"],
+    "boost-manufacturer": ["manufacturer"],
 
     "research-science-1": ["by-hand"],
     "research-science-2": ["by-hand"],
@@ -199,4 +238,5 @@ export default {
     assemblerSpeeds,
     requiredBuildings,
     buildingPowerRequirementsPerSecond,
+    buildingBoosts,
 };

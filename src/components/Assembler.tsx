@@ -33,7 +33,11 @@ export function Assembler({
     const thisPower = state.powerConsumptionProgress[itemName] ?? {};
 
     const no = assemblersMakingThis[assemblerName] ?? 0;
-    const speedPer = GAME.assemblerSpeeds(assemblerName) / baseCraftTime;
+    const boost = GAME.buildingBoosts[assemblerName];
+    let speedPer = GAME.assemblerSpeeds(assemblerName) / baseCraftTime;
+    if (boost) {
+        speedPer *= Math.pow(2, state.amountThatWeHave[boost] ?? 0);
+    }
     let label = (
         <span>
             <span className={"assembler-count-name"}>

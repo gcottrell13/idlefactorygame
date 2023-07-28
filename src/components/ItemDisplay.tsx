@@ -122,13 +122,16 @@ export function ItemDisplay({
     const othersConsumingRate =
         _.sum(values(othersConsuming)) + othersConsumingAsPowerRate;
 
+    const recipeScale = GAME.recipeScaleFactor(itemName);
     const recipe = GAME.recipes(itemName);
     const formatIngredients = keys(recipe)
         .map((name) => [name, recipe[name]!] as const)
         .filter(([_name, count]) => count > 0)
         .map(([name, count]) => (
             <tr key={name}>
-                <td className={"popover-ingredient-count"}>{count}</td>
+                <td className={"popover-ingredient-count"}>
+                    {count * recipeScale}
+                </td>
                 <td>{GAME.displayNames(name)}</td>
                 <td>
                     <span className={"popover-ingredient-has"}>

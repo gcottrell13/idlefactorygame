@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { SMap, keys, mapValues, values } from "./smap";
 import { Items, partialItems } from "./content/itemNames";
-import buildings from "./content/buildings";
+import buildings, { Buildings } from "./content/buildings";
 import byproducts from "./content/byproducts";
 import displayStrings from "./content/displayStrings";
 import hideOnBuy from "./content/hideOnBuy";
@@ -72,6 +72,8 @@ const ex = {
     MIN_STORAGE: storage.MIN_STORAGE,
     buildingPowerRequirementsPerSecond: (item: Items) =>
         buildings.buildingPowerRequirementsPerSecond[item] ?? {},
+
+    buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
 };
 
 keys(recipeValues.recipes).forEach((item) => {

@@ -28,8 +28,14 @@ export function howManyRecipesCanBeMade(
 
     let numberOfRecipesToMake = Number.MAX_SAFE_INTEGER;
 
+    const scale = Math.pow(
+        GAME.recipeScaleFactor(itemName),
+        amounts[itemName] ?? 0,
+    );
+
     _.toPairs(recipe).forEach((pair) => {
-        const [ingredientName, requiredCount] = pair;
+        let [ingredientName, requiredCount] = pair;
+        requiredCount *= scale;
         const weHave = amounts[ingredientName] ?? 0;
         if (weHave < requiredCount) {
             numberOfRecipesToMake = 0;
@@ -45,11 +51,21 @@ export function howManyRecipesCanBeMade(
 }
 
 export function consumeMaterials(
+    itemName: Items | undefined,
     amountWeHave: SMap<number>,
     recipe: SMap<number>,
 ) {
+    const scale = itemName
+        ? Math.pow(
+              GAME.recipeScaleFactor(itemName),
+              amountWeHave[itemName] ?? 0,
+          )
+        : 1;
+
     _.toPairs(recipe).forEach((pair) => {
-        const [ingredientName, requiredCount] = pair;
+        let [ingredientName, requiredCount] = pair;
+        requiredCount *= scale;
+
         const toGrab = requiredCount;
 
         const weHave = amountWeHave[ingredientName] ?? 0;
@@ -67,7 +83,7 @@ export function consumeMaterialsFromRecipe(
 
     if (howManyRecipesCanBeMade(itemName, amounts) <= 0) return null;
 
-    consumeMaterials(amounts, recipe);
+    consumeMaterials(itemName, amounts, recipe);
     return 0;
 }
 

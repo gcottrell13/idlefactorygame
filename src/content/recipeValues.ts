@@ -55,6 +55,23 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "research-metal": 1,
     "research-woodcutting": 1,
 
+    "boost-lumberjack": 10,
+    "boost-miner-mk1": 10,
+    "boost-chemical-plant": 10,
+    "boost-adamantium-drill": 10,
+    "boost-gas-extractor": 10,
+    "boost-lumberjack-school": 10,
+    "boost-oil-pump": 10,
+    "boost-rock-crusher": 10,
+    "boost-smelter-mk1": 10,
+    "boost-smelter-mk2": 10,
+    "boost-assembler": 10,
+    "boost-water-pump": 10,
+    "boost-centrifuge": 10,
+    "boost-explorer": 10,
+    "boost-greenhouse": 10,
+    "boost-manufacturer": 10,
+
     //region : science 0 -----------------------------------------------------------------
     //                           ___
     //                          / _ \
@@ -453,6 +470,23 @@ const recipes: Recipes = {
     "research-science-4": { science3: 400, "advanced-circuit": 100 },
     "research-science-5": { science4: 500, aluminum: 500, computer: 50 },
 
+    "boost-lumberjack": { science4: 100 },
+    "boost-miner-mk1": { science4: 100 },
+    "boost-chemical-plant": { science4: 100 },
+    "boost-adamantium-drill": { science4: 100 },
+    "boost-gas-extractor": { science4: 100 },
+    "boost-lumberjack-school": { science4: 100 },
+    "boost-oil-pump": { science4: 100 },
+    "boost-rock-crusher": { science4: 100 },
+    "boost-smelter-mk1": { science4: 100 },
+    "boost-smelter-mk2": { science4: 100 },
+    "boost-assembler": { science4: 100 },
+    "boost-water-pump": { science4: 100 },
+    "boost-centrifuge": { science4: 100 },
+    "boost-explorer": { science4: 100 },
+    "boost-greenhouse": { science4: 100 },
+    "boost-manufacturer": { science4: 100 },
+
     "research-box": { science1: 1 },
     "research-box2": { science1: 1, box: 10 },
     "research-box3": { science1: 10, box: 100 },
@@ -462,10 +496,23 @@ const recipes: Recipes = {
 
 const recipeScaleFactor: partialItems<number> = {
     // default 1.0
-    science1: 1.001,
-    science2: 1.001,
-    science3: 1.001,
-    science4: 1.001,
+
+    "boost-lumberjack": 3,
+    "boost-miner-mk1": 3,
+    "boost-chemical-plant": 3,
+    "boost-adamantium-drill": 3,
+    "boost-gas-extractor": 3,
+    "boost-lumberjack-school": 3,
+    "boost-oil-pump": 3,
+    "boost-rock-crusher": 3,
+    "boost-smelter-mk1": 3,
+    "boost-smelter-mk2": 3,
+    "boost-assembler": 3,
+    "boost-water-pump": 3,
+    "boost-centrifuge": 3,
+    "boost-explorer": 3,
+    "boost-greenhouse": 3,
+    "boost-manufacturer": 3,
 };
 
 export default {

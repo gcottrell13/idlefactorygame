@@ -127,6 +127,23 @@ const displayNames: partialItems<string> = {
     "studonite-node": "Studonite Deposit",
     "bauxite-node": "Bauxite Deposit",
     "uranium-node": "Uranium Deposit",
+
+    "boost-lumberjack": "Boost: Lumberjack",
+    "boost-miner-mk1": "Boost: Miner Mark 1",
+    "boost-chemical-plant": "Boost: Chemical Plant",
+    "boost-adamantium-drill": "Boost: Adamantium Drill",
+    "boost-gas-extractor": "Boost: Gas Extractor",
+    "boost-lumberjack-school": "Boost: Lumberjack School",
+    "boost-oil-pump": "Boost: Oil Pumps",
+    "boost-rock-crusher": "Boost: Rock Crusher",
+    "boost-smelter-mk1": "Boost: Smelter",
+    "boost-smelter-mk2": "Boost: Foundry",
+    "boost-assembler": "Boost: Assembler",
+    "boost-water-pump": "Boost: Water Pump",
+    "boost-centrifuge": "Boost: Centrifuge",
+    "boost-explorer": "Boost: Explorer",
+    "boost-greenhouse": "Boost: Greenhouse",
+    "boost-manufacturer": "Boost: Manufacturer",
 };
 
 const flavorText: partialItems<React.ReactNode> = {
@@ -136,6 +153,23 @@ const flavorText: partialItems<React.ReactNode> = {
     prospector: <i>Lets you find some land!</i>,
     electricity: <i>Power is Knowledge</i>,
     "lumberjack-school": <i>They learn all night, and they sleep all day.</i>,
+
+    "boost-lumberjack": "Increase Lumberjack output by 2x",
+    "boost-miner-mk1": "Increase Miner Mark 1 output by 2x",
+    "boost-chemical-plant": "Increase Chemical Plant output by 2x",
+    "boost-adamantium-drill": "Increase Adamantium Drill output by 2x",
+    "boost-gas-extractor": "Increase Gas Extractor output by 2x",
+    "boost-lumberjack-school": "Increase Lumberjack School output by 2x",
+    "boost-oil-pump": "Increase Oil Pumps output by 2x",
+    "boost-rock-crusher": "Increase Rock Crusher output by 2x",
+    "boost-smelter-mk1": "Increase Smelter output by 2x",
+    "boost-smelter-mk2": "Increase Foundry output by 2x",
+    "boost-assembler": "Increase Assembler output by 2x",
+    "boost-water-pump": "Increase Water Pump output by 2x",
+    "boost-centrifuge": "Increase Centrifuge output by 2x",
+    "boost-explorer": "Increase Explorer output by 2x",
+    "boost-greenhouse": "Increase Greenhouse output by 2x",
+    "boost-manufacturer": "Increase Manufacturer output by 2x",
 };
 
 const units: partialItems<string> = {
