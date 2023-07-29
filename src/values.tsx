@@ -74,6 +74,7 @@ const ex = {
         buildings.buildingPowerRequirementsPerSecond[item] ?? {},
 
     buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
+    buildingPowerDisplayWord: buildings.buildingPowerDisplayWord,
 };
 
 keys(recipeValues.recipes).forEach((item) => {

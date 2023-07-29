@@ -21,7 +21,7 @@ import {
     faChevronCircleDown,
     faBolt,
 } from "@fortawesome/free-solid-svg-icons";
-import { formatNumber as d } from "../numberFormatter";
+import { formatNumber as d, formatSeconds } from "../numberFormatter";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
@@ -130,7 +130,7 @@ export function ItemDisplay({
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
-                    {count * recipeScale}
+                    {count * Math.pow(recipeScale, amt)}
                 </td>
                 <td>{GAME.displayNames(name)}</td>
                 <td>
@@ -255,6 +255,8 @@ export function ItemDisplay({
         ),
     );
 
+    const unlockedAt = formatSeconds(state.timeUnlockedAt[itemName] ?? 0);
+
     const parts = [
         GAME.flavorText[itemName] && <div>{GAME.flavorText[itemName]}</div>,
         madeIn.length > 0 && (
@@ -299,8 +301,11 @@ export function ItemDisplay({
             </div>
         ),
         unlocks.length > 0 && (
-            <div className={"unlock-list"}>Unlocks: {unlocks.join(", ")}</div>
+            <div className={"unlock-list"}>
+                <b>Unlocks:</b> {unlocks.join(", ")}
+            </div>
         ),
+        <i>Unlocked at: {unlockedAt}</i>,
     ];
 
     const displayParts: JSX.Element[] = [];

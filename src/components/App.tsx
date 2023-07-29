@@ -19,6 +19,7 @@ import { VERSION } from "../version";
 import { ItemDisplay } from "./ItemDisplay";
 import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
+import { formatSeconds } from "../numberFormatter";
 
 type Props = {
     ticksPerSecond: number;
@@ -208,6 +209,9 @@ export function App({ ticksPerSecond }: Props) {
                     Reset
                 </Button>{" "}
                 <span>v{VERSION.join(".")}</span>
+                <span className={"play-timer"}>
+                    {formatSeconds(state.timeSpentPlaying)}
+                </span>
             </div>
             <Tabs
                 activeKey={currentTab}

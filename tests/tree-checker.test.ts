@@ -10,6 +10,8 @@ describe("tree-check", () => {
      */
     test("all-items-are-reachable", () => {
         const state: State = {
+            timeSpentPlaying: 0,
+            timeUnlockedAt: {},
             version: [0, 0, 0] as any,
             displayAmount: {},
             amountThatWeHave: {},

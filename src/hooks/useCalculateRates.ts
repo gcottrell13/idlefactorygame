@@ -29,16 +29,21 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         return false;
     }
 
-    const assemblerBoosts = fromPairs(
-        keys(GAME.buildingBoosts).map((boostedBuilding) => [
-            boostedBuilding,
+    const assemblerBoosts: partialItems<number> = fromPairs(
+        GAME.allAssemblers.map((assemblerName) => [
+            assemblerName,
             Math.pow(
                 2,
-                state.amountThatWeHave[GAME.buildingBoosts[boostedBuilding]!] ??
-                    0,
+                state.amountThatWeHave[
+                    GAME.buildingBoosts[assemblerName] ?? ""
+                ] ?? 0,
             ),
         ]),
     );
+
+    function getBoost(item: Items) {
+        return assemblerBoosts[item] ?? 1;
+    }
 
     itemFilter.forEach((itemName) => {
         const production: partialItems<number> = {};
@@ -51,7 +56,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
                     producer != itemName && disabledRecipes[producer]
                         ? 0
                         : GAME.assemblerSpeeds(assemblerName) *
-                          (assemblerBoosts[assemblerName] ?? 1) *
+                          getBoost(assemblerName) *
                           assemblerNumber *
                           rate,
             );
@@ -64,7 +69,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             mapPairs(assemblersMakingThis, (assemblerCount, assemblerName) => {
                 const speed =
                     (GAME.assemblerSpeeds(assemblerName) *
-                        (assemblerBoosts[assemblerName] ?? 1) *
+                        getBoost(assemblerName) *
                         assemblerCount) /
                     baseCraftTime;
                 production[assemblerName] = speed;
@@ -110,7 +115,9 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
                 if (assemblerIsStuckOrDisabled(itemName, assemblerName)) return;
                 rate +=
-                    (GAME.assemblerSpeeds(assemblerName) * assemblerCount) /
+                    (GAME.assemblerSpeeds(assemblerName) *
+                        getBoost(assemblerName) *
+                        assemblerCount) /
                     baseCraftTime;
             });
             (effectiveConsumptionRates[ingredient] ??= {})[itemName] =

@@ -71,6 +71,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "boost-explorer": 10,
     "boost-greenhouse": 10,
     "boost-manufacturer": 10,
+    "boost-constructor": 10,
 
     //region : science 0 -----------------------------------------------------------------
     //                           ___
@@ -443,7 +444,7 @@ const recipes: Recipes = {
     "research-woodcutting": { food: 10 },
     "research-metal": { food: 10, wood: 10 },
     "research-frames": { science0: 5 },
-    "research-wire": { science0: 10, "iron-frame": 5 },
+    "research-wire": { science0: 10 },
     "research-steel": { science1: 50 },
     "research-arbol": { science2: 200 },
     "research-basic-circuit": { science2: 200, wood: 100 },
@@ -470,22 +471,23 @@ const recipes: Recipes = {
     "research-science-4": { science3: 400, "advanced-circuit": 100 },
     "research-science-5": { science4: 500, aluminum: 500, computer: 50 },
 
-    "boost-lumberjack": { science4: 100 },
-    "boost-miner-mk1": { science4: 100 },
-    "boost-chemical-plant": { science4: 100 },
-    "boost-adamantium-drill": { science4: 100 },
-    "boost-gas-extractor": { science4: 100 },
+    "boost-lumberjack": { science1: 100 },
+    "boost-miner-mk1": { science2: 100 },
+    "boost-chemical-plant": { science2: 100 },
+    "boost-adamantium-drill": { science5: 100 },
+    "boost-gas-extractor": { science3: 100 },
     "boost-lumberjack-school": { science4: 100 },
-    "boost-oil-pump": { science4: 100 },
+    "boost-oil-pump": { science3: 100 },
     "boost-rock-crusher": { science4: 100 },
-    "boost-smelter-mk1": { science4: 100 },
-    "boost-smelter-mk2": { science4: 100 },
-    "boost-assembler": { science4: 100 },
-    "boost-water-pump": { science4: 100 },
-    "boost-centrifuge": { science4: 100 },
-    "boost-explorer": { science4: 100 },
-    "boost-greenhouse": { science4: 100 },
+    "boost-smelter-mk1": { science2: 100 },
+    "boost-smelter-mk2": { science2: 100 },
+    "boost-assembler": { science3: 100 },
+    "boost-water-pump": { science3: 100 },
+    "boost-centrifuge": { science5: 100 },
+    "boost-explorer": { science3: 100 },
+    "boost-greenhouse": { science3: 100 },
     "boost-manufacturer": { science4: 100 },
+    "boost-constructor": { science2: 100 },
 
     "research-box": { science1: 1 },
     "research-box2": { science1: 1, box: 10 },
@@ -513,6 +515,7 @@ const recipeScaleFactor: partialItems<number> = {
     "boost-explorer": 3,
     "boost-greenhouse": 3,
     "boost-manufacturer": 3,
+    "boost-constructor": 3,
 };
 
 export default {

@@ -85,6 +85,11 @@ button.make-by-hand {
     z-index: 999;
 }
 
+.play-timer {
+    font-style: italic;
+    margin-left: 20px;
+}
+
 .subsection-header {
     line-height: 40px;
     border-bottom: 1px lightgray solid;

@@ -52,10 +52,18 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     [p in Buildings]: partialItems<number>;
 };
 
+const buildingPowerDisplayWord: partialItems<string> = {
+    prospector: "Food",
+    lumberjack: "Food",
+    "smelter-mk1": "Fuel",
+    "smelter-mk2": "Fuel",
+} satisfies { [p in Buildings]?: string };
+
 /**
  * A list of items that will double building efficiency for each item owned
  */
 const buildingBoosts: { [p in Buildings]?: Items } = {
+    constructer: "boost-constructor",
     lumberjack: "boost-lumberjack",
     "miner-mk1": "boost-miner-mk1",
     "chemical-plant": "boost-chemical-plant",
@@ -120,14 +128,14 @@ const requiredBuildings: {
     "research-woodcutting": ["by-hand"],
 
     "boost-lumberjack": ["manufacturer"],
-    "boost-miner-mk1": ["manufacturer"],
+    "boost-miner-mk1": ["assembler"],
     "boost-chemical-plant": ["manufacturer"],
     "boost-adamantium-drill": ["manufacturer"],
     "boost-gas-extractor": ["manufacturer"],
-    "boost-lumberjack-school": ["manufacturer"],
+    "boost-lumberjack-school": ["assembler"],
     "boost-oil-pump": ["manufacturer"],
     "boost-rock-crusher": ["manufacturer"],
-    "boost-smelter-mk1": ["manufacturer"],
+    "boost-smelter-mk1": ["assembler"],
     "boost-smelter-mk2": ["manufacturer"],
     "boost-assembler": ["manufacturer"],
     "boost-water-pump": ["manufacturer"],
@@ -135,6 +143,7 @@ const requiredBuildings: {
     "boost-explorer": ["manufacturer"],
     "boost-greenhouse": ["manufacturer"],
     "boost-manufacturer": ["manufacturer"],
+    "boost-constructor": ["by-hand", "assembler"],
 
     "research-science-1": ["by-hand"],
     "research-science-2": ["by-hand"],
@@ -239,4 +248,5 @@ export default {
     requiredBuildings,
     buildingPowerRequirementsPerSecond,
     buildingBoosts,
+    buildingPowerDisplayWord,
 };

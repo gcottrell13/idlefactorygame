@@ -14,6 +14,8 @@ const defaultState = {
     acknowledged: {},
     disabledRecipes: {},
     powerConsumptionProgress: {},
+    timeSpentPlaying: 0,
+    timeUnlockedAt: {},
 } satisfies State;
 
 function loadStorage() {

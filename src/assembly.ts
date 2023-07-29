@@ -88,7 +88,13 @@ export function consumeMaterialsFromRecipe(
 }
 
 export function checkVisible(state: State) {
-    const { visible, amountThatWeHave, acknowledged } = state;
+    const {
+        visible,
+        amountThatWeHave,
+        acknowledged,
+        timeSpentPlaying,
+        timeUnlockedAt,
+    } = state;
     let discoveredSomething = true;
     const itemsDiscovered: Items[] = [];
     function _visible(itemName: Items) {
@@ -96,6 +102,7 @@ export function checkVisible(state: State) {
         acknowledged[itemName] ??= false;
         itemsDiscovered.push(itemName);
         discoveredSomething = true;
+        timeUnlockedAt[itemName] ??= timeSpentPlaying;
     }
 
     while (discoveredSomething) {
@@ -103,10 +110,13 @@ export function checkVisible(state: State) {
         GAME.allItemNames.forEach((itemName) => {
             if (visible[itemName] === undefined) {
                 const unlockedWith = GAME.unlockedWith(itemName).every(
-                    (x) => amountThatWeHave[x] ?? 0,
+                    (x) => (amountThatWeHave[x] ?? 0) > 0,
                 );
                 if (GAME.unlockedWith(itemName).length > 0 && unlockedWith) {
                     _visible(itemName);
+                    return;
+                }
+                if (!unlockedWith) {
                     return;
                 }
 

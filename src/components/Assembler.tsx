@@ -48,11 +48,12 @@ export function Assembler({
     );
     const prog = progress[assemblerName] ?? null;
     if (thisPower[assemblerName] === PRODUCTION_NO_POWER) {
+        const word = GAME.buildingPowerDisplayWord[assemblerName] ?? "Power";
         label = (
             <span>
                 {label}{" "}
                 <Badge bg={"danger"}>
-                    <FontAwesomeIcon icon={faBolt} /> No Power
+                    <FontAwesomeIcon icon={faBolt} /> No {word}
                 </Badge>
             </span>
         );
@@ -65,7 +66,7 @@ export function Assembler({
     } else if (prog === null || prog === PRODUCTION_NO_INPUT) {
         label = (
             <span>
-                {label} <Badge bg={"danger"}>No Input</Badge>
+                {label} <Badge bg={"danger"}>Missing Input</Badge>
             </span>
         );
     } else if (prog === PRODUCTION_OUTPUT_BLOCKED) {

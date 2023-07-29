@@ -9,6 +9,13 @@ export interface State {
     version: typeof VERSION;
 
     /**
+     * the number of ticks spent playing
+     */
+    timeSpentPlaying: number;
+
+    timeUnlockedAt: partialItems<number>;
+
+    /**
      * [what its making][the building]
      */
     assemblers: partialItems<partialItems<number>>;

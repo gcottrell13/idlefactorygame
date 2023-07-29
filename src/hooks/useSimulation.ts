@@ -342,6 +342,7 @@ export function useProduction(ticksPerSecond: number) {
         const i = setTimeout(() => {
             setState(doProduction(1 / ticksPerSecond));
             setCounter(c + 1);
+            stateRef.current.timeSpentPlaying += 1 / ticksPerSecond;
         }, 1000 / ticksPerSecond);
         return () => {
             clearTimeout(i);

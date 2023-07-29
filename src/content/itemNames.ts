@@ -141,6 +141,7 @@ export type Items =
     | "boost-explorer"
     | "boost-greenhouse"
     | "boost-manufacturer"
+    | "boost-constructor"
     | "";
 
 export type itemsMap<T> = { [p in Items]: T };
