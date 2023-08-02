@@ -27,7 +27,7 @@ export function useProduction(ticksPerSecond: number) {
         stateRef.current = { ...stateRef.current, ...state };
     };
 
-    const [c, setCounter] = useState<number>(0);
+    const [fps, setFps] = useState<number>(0);
 
     function calculateStorage(itemName: Items) {
         const canBeStoredIn = GAME.itemsCanBeStoreIn(itemName);
@@ -252,8 +252,6 @@ export function useProduction(ticksPerSecond: number) {
         if (GAME.hideOnBuy(itemName)) {
             markVisibility(itemName, false);
         }
-
-        setState();
     }, []);
 
     const makeItemByhand = useCallback((itemName: Items, count: number) => {
@@ -263,7 +261,7 @@ export function useProduction(ticksPerSecond: number) {
                     itemName,
                     stateRef.current.amountThatWeHave,
                 );
-                setState();
+                updateUI();
             }
         }
     }, []);
@@ -291,7 +289,7 @@ export function useProduction(ticksPerSecond: number) {
             k[level] = appliedAssemblers + amount;
             stateRef.current.assemblers[itemName] = k;
             stateRef.current.amountThatWeHave[level] = haveAssemblers - amount;
-            setState();
+            updateUI();
         },
         [],
     );
@@ -308,52 +306,82 @@ export function useProduction(ticksPerSecond: number) {
                 haveStorage + amount;
             stateRef.current.amountThatWeHave[container] =
                 haveContainers - amount;
+            updateUI();
         },
         [],
     );
 
+    const updateUI = useCallback(() => {
+        const now = new Date().getTime();
+        const before =
+            stateRef.current.lastUIUpdateTimestamp === 0
+                ? now - 1
+                : stateRef.current.lastUIUpdateTimestamp;
+        const timeDiff = Math.min(1, (now - before) / 1000);
+        let fps = stateRef.current.ticksSinceLastUIUpdate / timeDiff;
+        if (!isNaN(fps)) setFps(fps);
+        stateRef.current.lastUIUpdateTimestamp = now;
+        stateRef.current.ticksSinceLastUIUpdate = 0;
+        stateRef.current.timeSpentPlaying += timeDiff;
+    }, []);
+
     const resetAll = useCallback(() => {
         setState(resetGame());
+        updateUI();
     }, []);
 
     const markVisibility = useCallback((item: Items, b: boolean) => {
         stateRef.current.visible[item] = b;
         stateRef.current.acknowledged[item] ??= false;
-        setState();
+        updateUI();
     }, []);
 
     const disableRecipe = useCallback((itemName: Items, disable: boolean) => {
         stateRef.current.disabledRecipes[itemName] = disable;
-        setState();
+        updateUI();
     }, []);
 
     const acknowledgeItem = (item: Items) => {
         stateRef.current.acknowledged[item] = true;
-        setState();
+        updateUI();
     };
 
-    const oneOfEverything = () => {
-        GAME.allItemNames.forEach((itemName) => {
-            stateRef.current.amountThatWeHave[itemName] ??= 1;
-        });
+    const setAmount = (amount: number = 1, itemName: Items = "") => {
+        stateRef.current.amountThatWeHave[itemName] = amount;
+        updateUI();
     };
 
     useEffect(() => {
-        const i = setTimeout(() => {
-            setState(doProduction(1 / ticksPerSecond));
-            setCounter(c + 1);
-            stateRef.current.timeSpentPlaying += 1 / ticksPerSecond;
+        const i = setInterval(() => {
+            const now = new Date().getTime();
+            const timeDiff = Math.min(
+                1,
+                (now - stateRef.current.lastTickTimestamp) / 1000,
+            );
+            doProduction(timeDiff);
+            stateRef.current.lastTickTimestamp = now;
+            stateRef.current.ticksSinceLastUIUpdate++;
         }, 1000 / ticksPerSecond);
         return () => {
-            clearTimeout(i);
+            clearInterval(i);
         };
-    });
+    }, []);
+
+    const UI_UPDATE_FREQUENCY_PER_SEC = 4;
+    useEffect(() => {
+        const i = setInterval(() => {
+            updateUI();
+        }, 1000 / UI_UPDATE_FREQUENCY_PER_SEC);
+        return () => {
+            clearInterval(i);
+        };
+    }, []);
 
     useEffect(() => {
         if (existingStorage.version[0] !== VERSION[0]) {
             resetAll();
         }
-        (document as any).oneOfEverything = oneOfEverything;
+        (document as any).setAmount = setAmount;
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);
 
@@ -365,6 +393,7 @@ export function useProduction(ticksPerSecond: number) {
             ...stateRef.current,
             calculateStorage,
         },
+        fps,
         addAmount,
         addAssemblers,
         resetAll,

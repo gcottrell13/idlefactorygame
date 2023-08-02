@@ -85,9 +85,12 @@ button.make-by-hand {
     z-index: 999;
 }
 
-.play-timer {
+.play-timer,
+.fps {
     font-style: italic;
     margin-left: 20px;
+    border: lightblue 1px dashed;
+    padding: 2px;
 }
 
 .subsection-header {

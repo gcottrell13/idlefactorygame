@@ -16,6 +16,9 @@ const defaultState = {
     powerConsumptionProgress: {},
     timeSpentPlaying: 0,
     timeUnlockedAt: {},
+    ticksSinceLastUIUpdate: 0,
+    lastTickTimestamp: 0,
+    lastUIUpdateTimestamp: 0,
 } satisfies State;
 
 function loadStorage() {

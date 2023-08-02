@@ -19,7 +19,7 @@ import { VERSION } from "../version";
 import { ItemDisplay } from "./ItemDisplay";
 import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
-import { formatSeconds } from "../numberFormatter";
+import { formatNumber, formatSeconds } from "../numberFormatter";
 
 type Props = {
     ticksPerSecond: number;
@@ -40,6 +40,7 @@ export function App({ ticksPerSecond }: Props) {
         disableRecipe,
         disabledRecipes,
         state,
+        fps,
     } = useProduction(ticksPerSecond);
 
     function calculateMaxMake(itemName: Items, n: number) {
@@ -210,8 +211,9 @@ export function App({ ticksPerSecond }: Props) {
                 </Button>{" "}
                 <span>v{VERSION.join(".")}</span>
                 <span className={"play-timer"}>
-                    {formatSeconds(state.timeSpentPlaying)}
+                    Play Time: {formatSeconds(state.timeSpentPlaying)}
                 </span>
+                <span className={"fps"}>{formatNumber(fps)} UPS</span>
             </div>
             <Tabs
                 activeKey={currentTab}

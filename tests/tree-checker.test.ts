@@ -23,6 +23,9 @@ describe("tree-check", () => {
             acknowledged: {},
             disabledRecipes: {},
             powerConsumptionProgress: {},
+            ticksSinceLastUIUpdate: 0,
+            lastTickTimestamp: 0,
+            lastUIUpdateTimestamp: 0,
         };
 
         const discoveryLog: string[] = [];

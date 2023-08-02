@@ -9,9 +9,12 @@ export interface State {
     version: typeof VERSION;
 
     /**
-     * the number of ticks spent playing
+     * the number of seconds spent playing
      */
     timeSpentPlaying: number;
+    lastUIUpdateTimestamp: number;
+    ticksSinceLastUIUpdate: number;
+    lastTickTimestamp: number;
 
     timeUnlockedAt: partialItems<number>;
 
