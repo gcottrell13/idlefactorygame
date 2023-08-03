@@ -222,7 +222,7 @@ export function useProduction(ticksPerSecond: number) {
                             );
                             if (result === null) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
-                                time = -fps * 0.5 * amountAddPerTick;
+                                time = -fps * amountAddPerTick;
                                 state = PRODUCTION_RUNNING;
                             }
                         }

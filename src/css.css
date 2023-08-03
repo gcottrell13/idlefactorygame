@@ -89,8 +89,14 @@ button.make-by-hand {
     border: black 1px solid;
 }
 
-.building-progress .progress-bar {
-    transition: width 0.05s linear;
+.building-progress.slow .progress-bar {
+    transition: width 0.25s linear;
+}
+.building-progress.fast .progress-bar {
+    transition: width 0.1s linear;
+}
+.building-progress.instant .progress-bar {
+    transition: width 0s linear;
 }
 
 .nav-tabs.section-tabs {

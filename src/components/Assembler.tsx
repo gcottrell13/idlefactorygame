@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import GAME from "../values";
 import { OverlayTrigger, Badge, Table } from "react-bootstrap";
 import {
@@ -29,15 +29,18 @@ export function Assembler({
     assemblersMakingThis,
     state,
 }: Props) {
-    const [progressDisplay, setProgressDisplay] = useState<number>(0);
     const [lastUpdateTimestamp, setLastUpdateTimestamp] = useState<
         number | null
     >(null);
+    const [instantAnim, setInstantAnim] = useState(false);
 
     const progress =
-        (state.productionProgress[itemName] ?? {})[assemblerName] ?? null;
+        (state.productionProgress[itemName] ?? {})[assemblerName] ?? 0;
     const progressState =
         (state.productionState[itemName] ?? {})[assemblerName] ?? null;
+
+    const [progressDisplay, setProgressDisplay] = useState<number>(progress);
+    const knownActualProgress = useRef<number>(progress);
 
     const baseCraftTime = GAME.timePerRecipe(itemName);
     // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
@@ -60,12 +63,13 @@ export function Assembler({
         </span>
     );
     let stateDisplay: JSX.Element | null = null;
+    const updateSpeed = Math.min(20, Math.max(4, 4 * totalSpeed));
 
     if (thisPowerState[assemblerName] === PRODUCTION_NO_POWER) {
         const word = GAME.buildingPowerDisplayWord[assemblerName] ?? "Power";
         stateDisplay = (
             <ProgressBar
-                className={"building-progress"}
+                className={"building-progress instant"}
                 now={100}
                 variant={"danger"}
                 label={
@@ -81,10 +85,10 @@ export function Assembler({
                 <Badge bg={"secondary"}>Disabled</Badge>
             </span>
         );
-    } else if (progress === null || progressState === PRODUCTION_NO_INPUT) {
+    } else if (progressState === PRODUCTION_NO_INPUT) {
         stateDisplay = (
             <ProgressBar
-                className={"building-progress"}
+                className={"building-progress instant"}
                 now={100}
                 variant={"danger"}
                 label={"Missing Input"}
@@ -93,7 +97,7 @@ export function Assembler({
     } else if (progressState === PRODUCTION_OUTPUT_BLOCKED) {
         stateDisplay = (
             <ProgressBar
-                className={"building-progress"}
+                className={"building-progress instant"}
                 now={100}
                 variant={"warning"}
                 label={"Full"}
@@ -106,37 +110,49 @@ export function Assembler({
             </span>
         );
     } else if (progressState === PRODUCTION_RUNNING) {
+        let speedClass = "slow";
+        if (instantAnim) speedClass = "instant";
+        else if (updateSpeed > 10) speedClass = "instant";
+        else if (updateSpeed > 4) speedClass = "fast";
         stateDisplay = (
             <ProgressBar
-                className={"building-progress"}
+                className={"building-progress " + speedClass}
                 now={progressDisplay}
             />
         );
     }
 
-    const updateSpeed = Math.max(4, 4 * totalSpeed);
     useEffect(() => {
         if (progressState === PRODUCTION_RUNNING) {
             const intervalHandle = setTimeout(() => {
                 const now = new Date().getTime();
-                if (lastUpdateTimestamp === null && progress) {
+                if (knownActualProgress.current !== progress) {
+                    if (progress < knownActualProgress.current) {
+                        setInstantAnim(true);
+                        setProgressDisplay(0);
+                    } else {
+                        setInstantAnim(false);
+                        setProgressDisplay(progress * 100);
+                    }
+                    knownActualProgress.current = progress;
+                } else if (lastUpdateTimestamp === null && progress) {
                     setProgressDisplay(progress * 100);
-                    setLastUpdateTimestamp(now);
                 } else {
                     const l = lastUpdateTimestamp ?? now;
                     const timeDelta = (now - l) / 1000;
                     const newProgress =
-                        (progressDisplay + 100 * totalSpeed * timeDelta) % 100;
+                        progressDisplay + 100 * totalSpeed * timeDelta;
                     setProgressDisplay(newProgress);
-                    setLastUpdateTimestamp(now);
                 }
+                setLastUpdateTimestamp(now);
             }, 1000 / updateSpeed);
             return () => {
                 clearTimeout(intervalHandle);
             };
-        } else if (progressState === PRODUCTION_NO_INPUT) {
+        } else {
             setProgressDisplay(0);
             setLastUpdateTimestamp(null);
+            setInstantAnim(true);
         }
     }, [totalSpeed, progressDisplay, progressState, lastUpdateTimestamp]);
 
