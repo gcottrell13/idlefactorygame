@@ -9,6 +9,8 @@ import {
     State,
     PRODUCTION_NO_INPUT,
     PRODUCTION_NO_POWER,
+    PRODUCTION_HAS_POWER,
+    PRODUCTION_RUNNING,
     PRODUCTION_OUTPUT_BLOCKED,
 } from "../typeDefs/State";
 import {
@@ -96,10 +98,17 @@ export function useProduction(ticksPerSecond: number) {
         return false;
     }
 
-    function doPowerConsumption(itemName: Items, building: Items) {
+    function getPower(itemName: Items, building: Items) {
         const power = ((stateRef.current.powerConsumptionProgress[itemName] ??=
+            {})[building] ??= 0);
+        const state = ((stateRef.current.powerConsumptionState[itemName] ??=
             {})[building] ??= PRODUCTION_NO_POWER);
-        if (typeof power === "number" && power >= ticksPerSecond) {
+        return [power, state] as const;
+    }
+
+    function doPowerConsumption(itemName: Items, building: Items) {
+        const [power, state] = getPower(itemName, building);
+        if (state === PRODUCTION_HAS_POWER && power >= ticksPerSecond) {
             let amount = stateRef.current.assemblers[itemName]![building]!;
             const r = GAME.buildingPowerRequirementsPerSecond(building);
             while (amount-- > 0)
@@ -112,19 +121,20 @@ export function useProduction(ticksPerSecond: number) {
     }
 
     function checkPowerConsumption(itemName: Items, building: Items): boolean {
-        const power = ((stateRef.current.powerConsumptionProgress[itemName] ??=
-            {})[building] ??= PRODUCTION_NO_POWER);
-        if (power === PRODUCTION_NO_POWER) {
+        const [power, state] = getPower(itemName, building);
+        if (state === PRODUCTION_NO_POWER) {
             const r = GAME.buildingPowerRequirementsPerSecond(building);
             if (checkAmounts(stateRef.current.amountThatWeHave, r)) {
                 stateRef.current.powerConsumptionProgress[itemName]![
                     building
                 ] = 0;
+                stateRef.current.powerConsumptionState[itemName]![building] =
+                    PRODUCTION_HAS_POWER;
                 return true;
             }
             return false;
         } else if (power >= ticksPerSecond) {
-            stateRef.current.powerConsumptionProgress[itemName]![building] =
+            stateRef.current.powerConsumptionState[itemName]![building] =
                 PRODUCTION_NO_POWER;
             return checkPowerConsumption(itemName, building);
         } else {
@@ -134,9 +144,24 @@ export function useProduction(ticksPerSecond: number) {
         }
     }
 
+    function getProductionProgress(itemName: Items, assemblerName: Items) {
+        const time = ((stateRef.current.productionProgress[itemName] ??= {})[
+            assemblerName
+        ] ??= 0);
+        const state = ((stateRef.current.productionState[itemName] ??= {})[
+            assemblerName
+        ] ??= PRODUCTION_NO_INPUT);
+        return [time, state] as const;
+    }
+
     function doProduction(timeStep: number) {
-        const { assemblers, amountThatWeHave, productionProgress, storage } =
-            stateRef.current;
+        const {
+            assemblers,
+            amountThatWeHave,
+            productionProgress,
+            productionState,
+            storage,
+        } = stateRef.current;
 
         keys(assemblers)
             .sort()
@@ -164,41 +189,45 @@ export function useProduction(ticksPerSecond: number) {
                             );
                         }
 
-                        let time =
-                            productionProgress[itemName]?.[assemblerName];
+                        let [time, state] = getProductionProgress(
+                            itemName,
+                            assemblerName,
+                        );
 
-                        if (Number.isNaN(time) || time === undefined)
-                            time = null;
+                        if (Number.isNaN(time) || time === undefined) time = 0;
 
                         if (!storage[itemName]) storage[itemName] = {};
 
                         // there's probably a better way to organize this code
 
-                        if (time === PRODUCTION_OUTPUT_BLOCKED) {
+                        if (state === PRODUCTION_OUTPUT_BLOCKED) {
                             if (addToTotal(itemName, 1)) {
-                                time = null;
+                                time = 0;
+                                state = PRODUCTION_NO_INPUT;
                             } else {
                                 return;
                             }
                         }
 
-                        const hadNoInput = time === PRODUCTION_NO_INPUT;
+                        const hadNoInput = state === PRODUCTION_NO_INPUT;
                         const hasPower = checkPowerConsumption(
                             itemName,
                             assemblerName,
                         );
 
-                        if (hasPower && (time === null || hadNoInput)) {
-                            time = consumeMaterialsFromRecipe(
+                        if (hasPower && hadNoInput) {
+                            const result = consumeMaterialsFromRecipe(
                                 itemName,
                                 amountThatWeHave,
                             );
-                            if (time === null) time = PRODUCTION_NO_INPUT;
-                            else if (hadNoInput)
-                                time = -ticksPerSecond * 0.5 * amountAddPerTick;
+                            if (result === null) state = PRODUCTION_NO_INPUT;
+                            else if (hadNoInput) {
+                                time = -fps * 0.5 * amountAddPerTick;
+                                state = PRODUCTION_RUNNING;
+                            }
                         }
 
-                        if (typeof time === "number") {
+                        if (state === PRODUCTION_RUNNING) {
                             if (!hasPower) {
                                 return;
                             }
@@ -218,19 +247,18 @@ export function useProduction(ticksPerSecond: number) {
                                             amountThatWeHave,
                                         ) === null
                                     ) {
-                                        time = PRODUCTION_NO_INPUT;
+                                        state = PRODUCTION_NO_INPUT;
                                         break;
                                     }
                                 } else {
-                                    time = PRODUCTION_OUTPUT_BLOCKED;
+                                    state = PRODUCTION_OUTPUT_BLOCKED;
                                     break;
                                 }
                             }
                         }
 
-                        if (!productionProgress[itemName])
-                            productionProgress[itemName] = {};
                         productionProgress[itemName]![assemblerName] = time;
+                        productionState[itemName]![assemblerName] = state;
                     },
                 );
             });
@@ -367,7 +395,7 @@ export function useProduction(ticksPerSecond: number) {
         };
     }, []);
 
-    const UI_UPDATE_FREQUENCY_PER_SEC = 4;
+    const UI_UPDATE_FREQUENCY_PER_SEC = 2;
     useEffect(() => {
         const i = setInterval(() => {
             updateUI();

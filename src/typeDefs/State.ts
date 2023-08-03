@@ -1,9 +1,20 @@
 import { partialItems } from "../content/itemNames";
 import { VERSION } from "../version";
 
-export const PRODUCTION_OUTPUT_BLOCKED = "blocked";
-export const PRODUCTION_NO_INPUT = "noinput";
-export const PRODUCTION_NO_POWER = "nopower";
+export const PRODUCTION_RUNNING = Symbol("RUNNING");
+export const PRODUCTION_OUTPUT_BLOCKED = Symbol("OUTPUT_BLOCKED");
+export const PRODUCTION_NO_INPUT = Symbol("NO_INPUT");
+export const PRODUCTION_HAS_POWER = Symbol("HAS_POWER");
+export const PRODUCTION_NO_POWER = Symbol("NO_POWER");
+
+export type POWER_STATE =
+    | typeof PRODUCTION_HAS_POWER
+    | typeof PRODUCTION_NO_POWER;
+
+export type PRODUCTION_STATE =
+    | typeof PRODUCTION_RUNNING
+    | typeof PRODUCTION_OUTPUT_BLOCKED
+    | typeof PRODUCTION_NO_INPUT;
 
 export interface State {
     version: typeof VERSION;
@@ -33,21 +44,14 @@ export interface State {
     /**
      * [whats being made] [the building making it]
      */
-    productionProgress: partialItems<
-        partialItems<
-            | number
-            | null
-            | typeof PRODUCTION_OUTPUT_BLOCKED
-            | typeof PRODUCTION_NO_INPUT
-        >
-    >;
+    productionProgress: partialItems<partialItems<number>>;
+    productionState: partialItems<partialItems<PRODUCTION_STATE>>;
 
     /**
      * [whats being made] [the building making it]
      */
-    powerConsumptionProgress: partialItems<
-        partialItems<number | typeof PRODUCTION_NO_POWER>
-    >;
+    powerConsumptionProgress: partialItems<partialItems<number>>;
+    powerConsumptionState: partialItems<partialItems<POWER_STATE>>;
 
     // for each item, how many storage containers are there.
     // this storage is a soft limit, the actual values may go over via direct production, but not from byproducts

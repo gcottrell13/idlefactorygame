@@ -80,6 +80,19 @@ button.make-by-hand {
     float: right;
 }
 
+.building-progress {
+    width: 100px;
+    height: 30px;
+    float: right;
+    margin-top: auto;
+    margin-left: 5px;
+    border: black 1px solid;
+}
+
+.building-progress .progress-bar {
+    transition: width 0.05s linear;
+}
+
 .nav-tabs.section-tabs {
     background-color: white;
     z-index: 999;

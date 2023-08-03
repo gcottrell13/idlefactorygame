@@ -15,11 +15,12 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         partialItems<[count: number, total: number, consumption: number]>
     > = {};
 
-    const { assemblers, disabledRecipes, productionProgress } = state;
+    const { assemblers, disabledRecipes, productionProgress, productionState } =
+        state;
 
     function assemblerStuck(itemName: Items, assembler: Items) {
         return (
-            (productionProgress[itemName] ?? {})[assembler] ===
+            (productionState[itemName] ?? {})[assembler] ===
             PRODUCTION_OUTPUT_BLOCKED
         );
     }

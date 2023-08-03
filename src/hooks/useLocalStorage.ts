@@ -19,6 +19,8 @@ const defaultState = {
     ticksSinceLastUIUpdate: 0,
     lastTickTimestamp: 0,
     lastUIUpdateTimestamp: 0,
+    powerConsumptionState: {},
+    productionState: {},
 } satisfies State;
 
 function loadStorage() {

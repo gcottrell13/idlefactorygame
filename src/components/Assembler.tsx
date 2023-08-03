@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import GAME from "../values";
 import { OverlayTrigger, Badge, Table } from "react-bootstrap";
 import {
     PRODUCTION_NO_INPUT,
     PRODUCTION_NO_POWER,
     PRODUCTION_OUTPUT_BLOCKED,
+    PRODUCTION_RUNNING,
     State,
 } from "../typeDefs/State";
 import Popover from "react-bootstrap/Popover";
@@ -13,6 +14,7 @@ import { faBolt } from "@fortawesome/free-solid-svg-icons";
 import { keys } from "../smap";
 import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
+import ProgressBar from "react-bootstrap/ProgressBar";
 
 type Props = {
     itemName: Items;
@@ -27,10 +29,19 @@ export function Assembler({
     assemblersMakingThis,
     state,
 }: Props) {
-    const progress = state.productionProgress[itemName] ?? {};
+    const [progressDisplay, setProgressDisplay] = useState<number>(0);
+    const [lastUpdateTimestamp, setLastUpdateTimestamp] = useState<
+        number | null
+    >(null);
+
+    const progress =
+        (state.productionProgress[itemName] ?? {})[assemblerName] ?? null;
+    const progressState =
+        (state.productionState[itemName] ?? {})[assemblerName] ?? null;
 
     const baseCraftTime = GAME.timePerRecipe(itemName);
-    const thisPower = state.powerConsumptionProgress[itemName] ?? {};
+    // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
+    const thisPowerState = state.powerConsumptionState[itemName] ?? {};
 
     const no = assemblersMakingThis[assemblerName] ?? 0;
     const boost = GAME.buildingBoosts[assemblerName];
@@ -38,56 +49,96 @@ export function Assembler({
     if (boost) {
         speedPer *= Math.pow(2, state.amountThatWeHave[boost] ?? 0);
     }
+    const totalSpeed = speedPer * no;
+
     let label = (
         <span>
             <span className={"assembler-count-name"}>
                 {no} {GAME.displayNames(assemblerName)} ({d(speedPer)}/s):
             </span>{" "}
-            ({d(speedPer * no)}/s)
+            ({d(totalSpeed)}/s)
         </span>
     );
-    const prog = progress[assemblerName] ?? null;
-    if (thisPower[assemblerName] === PRODUCTION_NO_POWER) {
+    let stateDisplay: JSX.Element | null = null;
+
+    if (thisPowerState[assemblerName] === PRODUCTION_NO_POWER) {
         const word = GAME.buildingPowerDisplayWord[assemblerName] ?? "Power";
-        label = (
-            <span>
-                {label}{" "}
-                <Badge bg={"danger"}>
-                    <FontAwesomeIcon icon={faBolt} /> No {word}
-                </Badge>
-            </span>
+        stateDisplay = (
+            <ProgressBar
+                className={"building-progress"}
+                now={100}
+                variant={"danger"}
+                label={
+                    <span>
+                        <FontAwesomeIcon icon={faBolt} /> No {word}
+                    </span>
+                }
+            />
         );
     } else if (state.disabledRecipes[itemName]) {
-        label = (
+        stateDisplay = (
             <span>
-                {label} <Badge bg={"secondary"}>Disabled</Badge>
+                <Badge bg={"secondary"}>Disabled</Badge>
             </span>
         );
-    } else if (prog === null || prog === PRODUCTION_NO_INPUT) {
-        label = (
+    } else if (progress === null || progressState === PRODUCTION_NO_INPUT) {
+        stateDisplay = (
+            <ProgressBar
+                className={"building-progress"}
+                now={100}
+                variant={"danger"}
+                label={"Missing Input"}
+            />
+        );
+    } else if (progressState === PRODUCTION_OUTPUT_BLOCKED) {
+        stateDisplay = (
+            <ProgressBar
+                className={"building-progress"}
+                now={100}
+                variant={"warning"}
+                label={"Full"}
+            />
+        );
+    } else if (progress < 0) {
+        stateDisplay = (
             <span>
-                {label} <Badge bg={"danger"}>Missing Input</Badge>
+                <Badge>Starting...</Badge>
             </span>
         );
-    } else if (prog === PRODUCTION_OUTPUT_BLOCKED) {
-        label = (
-            <span>
-                {label} <Badge bg={"warning"}>Output Full</Badge>
-            </span>
-        );
-    } else if (typeof prog === "number" && prog < 0) {
-        label = (
-            <span>
-                {label} <Badge>Starting...</Badge>
-            </span>
-        );
-    } else {
-        label = (
-            <span>
-                {label} <Badge>Working {d((prog as any) * 100)}%</Badge>
-            </span>
+    } else if (progressState === PRODUCTION_RUNNING) {
+        stateDisplay = (
+            <ProgressBar
+                className={"building-progress"}
+                now={progressDisplay}
+            />
         );
     }
+
+    const updateSpeed = Math.max(4, 4 * totalSpeed);
+    useEffect(() => {
+        if (progressState === PRODUCTION_RUNNING) {
+            const intervalHandle = setTimeout(() => {
+                const now = new Date().getTime();
+                if (lastUpdateTimestamp === null && progress) {
+                    setProgressDisplay(progress * 100);
+                    setLastUpdateTimestamp(now);
+                } else {
+                    const l = lastUpdateTimestamp ?? now;
+                    const timeDelta = (now - l) / 1000;
+                    const newProgress =
+                        (progressDisplay + 100 * totalSpeed * timeDelta) % 100;
+                    setProgressDisplay(newProgress);
+                    setLastUpdateTimestamp(now);
+                }
+            }, 1000 / updateSpeed);
+            return () => {
+                clearTimeout(intervalHandle);
+            };
+        } else if (progressState === PRODUCTION_NO_INPUT) {
+            setProgressDisplay(0);
+            setLastUpdateTimestamp(null);
+        }
+    }, [totalSpeed, progressDisplay, progressState, lastUpdateTimestamp]);
 
     const powerRequirements =
         GAME.buildingPowerRequirementsPerSecond(assemblerName);
@@ -133,5 +184,9 @@ export function Assembler({
         );
     }
 
-    return <div className={"assembler-count"}>{label}</div>;
+    return (
+        <div className={"assembler-count"}>
+            {label} {stateDisplay}
+        </div>
+    );
 }
