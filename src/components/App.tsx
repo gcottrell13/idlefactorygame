@@ -3,15 +3,7 @@ import _ from "lodash";
 import { howManyRecipesCanBeMade } from "../assembly";
 import GAME from "../values";
 import { Items } from "../content/itemNames";
-import {
-    Button,
-    Row,
-    Col,
-    Badge,
-    Tabs,
-    Tab,
-    ButtonToolbar,
-} from "react-bootstrap";
+import { Button, Badge, Tabs, Tab, ButtonToolbar } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
 import { SMap } from "../smap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -209,7 +201,7 @@ export function App({ ticksPerSecond }: Props) {
                 <Button onClick={resetAll} variant={"secondary"}>
                     Reset
                 </Button>{" "}
-                <span>v{VERSION}</span>
+                <span>v{VERSION().join(".")}</span>
                 <span className={"play-timer"}>
                     Play Time: {formatSeconds(state.timeSpentPlaying)}
                 </span>

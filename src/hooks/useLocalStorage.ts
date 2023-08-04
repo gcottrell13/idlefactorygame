@@ -3,7 +3,7 @@ import { State } from "../typeDefs/State";
 import { VERSION } from "../version";
 
 const defaultState = {
-    version: VERSION,
+    version: VERSION(),
     displayAmount: {},
     amountThatWeHave: {},
     assemblers: {},

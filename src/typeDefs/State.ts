@@ -17,7 +17,7 @@ export type PRODUCTION_STATE =
     | typeof PRODUCTION_NO_INPUT;
 
 export interface State {
-    version: typeof VERSION;
+    version: ReturnType<typeof VERSION>;
 
     /**
      * the number of seconds spent playing
