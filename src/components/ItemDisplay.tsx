@@ -331,16 +331,14 @@ export function ItemDisplay({
     );
 
     return (
-        <Row className="item-row" onMouseEnter={onMouseover}>
-            <Col xs={1}>
-                {!state.acknowledged[itemName] && (
-                    <Badge className={"new-item-badge"}>New</Badge>
-                )}
-                {makeByHandButton}
-            </Col>
-            <Col xs={2}>
+        <div className="item-row" onMouseEnter={onMouseover}>
+            <div className={"new-badge"}>{makeByHandButton}</div>
+            <div className={"item-name-container"}>
                 <OverlayTrigger placement="right" overlay={tooltip}>
                     <span>
+                        {!state.acknowledged[itemName] && (
+                            <Badge className={"new-item-badge"}>New</Badge>
+                        )}
                         <span className="item-name">
                             {GAME.displayNames(itemName)}
                         </span>
@@ -349,8 +347,8 @@ export function ItemDisplay({
                         ) : null}
                     </span>
                 </OverlayTrigger>
-            </Col>
-            <Col xs={2}>
+            </div>
+            <div className={"rate-container"}>
                 <span className="item-count">
                     {historyDisplay} {d(amt)}
                 </span>
@@ -362,15 +360,17 @@ export function ItemDisplay({
                 {producingRate > 0 && (
                     <span className={"speed"}> (+{d(producingRate)}/s)</span>
                 )}
-            </Col>
-            <Col xs={7}>
+            </div>
+            <div className={"assembler-display-container"}>
                 {disableButton}
                 {assemblerDisplay}
+            </div>
+            <div className={"add-button-container"}>
                 <div className={"buttons-display"}>
                     {boxButtons}
                     {assemblerButtons}
                 </div>
-            </Col>
-        </Row>
+            </div>
+        </div>
     );
 }

@@ -33,6 +33,7 @@ const storageSizes = {
     "lumberjack-school": 10,
     "small-battery": 10,
     "wind-turbine": 1,
+    "coal-power": 10,
 } satisfies partialItems<number> & { [p in Buildings]: number };
 
 // these items impose a limit on how much we can have.
@@ -53,6 +54,7 @@ const itemsCanBeStoreIn: partialItems<(keyof typeof storageSizes)[]> = {
     electricity: ["small-battery"],
     "small-battery": ["box3"],
     "wind-turbine": ["box3"],
+    "coal-power": ["box3"],
 
     // raw
     gas: ["tank"],

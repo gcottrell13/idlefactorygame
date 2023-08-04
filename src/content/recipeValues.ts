@@ -55,6 +55,8 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "research-metal": 1,
     "research-woodcutting": 1,
 
+    "coal-power": 10,
+
     "boost-lumberjack": 10,
     "boost-miner-mk1": 10,
     "boost-chemical-plant": 10,
@@ -346,7 +348,7 @@ const recipes: Recipes = {
     // raw
     "iron-ore": { "iron-node": 0.01 },
     gas: {},
-    gold: {},
+    gold: { "gold-node": 0.01 },
     "uranium-ore": { "uranium-node": 0.2, "sulfuric-acid": 1 },
     "copper-ore": { "copper-node": 0.01 },
     oil: { "oil-node": 0.01 },
@@ -418,6 +420,7 @@ const recipes: Recipes = {
     "water-filter": { steel: 5, pipe: 5 },
     "water-evaporator": { steel: 5, pipe: 5 },
     "evaporate-water": { water: 50, "clean-water": 50 },
+    "coal-power": { steel: 100 },
 
     explorer: { steel: 10, "basic-circuit": 8 },
 
@@ -447,10 +450,11 @@ const recipes: Recipes = {
     "research-wire": { science0: 10 },
     "research-steel": { science1: 50 },
     "research-arbol": { science2: 200 },
-    "research-basic-circuit": { science2: 200, wood: 100 },
+    "research-basic-circuit": { science2: 50, wood: 100 },
     "research-assembler": { science2: 15, gear: 50 },
-    "research-nitrogen": { science2: 200 },
-    "research-fluids": { science2: 200 },
+    "research-nitrogen": { science2: 50 },
+    "research-fluids": { science2: 50 },
+    "research-oil": { science2: 100 },
     "research-natural-gas": { science3: 50, nitrogen: 1000 },
     "research-explorer": { science2: 200 },
     "research-manufacturer": { science3: 200 },
@@ -459,7 +463,6 @@ const recipes: Recipes = {
     "research-adamantium-drill": { science4: 200 },
     "research-computer": { science4: 500 },
     "research-uranium": { science5: 500 },
-    "research-oil": { science2: 100 },
     "research-constructor": { science1: 5 },
     "research-miner-mk1": { science1: 30 },
     "research-advanced-circuitry": { science3: 500 },

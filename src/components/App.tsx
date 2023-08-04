@@ -192,12 +192,12 @@ export function App({ ticksPerSecond }: Props) {
 
         if (thisSectionItems.length > 0) {
             elements.push(
-                <Row
+                <div
                     className="subsection-header"
                     key={"ss-" + subSection.Name}
                 >
-                    <Col xs={12}>{subSection.Name}</Col>
-                </Row>,
+                    {subSection.Name}
+                </div>,
             );
             elements.push(...thisSectionItems);
         }
@@ -209,7 +209,7 @@ export function App({ ticksPerSecond }: Props) {
                 <Button onClick={resetAll} variant={"secondary"}>
                     Reset
                 </Button>{" "}
-                <span>v{VERSION.join(".")}</span>
+                <span>v{VERSION}</span>
                 <span className={"play-timer"}>
                     Play Time: {formatSeconds(state.timeSpentPlaying)}
                 </span>
@@ -248,7 +248,9 @@ export function App({ ticksPerSecond }: Props) {
                             eventKey={section.Name}
                             title={title}
                         >
-                            {sections[section.Name]}
+                            <div className={"main-grid"}>
+                                {sections[section.Name]}
+                            </div>
                         </Tab>
                     );
                 })}

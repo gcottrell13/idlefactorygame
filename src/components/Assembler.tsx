@@ -55,7 +55,7 @@ export function Assembler({
     const totalSpeed = speedPer * no;
 
     let label = (
-        <span>
+        <span className={"assembler-count"}>
             <span className={"assembler-count-name"}>
                 {no} {GAME.displayNames(assemblerName)} ({d(speedPer)}/s):
             </span>{" "}
@@ -81,9 +81,11 @@ export function Assembler({
         );
     } else if (state.disabledRecipes[itemName]) {
         stateDisplay = (
-            <span>
-                <Badge bg={"secondary"}>Disabled</Badge>
-            </span>
+            <ProgressBar
+                className={"building-progress secondary instant"}
+                now={100}
+                label={"Disabled"}
+            />
         );
     } else if (progressState === PRODUCTION_NO_INPUT) {
         stateDisplay = (
@@ -105,25 +107,31 @@ export function Assembler({
         );
     } else if (progress < 0) {
         stateDisplay = (
-            <span>
-                <Badge>Starting...</Badge>
-            </span>
+            <ProgressBar
+                className={"building-progress instant"}
+                now={100}
+                label={"Starting..."}
+            />
         );
     } else if (progressState === PRODUCTION_RUNNING) {
         let speedClass = "slow";
         if (instantAnim) speedClass = "instant";
-        else if (updateSpeed > 10) speedClass = "instant";
-        else if (updateSpeed > 4) speedClass = "fast";
+        else if (updateSpeed > 15) speedClass = "instant";
+        else if (updateSpeed > 8) speedClass = "fast";
         stateDisplay = (
             <ProgressBar
                 className={"building-progress " + speedClass}
-                now={progressDisplay}
+                now={progressDisplay * 100}
             />
         );
     }
 
     useEffect(() => {
         if (progressState === PRODUCTION_RUNNING) {
+            if (totalSpeed > 5) {
+                setProgressDisplay(1);
+                return;
+            }
             const intervalHandle = setTimeout(() => {
                 const now = new Date().getTime();
                 if (knownActualProgress.current !== progress) {
@@ -132,16 +140,16 @@ export function Assembler({
                         setProgressDisplay(0);
                     } else {
                         setInstantAnim(false);
-                        setProgressDisplay(progress * 100);
+                        setProgressDisplay(progress);
                     }
                     knownActualProgress.current = progress;
                 } else if (lastUpdateTimestamp === null && progress) {
-                    setProgressDisplay(progress * 100);
+                    setProgressDisplay(progress);
                 } else {
                     const l = lastUpdateTimestamp ?? now;
                     const timeDelta = (now - l) / 1000;
                     const newProgress =
-                        progressDisplay + 100 * totalSpeed * timeDelta;
+                        progressDisplay + totalSpeed * timeDelta;
                     setProgressDisplay(newProgress);
                 }
                 setLastUpdateTimestamp(now);
@@ -201,8 +209,15 @@ export function Assembler({
     }
 
     return (
-        <div className={"assembler-count"}>
-            {label} {stateDisplay}
+        <div className={"assembler-count-container"}>
+            <table>
+                <tbody>
+                    <tr>
+                        <td>{label}</td>
+                        <td>{stateDisplay}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     );
 }

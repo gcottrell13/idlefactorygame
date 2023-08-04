@@ -406,7 +406,7 @@ export function useProduction(ticksPerSecond: number) {
     }, []);
 
     useEffect(() => {
-        if (existingStorage.version[0] !== VERSION[0]) {
+        if (existingStorage.version.split(".")[0] !== VERSION.split(".")[0]) {
             resetAll();
         }
         (document as any).setAmount = setAmount;

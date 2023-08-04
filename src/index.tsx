@@ -9,7 +9,7 @@ const TICKS_PER_SECOND = 20;
 const root = createRoot(document.getElementById("view")!);
 root.render(<App ticksPerSecond={TICKS_PER_SECOND} />);
 
-document.title = "idlefactorygame v" + VERSION.join(".");
+document.title = "idlefactorygame v" + VERSION;
 document.addEventListener(
     "mousedown",
     function (event) {

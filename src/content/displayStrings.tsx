@@ -106,6 +106,7 @@ const displayNames: partialItems<string> = {
     coal: "Coal",
     gas: "Natural Gas",
     "gold-filament": "Gold Filament",
+    "coal-power": "Coal Burner",
 
     begin: "Start Here",
 

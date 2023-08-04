@@ -22,6 +22,7 @@ const assemblerSpeeds = {
     "water-evaporator": 1,
     "lumberjack-school": 1,
     "wind-turbine": 2,
+    "coal-power": 100,
 } satisfies partialItems<number>;
 
 export type Buildings = keyof typeof assemblerSpeeds;
@@ -48,6 +49,7 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     prospector: { food: 0.05 },
     lumberjack: { food: 0.05 },
     "wind-turbine": {},
+    "coal-power": { coal: 1 },
 } satisfies {
     [p in Buildings]: partialItems<number>;
 };
@@ -92,9 +94,11 @@ const requiredBuildings: {
     "research-metal": ["by-hand"],
     "research-small-battery": ["by-hand"],
     "small-battery": ["by-hand", "constructer"],
-    electricity: ["wind-turbine"],
+    electricity: ["wind-turbine", "coal-power"],
     "wind-turbine": ["by-hand", "constructer"],
     food: ["by-hand", "prospector"],
+
+    "coal-power": ["by-hand", "manufacturer"],
 
     "adamantium-drill": ["manufacturer"],
     "advanced-circuit": ["assembler"],
@@ -175,12 +179,12 @@ const requiredBuildings: {
     u234: [],
     slag: [],
     "bauxite-node": ["explorer"],
-    "coal-node": ["prospector"],
-    "copper-node": ["prospector"],
-    "iron-node": ["prospector"],
-    "sandy-land": ["prospector"],
-    "stony-land": ["prospector"],
-    "wet-land": ["prospector"],
+    "coal-node": ["explorer", "prospector"],
+    "copper-node": ["explorer", "prospector"],
+    "iron-node": ["explorer", "prospector"],
+    "sandy-land": ["explorer", "prospector"],
+    "stony-land": ["explorer", "prospector"],
+    "wet-land": ["explorer", "prospector"],
     "gold-node": ["explorer"],
     "oil-node": ["explorer"],
     "studonite-node": ["explorer"],

@@ -65,7 +65,7 @@ const sections: Sections = [
             },
             {
                 Name: "Buildings",
-                Items: ["wind-turbine"],
+                Items: ["wind-turbine", "coal-power"],
             },
             {
                 Name: "Storage",
