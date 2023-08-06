@@ -25,6 +25,8 @@ import { formatNumber as d, formatSeconds } from "../numberFormatter";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
+import { useImages } from "../useImages";
+import { Sprite } from "./Sprite";
 
 type func = () => void;
 
@@ -57,6 +59,8 @@ export function ItemDisplay({
     powerConsumptionRates,
     assemblerIsStuckOrDisabled,
 }: Props) {
+    const sprites = useImages();
+
     const byHandCb =
         makeByHand === false || makeByHand === null ? undefined : makeByHand;
     const canMakeByHand = Math.min(
@@ -102,11 +106,6 @@ export function ItemDisplay({
             </Button>
         ) : null;
 
-    const assemblerDisplay =
-        assemblers.length > 0 ? (
-            <span className="assembler-display">{assemblers}</span>
-        ) : null;
-
     const byproducts = _.uniq(
         GAME.sideProducts(itemName).flatMap((x) => keys(x)),
     ).filter((x) => x != itemName);
@@ -132,7 +131,10 @@ export function ItemDisplay({
                 <td className={"popover-ingredient-count"}>
                     {count * Math.pow(recipeScale, amt)}
                 </td>
-                <td>{GAME.displayNames(name)}</td>
+                <td>
+                    <Sprite name={name} />
+                    {GAME.displayNames(name)}
+                </td>
                 <td>
                     <span className={"popover-ingredient-has"}>
                         ({d(state.amountThatWeHave[name] ?? 0)})
@@ -248,7 +250,7 @@ export function ItemDisplay({
                     <FontAwesomeIcon icon={faBolt} />
                 </td>
                 <td style={{ paddingRight: "10px" }}>
-                    {GAME.displayNames(item)}
+                    <Sprite name={item} /> {GAME.displayNames(item)}
                 </td>
                 <td>{d(value)}/s</td>
             </tr>
@@ -330,18 +332,22 @@ export function ItemDisplay({
         </Popover>
     );
 
+    const isNew = state.acknowledged[itemName] !== true;
+
     return (
         <div className="item-row" onMouseEnter={onMouseover}>
             <div className={"new-badge"}>{makeByHandButton}</div>
             <div className={"item-name-container"}>
                 <OverlayTrigger placement="right" overlay={tooltip}>
                     <span>
-                        {!state.acknowledged[itemName] && (
-                            <Badge className={"new-item-badge"}>New</Badge>
-                        )}
+                        <Sprite name={itemName} />
+                        &nbsp;
                         <span className="item-name">
                             {GAME.displayNames(itemName)}
                         </span>
+                        {isNew && (
+                            <Badge className={"new-item-badge"}>New</Badge>
+                        )}
                         {recipeDisabled ? (
                             <Badge bg={"danger"}>DISABLED</Badge>
                         ) : null}
@@ -363,7 +369,7 @@ export function ItemDisplay({
             </div>
             <div className={"assembler-display-container"}>
                 {disableButton}
-                {assemblerDisplay}
+                {assemblers}
             </div>
             <div className={"add-button-container"}>
                 <div className={"buttons-display"}>

@@ -376,6 +376,7 @@ export function useProduction(ticksPerSecond: number) {
 
     const setAmount = (amount: number = 1, itemName: Items = "") => {
         stateRef.current.amountThatWeHave[itemName] = amount;
+        stateRef.current.visible[itemName] ??= true;
         updateUI();
     };
 

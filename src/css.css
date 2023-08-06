@@ -3,22 +3,29 @@
     border-bottom: 1px lightgray dashed;
 }
 
-.assembler-count-container {
-    margin-left: 10px;
-}
-
 .assembler-count {
     display: inline-block;
+    white-space: nowrap;
+}
+
+.building-label {
+    grid-column: 2;
+}
+
+.sprite {
+    height: 1em;
+    image-rendering: pixelated;
+    margin: 2px;
+}
+
+.building-state-display {
+    grid-column: 3;
+    justify-self: start;
 }
 
 .main-grid {
     display: grid;
     display: -moz-grid;
-}
-
-.assembler-display {
-    margin-left: 10px;
-    display: inline-block;
 }
 
 .per-click-amount-buttons {
@@ -35,6 +42,8 @@
 
 button.assembler-disable-button {
     float: left;
+    grid-row-start: 1;
+    grid-row-end: 10;
 }
 
 button.add-assembler {
@@ -73,6 +82,14 @@ button.make-by-hand {
 
 .badge.new-item-badge {
     background-color: orangered !important;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.item-name-container .badge.new-item-badge {
+    position: absolute;
+    top: 4px;
+    right: 0;
 }
 
 .game-container .item-row:nth-of-type(even) {
@@ -144,16 +161,21 @@ button.btn {
 }
 .item-row .item-name-container {
     grid-column: 2;
+    position: relative;
 }
 .item-row .rate-container {
     grid-column: 3;
 }
 .item-row .assembler-display-container {
     grid-column: 4;
+    display: grid;
+    grid-template-columns: 50px;
+    grid-column-gap: 5px;
 }
 .item-row .add-button-container {
     grid-column: 5;
     justify-self: start;
+    white-space: nowrap;
 }
 
 .item-popup-detail {

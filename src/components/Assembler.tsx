@@ -15,6 +15,7 @@ import { keys } from "../smap";
 import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
+import { Sprite } from "./Sprite";
 
 type Props = {
     itemName: Items;
@@ -57,7 +58,8 @@ export function Assembler({
     let label = (
         <span className={"assembler-count"}>
             <span className={"assembler-count-name"}>
-                {no} {GAME.displayNames(assemblerName)} ({d(speedPer)}/s):
+                {no} <Sprite name={assemblerName} />
+                {GAME.displayNames(assemblerName)} ({d(speedPer)}/s):
             </span>{" "}
             ({d(totalSpeed)}/s)
         </span>
@@ -182,6 +184,7 @@ export function Assembler({
                                     return (
                                         <tr key={requirement}>
                                             <td>
+                                                <Sprite name={requirement} />
                                                 {GAME.displayNames(requirement)}
                                             </td>
                                             <td>
@@ -209,15 +212,9 @@ export function Assembler({
     }
 
     return (
-        <div className={"assembler-count-container"}>
-            <table>
-                <tbody>
-                    <tr>
-                        <td>{label}</td>
-                        <td>{stateDisplay}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <>
+            <span className={"building-label"}>{label}</span>
+            <span className={"building-state-display"}>{stateDisplay}</span>
+        </>
     );
 }

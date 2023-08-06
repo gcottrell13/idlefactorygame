@@ -228,7 +228,7 @@ export function App({ ticksPerSecond }: Props) {
                         )
                     )
                         title = (
-                            <span>
+                            <span className={"layout-tab"}>
                                 {title}{" "}
                                 <Badge className={"new-item-badge"}>New</Badge>
                             </span>
