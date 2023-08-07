@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { State } from "../typeDefs/State";
 import { VERSION } from "../version";
+import { keys } from "../smap";
 
 const defaultState = {
     version: VERSION(),
@@ -23,17 +24,49 @@ const defaultState = {
     productionState: {},
 } satisfies State;
 
-function loadStorage() {
-    const ex = localStorage.getItem("state");
-    const existingStorage = {
-        ...defaultState,
-        ...((ex ? JSON.parse(ex) : {}) as State),
-    };
-    return existingStorage;
+function makeName(name: string) {
+    return `idlefactory.${name}`;
+}
+
+function serializer(this: any, key: string, value: any) {
+    if (typeof value === "number") {
+        return Math.round(value * 1000) / 1000;
+    }
+    return value;
+}
+
+function loadStorage(): State {
+    const monoState = localStorage.getItem("state");
+    if (monoState) {
+        const existingStorage = {
+            ...defaultState,
+            ...(JSON.parse(monoState) as State),
+        };
+        return existingStorage;
+    } else {
+        const state: State = {} as State;
+        keys(defaultState).forEach((k) => {
+            const storage = localStorage.getItem(makeName(k));
+            if (storage) {
+                state[k] = JSON.parse(storage);
+            } else {
+                state[k] = defaultState[k] as any;
+            }
+        });
+        return state;
+    }
 }
 
 function saveGame(state: State) {
-    localStorage.setItem("state", JSON.stringify(state));
+    keys(state).forEach((key) => {
+        localStorage.setItem(
+            makeName(key),
+            JSON.stringify(state[key], serializer),
+        );
+    });
+    if (localStorage.getItem("state")) {
+        localStorage.removeItem("state");
+    }
 }
 
 export function useLocalStorage() {
