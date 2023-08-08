@@ -126,6 +126,7 @@ export type Items =
     | "bauxite-node"
     | "uranium-node"
     | "gold-node"
+    | "nuclear-reactor"
     | "boost-lumberjack"
     | "boost-miner-mk1"
     | "boost-chemical-plant"

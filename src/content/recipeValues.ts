@@ -316,6 +316,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     hydroponics: 20,
     "rock-crusher": 10,
     centrifuge: 10,
+    "nuclear-reactor": 100,
 };
 
 const recipes: Recipes = {
@@ -421,6 +422,7 @@ const recipes: Recipes = {
     "water-evaporator": { steel: 5, pipe: 5 },
     "evaporate-water": { water: 50, "clean-water": 50 },
     "coal-power": { steel: 100 },
+    "nuclear-reactor": { computer: 100, adamantium: 500 },
 
     explorer: { steel: 10, "basic-circuit": 8 },
 

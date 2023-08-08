@@ -87,6 +87,7 @@ const unlockedWith: partialItems<Items[]> = {
     "research-box5": ["research-box4"],
 
     "uranium-node": ["research-uranium"],
+    "nuclear-reactor": ["research-uranium"],
     centrifuge: ["research-uranium"],
     "rock-crusher": ["research-uranium"],
 };

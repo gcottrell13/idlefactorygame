@@ -65,7 +65,7 @@ const sections: Sections = [
             },
             {
                 Name: "Buildings",
-                Items: ["wind-turbine", "coal-power"],
+                Items: ["wind-turbine", "coal-power", "nuclear-reactor"],
             },
             {
                 Name: "Storage",
@@ -84,6 +84,7 @@ const sections: Sections = [
                 Name: "",
                 Items: [
                     "boost-lumberjack",
+                    "boost-constructor",
                     "boost-miner-mk1",
                     "boost-chemical-plant",
                     "boost-adamantium-drill",

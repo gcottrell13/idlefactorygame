@@ -23,6 +23,7 @@ const assemblerSpeeds = {
     "lumberjack-school": 1,
     "wind-turbine": 2,
     "coal-power": 100,
+    "nuclear-reactor": 2500,
 } satisfies partialItems<number>;
 
 export type Buildings = keyof typeof assemblerSpeeds;
@@ -50,6 +51,7 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     lumberjack: { food: 0.05 },
     "wind-turbine": {},
     "coal-power": { coal: 1 },
+    "nuclear-reactor": { "nuclear-fuel": 1 },
 } satisfies {
     [p in Buildings]: partialItems<number>;
 };
@@ -94,11 +96,12 @@ const requiredBuildings: {
     "research-metal": ["by-hand"],
     "research-small-battery": ["by-hand"],
     "small-battery": ["by-hand", "constructer"],
-    electricity: ["wind-turbine", "coal-power"],
+    electricity: ["wind-turbine", "coal-power", "nuclear-reactor"],
     "wind-turbine": ["by-hand", "constructer"],
     food: ["by-hand", "prospector"],
 
     "coal-power": ["by-hand", "manufacturer"],
+    "nuclear-reactor": ["manufacturer"],
 
     "adamantium-drill": ["manufacturer"],
     "advanced-circuit": ["assembler"],
