@@ -188,9 +188,11 @@ export function Assembler({
                                                 {GAME.displayNames(requirement)}
                                             </td>
                                             <td>
-                                                {state.amountThatWeHave[
-                                                    requirement
-                                                ] ?? 0}
+                                                {d(
+                                                    state.amountThatWeHave[
+                                                        requirement
+                                                    ],
+                                                )}
                                             </td>
                                             <td className="assembler-count-name">
                                                 ({d(rate)}/s)

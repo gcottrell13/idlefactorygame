@@ -28,6 +28,8 @@ describe("tree-check", () => {
             lastUIUpdateTimestamp: 0,
             powerConsumptionState: {},
             productionState: {},
+            dedicatedResources: {},
+            priorityLists: {},
         };
 
         const discoveryLog: string[] = [];

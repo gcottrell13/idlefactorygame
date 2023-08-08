@@ -3,6 +3,10 @@
     border-bottom: 1px lightgray dashed;
 }
 
+.popover-name {
+    font-size: x-large;
+}
+
 .assembler-count {
     display: inline-block;
     white-space: nowrap;

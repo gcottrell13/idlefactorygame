@@ -325,7 +325,7 @@ export function ItemDisplay({
         <Popover id={`${itemName}-popover`} {...props}>
             <Popover.Header>
                 <span className={"popover-name"}>
-                    {GAME.displayNames(itemName)}
+                    <Sprite name={itemName} /> {GAME.displayNames(itemName)}
                 </span>
             </Popover.Header>
             <Popover.Body>{displayParts}</Popover.Body>

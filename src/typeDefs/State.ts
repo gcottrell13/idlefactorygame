@@ -1,4 +1,4 @@
-import { partialItems } from "../content/itemNames";
+import { Items, partialItems } from "../content/itemNames";
 import { VERSION } from "../version";
 
 export const PRODUCTION_RUNNING = Symbol("RUNNING");
@@ -34,7 +34,54 @@ export interface State {
      */
     assemblers: partialItems<partialItems<number>>;
     displayAmount: partialItems<number>;
+
+    /**
+     * The amount in "general storage".
+     * Any recipes/buildings that are not in a priority list will consume from here.
+     */
     amountThatWeHave: partialItems<number>;
+
+    /**
+     * Dedicated resources for:
+     * [recipe][building making it][ingredient] => storage amount and maximum
+     *
+     * The ingredient MAY define a priority list, and it MAY include this recipe/building,
+     * in which case there will be a number defined at this path.
+     *
+     * If the path exists, then the building must only consume the ingredient from this, and must not consume
+     * from amountThatWeHave.
+     *
+     * The distribution algorithm will attempt to supply any defined paths with the following amounts:
+     * - In the case of recipe ingredients, twice the recipe amount.
+     * - In the case of power requirements, requirements-per-second amount (for a total of 1 second worth of power);
+     * - If a building requires the same ingredient for power and recipe, the amounts will be added.
+     */
+    dedicatedResources: partialItems<
+        partialItems<partialItems<[amount: number, max: number]>>
+    >;
+
+    /**
+     * [item being made] => [recipe, building]
+     *
+     * defines a dedicatedResources for [recipe][building][item being made]
+     *
+     * general algorithm for distribution:
+     *  - set OVERFLOW = amountThatWeHave
+     *  - set LASTOVERFLOW = amountThatWeHave
+     *  - set TARGETS = items in priority list where amount < max
+     *  - while OVERFLOW > 0 && #TARGETS > 0 && LASTOVERFLOW != OVERFLOW:
+     *     - set ADD = OVERFLOW divide by #TARGETS
+     *     - set NEWAMOUNT = 0
+     *     - for each item in TARGETS:
+     *        - set EXTRA = Math.max((amount + ADD) - max, 0)
+     *        - set amount = Math.min(amount + ADD, max)
+     *        - NEWAMOUNT += EXTRA
+     *     - set LASTOVERFLOW = OVERFLOW
+     *     - set OVERFLOW = NEWAMOUNT
+     *     - recalculate TARGETS
+     *  - set amountThatWeHave = OVERFLOW
+     */
+    priorityLists: partialItems<[recipe: Items, building: Items][]>;
 
     /**
      * all buildings making these recipes should not do so

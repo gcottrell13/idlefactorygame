@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import GAME from "../values";
 import { Items } from "../content/itemNames";
 import _ from "lodash";
-import { forEach, keys, values } from "../smap";
+import { forEach, keys, mapPairs, values } from "../smap";
 import { VERSION } from "../version";
 import { useLocalStorage } from "./useLocalStorage";
 import {
@@ -13,13 +13,7 @@ import {
     PRODUCTION_RUNNING,
     PRODUCTION_OUTPUT_BLOCKED,
 } from "../typeDefs/State";
-import {
-    checkAmounts,
-    checkVisible,
-    consumeMaterials,
-    consumeMaterialsFromRecipe,
-    howManyRecipesCanBeMade,
-} from "../assembly";
+import * as Assembly from "../assembly";
 
 export function useProduction(ticksPerSecond: number) {
     const { existingStorage, saveGame, resetGame } = useLocalStorage();
@@ -106,17 +100,52 @@ export function useProduction(ticksPerSecond: number) {
         return [power, state] as const;
     }
 
+    function getDedicatedResources(itemName: Items, building: Items) {
+        const r = stateRef.current.dedicatedResources[itemName]?.[building];
+        return r;
+    }
+
+    function checkHas(
+        itemName: Items,
+        assemblerName: Items,
+        ingredient: Items,
+        amount: number,
+    ) {
+        const { amountThatWeHave } = stateRef.current;
+        const building = getDedicatedResources(itemName, assemblerName);
+        const dedicated = building?.[ingredient];
+        if (dedicated) {
+            return dedicated[0] >= amount;
+        } else {
+            return (amountThatWeHave[ingredient] ?? 0) >= amount;
+        }
+    }
+
+    function consumeMaterials(
+        itemName: Items,
+        assemblerName: Items,
+        ingredient: Items,
+        amount: number,
+    ) {
+        const { amountThatWeHave } = stateRef.current;
+        const building = getDedicatedResources(itemName, assemblerName);
+        const dedicated = building?.[ingredient];
+        if (dedicated) {
+            dedicated[0] = Math.max(0, dedicated[0] - amount);
+        } else {
+            const d = amountThatWeHave[ingredient] ?? 0;
+            amountThatWeHave[ingredient] = Math.max(0, d - amount);
+        }
+    }
+
     function doPowerConsumption(itemName: Items, building: Items) {
         const [power, state] = getPower(itemName, building);
         if (state === PRODUCTION_HAS_POWER && power >= ticksPerSecond) {
             let amount = stateRef.current.assemblers[itemName]![building]!;
             const r = GAME.buildingPowerRequirementsPerSecond(building);
-            while (amount-- > 0)
-                consumeMaterials(
-                    undefined,
-                    stateRef.current.amountThatWeHave,
-                    r,
-                );
+            mapPairs(r, (v, k) =>
+                consumeMaterials(itemName, building, k, v * amount),
+            );
         }
     }
 
@@ -124,7 +153,11 @@ export function useProduction(ticksPerSecond: number) {
         const [power, state] = getPower(itemName, building);
         if (state === PRODUCTION_NO_POWER) {
             const r = GAME.buildingPowerRequirementsPerSecond(building);
-            if (checkAmounts(stateRef.current.amountThatWeHave, r)) {
+            if (
+                _.every(
+                    mapPairs(r, (v, k) => checkHas(itemName, building, k, v)),
+                )
+            ) {
                 stateRef.current.powerConsumptionProgress[itemName]![
                     building
                 ] = 0;
@@ -152,6 +185,29 @@ export function useProduction(ticksPerSecond: number) {
             assemblerName
         ] ??= PRODUCTION_NO_INPUT);
         return [time, state] as const;
+    }
+
+    function buildingConsume(itemName: Items, assemblerName: Items) {
+        const { amountThatWeHave } = stateRef.current;
+        const scale = Math.pow(
+            GAME.recipeScaleFactor(itemName),
+            amountThatWeHave[itemName] ?? 0,
+        );
+
+        const recipe = GAME.recipes(itemName);
+        if (!recipe) return null;
+
+        let ingredient: Items;
+        for (ingredient in recipe) {
+            const amt = scale * (recipe[ingredient] ?? 0);
+            if (!checkHas(itemName, assemblerName, ingredient, amt))
+                return null;
+        }
+
+        for (ingredient in recipe) {
+            const amt = scale * (recipe[ingredient] ?? 0);
+            consumeMaterials(itemName, assemblerName, ingredient, amt);
+        }
     }
 
     function doProduction(timeStep: number) {
@@ -216,9 +272,9 @@ export function useProduction(ticksPerSecond: number) {
                         );
 
                         if (hasPower && hadNoInput) {
-                            const result = consumeMaterialsFromRecipe(
+                            const result = buildingConsume(
                                 itemName,
-                                amountThatWeHave,
+                                assemblerName,
                             );
                             if (result === null) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
@@ -242,9 +298,9 @@ export function useProduction(ticksPerSecond: number) {
                                     t -= 1;
                                     time = t;
                                     if (
-                                        consumeMaterialsFromRecipe(
+                                        buildingConsume(
                                             itemName,
-                                            amountThatWeHave,
+                                            assemblerName,
                                         ) === null
                                     ) {
                                         state = PRODUCTION_NO_INPUT;
@@ -285,7 +341,7 @@ export function useProduction(ticksPerSecond: number) {
     const makeItemByhand = useCallback((itemName: Items, count: number) => {
         for (let i = 0; i < count; i++) {
             if (addToTotal(itemName, 1)) {
-                consumeMaterialsFromRecipe(
+                Assembly.consumeMaterialsFromRecipe(
                     itemName,
                     stateRef.current.amountThatWeHave,
                 );
@@ -298,7 +354,7 @@ export function useProduction(ticksPerSecond: number) {
         if (GAME.requiredBuildings(itemName).includes("by-hand") === false)
             return null;
         if (
-            howManyRecipesCanBeMade(
+            Assembly.howManyRecipesCanBeMade(
                 itemName,
                 stateRef.current.amountThatWeHave,
             ) <= 0
@@ -414,7 +470,7 @@ export function useProduction(ticksPerSecond: number) {
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);
 
-    checkVisible(stateRef.current);
+    Assembly.checkVisible(stateRef.current);
 
     return {
         ...stateRef.current,
