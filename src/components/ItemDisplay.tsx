@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import _ from "lodash";
 import { howManyRecipesCanBeMade } from "../assembly";
 import GAME from "../values";
@@ -59,27 +59,12 @@ export function ItemDisplay({
     powerConsumptionRates,
     assemblerIsStuckOrDisabled,
 }: Props) {
-    const sprites = useImages();
-
-    const byHandCb =
-        makeByHand === false || makeByHand === null ? undefined : makeByHand;
     const canMakeByHand = Math.min(
         currentClickAmount,
         howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
         state.calculateStorage(itemName) - amt,
         GAME.maxCraftAtATime(itemName),
     );
-    const makeByHandButton =
-        makeByHand === null ? undefined : (
-            <Button
-                className={"make-by-hand"}
-                onClick={byHandCb}
-                disabled={makeByHand === false}
-            >
-                {GAME.byHandVerbs(itemName)}{" "}
-                {canMakeByHand > 1 ? Math.floor(canMakeByHand) : ""}
-            </Button>
-        );
 
     const recipeDisabled = state.disabledRecipes[itemName] === true;
     const thisPowerRequirements =
@@ -336,7 +321,13 @@ export function ItemDisplay({
 
     return (
         <div className="item-row" onMouseEnter={onMouseover}>
-            <div className={"new-badge"}>{makeByHandButton}</div>
+            <div className={"new-badge"}>
+                <ByHandButton
+                    itemName={itemName}
+                    count={canMakeByHand}
+                    makeByHand={makeByHand}
+                />
+            </div>
             <div className={"item-name-container"}>
                 <OverlayTrigger placement="right" overlay={tooltip}>
                     <span>
@@ -378,5 +369,38 @@ export function ItemDisplay({
                 </div>
             </div>
         </div>
+    );
+}
+
+interface ByHandButtonProps {
+    makeByHand: false | null | (() => void);
+    itemName: Items;
+    count: number;
+}
+
+function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
+    const [intervalId, setIntervalId] = useState<any>(0);
+
+    return makeByHand === null ? undefined : (
+        <Button
+            className={"make-by-hand"}
+            onMouseDown={() => {
+                if (makeByHand) {
+                    setIntervalId(
+                        setInterval(() => {
+                            makeByHand();
+                        }, 200),
+                    );
+                }
+            }}
+            onMouseUp={() => {
+                clearInterval(intervalId);
+                if (makeByHand) makeByHand();
+            }}
+            onMouseLeave={() => clearInterval(intervalId)}
+            disabled={makeByHand === false}
+        >
+            {GAME.byHandVerbs(itemName)} {count > 1 ? Math.floor(count) : ""}
+        </Button>
     );
 }
