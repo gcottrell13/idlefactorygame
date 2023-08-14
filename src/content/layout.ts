@@ -109,7 +109,7 @@ const sections: Sections = [
         SubSections: [
             {
                 Name: "Money",
-                Items: ["money"],
+                Items: ["money", "research-money"],
             },
         ],
     },

@@ -18,6 +18,8 @@ const unlockedWith: partialItems<Items[]> = {
     "coal-node": ["research-steel"],
     "smelter-mk2": ["research-steel"],
 
+    money: ["research-money"],
+
     "boost-lumberjack": ["lumberjack"],
     "boost-miner-mk1": ["research-miner-mk1"],
     "boost-chemical-plant": ["chemical-plant"],
@@ -34,6 +36,7 @@ const unlockedWith: partialItems<Items[]> = {
     "boost-explorer": ["explorer"],
     "boost-greenhouse": ["greenhouse"],
     "boost-manufacturer": ["manufacturer"],
+    "boost-constructor": ["constructer"],
 
     "iron-node": ["research-metal"],
     "copper-node": ["research-metal"],

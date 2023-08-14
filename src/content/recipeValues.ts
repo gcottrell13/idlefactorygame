@@ -142,6 +142,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "research-mass-click": 1,
     "research-steel": 1,
     "research-science-2": 1,
+    "research-money": 1,
 
     // science
     science1: 1,
@@ -473,6 +474,7 @@ const recipes: Recipes = {
     "research-miner-mk1": { science1: 30 },
     "research-advanced-circuitry": { science3: 500 },
     "research-mass-click": { science1: 100 },
+    "research-money": { science2: 10 },
 
     "research-science-1": { "copper-wire": 10, gear: 10 },
     "research-science-2": { science1: 200, steel: 50 },

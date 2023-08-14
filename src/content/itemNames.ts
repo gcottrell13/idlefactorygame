@@ -87,6 +87,7 @@ export type Items =
     | "research-studonite"
     | "research-uranium"
     | "research-wire"
+    | "research-money"
     | "coal-power"
     | "rock-crusher"
     | "sand"

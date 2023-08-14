@@ -137,6 +137,7 @@ const requiredBuildings: {
     "research-mass-click": ["by-hand"],
     "research-basic-circuit": ["by-hand"],
     "research-woodcutting": ["by-hand"],
+    "research-money": ["by-hand"],
 
     "boost-lumberjack": ["by-hand"],
     "boost-miner-mk1": ["by-hand"],

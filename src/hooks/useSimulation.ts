@@ -221,7 +221,7 @@ export function useProduction(ticksPerSecond: number) {
                                 itemName,
                                 amountThatWeHave,
                             );
-                            if (result === null) state = PRODUCTION_NO_INPUT;
+                            if (!result) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
                                 time = -fps * amountAddPerTick;
                                 state = PRODUCTION_RUNNING;
@@ -243,10 +243,10 @@ export function useProduction(ticksPerSecond: number) {
                                     t -= 1;
                                     time = t;
                                     if (
-                                        consumeMaterialsFromRecipe(
+                                        !consumeMaterialsFromRecipe(
                                             itemName,
                                             amountThatWeHave,
-                                        ) === null
+                                        )
                                     ) {
                                         state = PRODUCTION_NO_INPUT;
                                         break;
@@ -288,14 +288,16 @@ export function useProduction(ticksPerSecond: number) {
         if (makeByHandTimeRef.current > now - 200) return;
         makeByHandTimeRef.current = now;
         for (let i = 0; i < count; i++) {
-            if (addToTotal(itemName, 1)) {
+            if (
                 consumeMaterialsFromRecipe(
                     itemName,
                     stateRef.current.amountThatWeHave,
-                );
-                updateUI();
+                )
+            ) {
+                addToTotal(itemName, 1);
             }
         }
+        updateUI();
     }, []);
 
     const canMakeItemByHand = useCallback((itemName: Items) => {

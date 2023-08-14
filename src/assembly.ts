@@ -76,15 +76,15 @@ export function consumeMaterials(
 export function consumeMaterialsFromRecipe(
     itemName: Items,
     amounts: SMap<number>,
-): number | null {
+): boolean {
     const recipe = GAME.recipes(itemName);
-    if (recipe === undefined) return 0;
+    if (recipe === undefined) return false;
     // not producing, so let's try to grab materials
 
-    if (howManyRecipesCanBeMade(itemName, amounts) <= 0) return null;
+    if (howManyRecipesCanBeMade(itemName, amounts) <= 0) return false;
 
     consumeMaterials(itemName, amounts, recipe);
-    return 0;
+    return true;
 }
 
 export function checkVisible(state: State) {
