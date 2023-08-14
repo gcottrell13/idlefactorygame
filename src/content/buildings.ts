@@ -24,6 +24,7 @@ const assemblerSpeeds = {
     "wind-turbine": 2,
     "coal-power": 100,
     "nuclear-reactor": 2500,
+    hydroponics: 5,
 } satisfies partialItems<number>;
 
 export type Buildings = keyof typeof assemblerSpeeds;
@@ -52,6 +53,7 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     "wind-turbine": {},
     "coal-power": { coal: 1 },
     "nuclear-reactor": { "nuclear-fuel": 1 },
+    hydroponics: { electricity: 1, fertilizer: 1, "clean-water": 1 },
 } satisfies {
     [p in Buildings]: partialItems<number>;
 };
@@ -98,7 +100,7 @@ const requiredBuildings: {
     "small-battery": ["by-hand", "constructer"],
     electricity: ["wind-turbine", "coal-power", "nuclear-reactor"],
     "wind-turbine": ["by-hand", "constructer"],
-    food: ["by-hand", "prospector"],
+    food: ["by-hand", "prospector", "hydroponics"],
 
     "coal-power": ["by-hand", "manufacturer"],
     "nuclear-reactor": ["manufacturer"],
