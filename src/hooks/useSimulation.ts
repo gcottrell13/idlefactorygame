@@ -285,7 +285,7 @@ export function useProduction(ticksPerSecond: number) {
 
     const makeItemByhand = useCallback((itemName: Items, count: number) => {
         const now = new Date().getTime();
-        if (makeByHandTimeRef.current >= now - 200) return;
+        if (makeByHandTimeRef.current > now - 200) return;
         makeByHandTimeRef.current = now;
         for (let i = 0; i < count; i++) {
             if (addToTotal(itemName, 1)) {

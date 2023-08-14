@@ -12,6 +12,7 @@ import { ItemDisplay } from "./ItemDisplay";
 import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
+import { ReleaseNotes } from "./ReleaseNotes";
 
 type Props = {
     ticksPerSecond: number;
@@ -201,7 +202,7 @@ export function App({ ticksPerSecond }: Props) {
                 <Button onClick={resetAll} variant={"secondary"}>
                     Reset
                 </Button>{" "}
-                <span>v{VERSION().join(".")}</span>
+                <ReleaseNotes version={VERSION().join(".")} />{" "}
                 <span className={"play-timer"}>
                     Play Time: {formatSeconds(state.timeSpentPlaying)}
                 </span>

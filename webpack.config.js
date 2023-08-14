@@ -24,6 +24,10 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.(txt|md)$/i,
+                type: "asset/source",
+            },
         ],
     },
     resolve: {
