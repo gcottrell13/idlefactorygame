@@ -81,7 +81,7 @@ const sections: Sections = [
         Name: "Upgrades",
         SubSections: [
             {
-                Name: "",
+                Name: "Upgrades",
                 Items: [
                     "boost-lumberjack",
                     "boost-constructor",
@@ -101,6 +101,15 @@ const sections: Sections = [
                     "boost-greenhouse",
                     "boost-manufacturer",
                 ],
+            },
+        ],
+    },
+    {
+        Name: "Money",
+        SubSections: [
+            {
+                Name: "Money",
+                Items: ["money"],
             },
         ],
     },

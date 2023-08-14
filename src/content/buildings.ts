@@ -105,6 +105,8 @@ const requiredBuildings: {
     "coal-power": ["by-hand", "manufacturer"],
     "nuclear-reactor": ["manufacturer"],
 
+    money: ["by-hand"],
+
     "adamantium-drill": ["manufacturer"],
     "advanced-circuit": ["assembler"],
     "crushed-uranium": ["rock-crusher"],

@@ -35,6 +35,8 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
 
     begin: 1,
 
+    money: 1,
+
     prospector: 1,
     lumberjack: 1,
     "lumberjack-school": 1,
@@ -346,6 +348,8 @@ const recipes: Recipes = {
     "uranium-node": {},
     "gold-node": {},
 
+    money: {},
+
     // raw
     "iron-ore": { "iron-node": 0.01 },
     gas: {},
@@ -476,23 +480,23 @@ const recipes: Recipes = {
     "research-science-4": { science3: 400, "advanced-circuit": 100 },
     "research-science-5": { science4: 500, aluminum: 500, computer: 50 },
 
-    "boost-lumberjack": { science1: 100 },
-    "boost-miner-mk1": { science2: 100 },
-    "boost-chemical-plant": { science2: 100 },
-    "boost-adamantium-drill": { science5: 100 },
-    "boost-gas-extractor": { science3: 100 },
-    "boost-lumberjack-school": { science4: 100 },
-    "boost-oil-pump": { science3: 100 },
-    "boost-rock-crusher": { science4: 100 },
-    "boost-smelter-mk1": { science2: 100 },
-    "boost-smelter-mk2": { science2: 100 },
-    "boost-assembler": { science3: 100 },
-    "boost-water-pump": { science3: 100 },
-    "boost-centrifuge": { science5: 100 },
-    "boost-explorer": { science3: 100 },
-    "boost-greenhouse": { science3: 100 },
-    "boost-manufacturer": { science4: 100 },
-    "boost-constructor": { science2: 100 },
+    "boost-lumberjack": { money: 100 },
+    "boost-miner-mk1": { money: 100 },
+    "boost-chemical-plant": { money: 100 },
+    "boost-adamantium-drill": { money: 100 },
+    "boost-gas-extractor": { money: 100 },
+    "boost-lumberjack-school": { money: 100 },
+    "boost-oil-pump": { money: 100 },
+    "boost-rock-crusher": { money: 100 },
+    "boost-smelter-mk1": { money: 100 },
+    "boost-smelter-mk2": { money: 100 },
+    "boost-assembler": { money: 100 },
+    "boost-water-pump": { money: 100 },
+    "boost-centrifuge": { money: 100 },
+    "boost-explorer": { money: 100 },
+    "boost-greenhouse": { money: 100 },
+    "boost-manufacturer": { money: 100 },
+    "boost-constructor": { money: 100 },
 
     "research-box": { science1: 1 },
     "research-box2": { science1: 1, box: 10 },

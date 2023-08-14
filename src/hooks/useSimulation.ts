@@ -18,6 +18,7 @@ import * as Assembly from "../assembly";
 export function useProduction(ticksPerSecond: number) {
     const { existingStorage, saveGame, resetGame } = useLocalStorage();
     const stateRef = useRef<State>(existingStorage);
+    const makeByHandTimeRef = useRef<number>(0);
 
     const setState = (state: Partial<State> = {}) => {
         stateRef.current = { ...stateRef.current, ...state };
@@ -339,6 +340,9 @@ export function useProduction(ticksPerSecond: number) {
     }, []);
 
     const makeItemByhand = useCallback((itemName: Items, count: number) => {
+        const now = new Date().getTime();
+        if (makeByHandTimeRef.current >= now - 200) return;
+        makeByHandTimeRef.current = now;
         for (let i = 0; i < count; i++) {
             if (addToTotal(itemName, 1)) {
                 Assembly.consumeMaterialsFromRecipe(
