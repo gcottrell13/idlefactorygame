@@ -22,8 +22,6 @@ const defaultState = {
     lastUIUpdateTimestamp: 0,
     powerConsumptionState: {},
     productionState: {},
-    dedicatedResources: {},
-    priorityLists: {},
 } satisfies State;
 
 function makeName(name: string) {
