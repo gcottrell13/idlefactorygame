@@ -145,8 +145,8 @@ export function ItemDisplay({
 
     const historyVisible =
         assemblers.length > 0 ||
-        producingRate > 0 ||
-        keys(othersConsumingAsPower).length > 0
+            producingRate > 0 ||
+            keys(othersConsumingAsPower).length > 0
             ? "visible"
             : "";
     const netRate = producingRate - othersConsumingRate;
@@ -318,6 +318,7 @@ export function ItemDisplay({
     );
 
     const isNew = state.acknowledged[itemName] !== true;
+    const hasStorage = maxValue !== Number.MAX_SAFE_INTEGER;
 
     return (
         <div className="item-row" onMouseEnter={onMouseover}>
@@ -346,11 +347,15 @@ export function ItemDisplay({
                 </OverlayTrigger>
             </div>
             <div className={"rate-container"}>
-                <span className="item-count">
-                    {historyDisplay} {d(amt)}
-                </span>
+                {
+                    hasStorage || amt > 0 ? (
+                        <span className="item-count">
+                            {historyDisplay} {d(amt)}
+                        </span>
+                    ) : null
+                }
                 <span className="item-max">
-                    {maxValue === Number.MAX_SAFE_INTEGER
+                    {hasStorage
                         ? ""
                         : `/ ${maxValue}`}
                 </span>
