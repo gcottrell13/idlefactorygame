@@ -356,8 +356,8 @@ export function ItemDisplay({
                 }
                 <span className="item-max">
                     {hasStorage
-                        ? ""
-                        : `/ ${maxValue}`}
+                        ? `/ ${maxValue}`
+                        : ""}
                 </span>
                 {producingRate > 0 && (
                     <span className={"speed"}> (+{d(producingRate)}/s)</span>

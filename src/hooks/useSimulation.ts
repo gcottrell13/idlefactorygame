@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import GAME from "../values";
-import { Items } from "../content/itemNames";
+import { Items, partialItems } from "../content/itemNames";
 import _ from "lodash";
 import { forEach, keys, values } from "../smap";
 import { VERSION } from "../version";
@@ -60,39 +60,41 @@ export function useProduction(ticksPerSecond: number) {
         );
     }
 
-    function hasStorageCapacity(item: Items, amt: number) {
+    function hasStorageCapacity(item: Items): number {
         const currentAmount = stateRef.current.amountThatWeHave[item] ?? 0;
-        return calculateStorage(item) - currentAmount >= amt;
+        return calculateStorage(item) - currentAmount;
     }
 
     function addToTotal(itemName: Items, recipeCount: number): boolean {
         if (GAME.sideProducts(itemName).length > 0) {
-            for (let i = 0; i < recipeCount; i++) {
-                const itemsChosen: Items[] = [];
+            const itemsChosen: partialItems<number> = {};
 
-                GAME.sideProducts(itemName).forEach((sideProduct) => {
-                    const total = _.sum(values(sideProduct));
-                    let runningTotal = 0;
-                    _.forIn(keys(sideProduct), (key) => {
-                        const k = key as Items;
-                        runningTotal += sideProduct[k] ?? 0;
-                        if (Math.random() <= runningTotal / total) {
-                            itemsChosen.push(k);
-                            return false;
-                        }
-                    });
+            GAME.sideProducts(itemName).forEach((sideProduct) => {
+                const total = _.sum(values(sideProduct));
+                let runningTotal = 0;
+                _.forIn(keys(sideProduct), (key) => {
+                    const k = key as Items;
+                    runningTotal += sideProduct[k] ?? 0;
+                    if (Math.random() <= runningTotal / total) {
+                        itemsChosen[k] = hasStorageCapacity(k);
+                        return false;
+                    }
                 });
+            });
+            
+            const canProduce = Math.min(recipeCount, ...Object.values(itemsChosen));
 
-                if (itemsChosen.every((x) => hasStorageCapacity(x, 1))) {
-                    itemsChosen.forEach((x) => addAmount(x, 1));
-                } else {
-                    return false;
-                }
+            if (canProduce > 0) {
+                keys(itemsChosen).forEach((x) => addAmount(x, canProduce));
+            } else {
+                return false;
             }
+
             return true;
         } else {
-            if (hasStorageCapacity(itemName, recipeCount)) {
-                addAmount(itemName, recipeCount);
+            const capacity = Math.min(recipeCount, hasStorageCapacity(itemName));
+            if (capacity) {
+                addAmount(itemName, capacity);
                 return true;
             }
         }
@@ -238,9 +240,10 @@ export function useProduction(ticksPerSecond: number) {
                             t += amountAddPerTick;
                             time = t;
 
-                            while (t >= 1) {
-                                if (addToTotal(itemName, 1)) {
-                                    t -= 1;
+                            const amountToProduce = Math.floor(t);
+                            if (amountToProduce > 0) {
+                                if (addToTotal(itemName, amountToProduce)) {
+                                    t -= amountToProduce;
                                     time = t;
                                     if (
                                         !consumeMaterialsFromRecipe(
@@ -249,11 +252,9 @@ export function useProduction(ticksPerSecond: number) {
                                         )
                                     ) {
                                         state = PRODUCTION_NO_INPUT;
-                                        break;
                                     }
                                 } else {
                                     state = PRODUCTION_OUTPUT_BLOCKED;
-                                    break;
                                 }
                             }
                         }
@@ -310,7 +311,7 @@ export function useProduction(ticksPerSecond: number) {
             ) <= 0
         )
             return false;
-        return hasStorageCapacity(itemName, 1);
+        return hasStorageCapacity(itemName) > 0;
     }, []);
 
     const addAssemblers = useCallback(
