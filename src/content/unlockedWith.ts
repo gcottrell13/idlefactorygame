@@ -5,6 +5,7 @@ const unlockedWith: partialItems<Items[]> = {
     assembler: ["research-assembler"],
 
     prospector: ["begin"],
+    youwin: ["begin"],
 
     "small-battery": ["research-small-battery"],
     electricity: ["research-small-battery"],
@@ -14,11 +15,16 @@ const unlockedWith: partialItems<Items[]> = {
     food: ["begin"],
     "research-woodcutting": ["begin"],
 
+    "raw-mana": ["research-wizard-tower"],
+    "mystical-catalyst": ["research-wizard-tower"],
+    "wizard-orb": ["research-wizard-tower"],
+
     "gas-extractor": ["research-nitrogen"],
     "coal-node": ["research-steel"],
     "smelter-mk2": ["research-steel"],
 
     money: ["research-money"],
+    bank: ["research-money"],
 
     "boost-lumberjack": ["lumberjack"],
     "boost-miner-mk1": ["research-miner-mk1"],

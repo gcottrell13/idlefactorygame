@@ -1,5 +1,6 @@
 export type Items =
     | "begin"
+    | "youwin"
     | "food"
     | "lumberjack"
     | "prospector"
@@ -146,6 +147,60 @@ export type Items =
     | "boost-greenhouse"
     | "boost-manufacturer"
     | "boost-constructor"
+
+    // convert gold to money
+    | "bank"
+
+    // margaritas are required to win
+    | "margarita"
+    | "simple-syrup"
+    | "lime-juice"
+    | "tequila"
+
+    // make some cars to win.
+    // some ingredients are also required to make explorers
+    | "car-engine"
+    | "engine-block"
+    | "engine-electronics"
+    | "crank-shaft"
+    | "spark-plug"
+    | "piston"
+    | "car"
+    | "car-chassis"
+    | "anti-grav-thruster"
+    | "chair"
+    | "steering-wheel"
+
+    // the wizard's tower.
+    // create wizard-paragon with 100 wizard degrees
+    // research the wizard tower using a telescope
+    // spend money to buy wizards
+    // wizards make wizard-pop
+    // create mana
+    // each tier of mana requires 2 of the previous + mystical catalyst
+    // create wizard degree with wizard power
+    // consume things to make wizard power
+
+    | "telescope"
+    | "wizard-essence"
+    | "raw-mana"
+    | "refined-mana"
+    | "powerful-mana"
+    | "mystical-catalyst"
+    | "wizard-orb"
+    | "research-wizard-tower"
+    | "wizard-paragon"
+    | "arcane-wizard"
+    | "fire-wizard"
+    | "necro-wizard"
+    | "wizard-pop"
+    | "wizard-power"
+    | "wizard-degree"
+    | "consume-arcane-wizard"
+    | "consume-fire-wizard"
+    | "consume-necro-wizard"
+    | "consume-wizard-pop"
+    | "boost-wizard"
     | "";
 
 export type itemsMap<T> = { [p in Items]: T };

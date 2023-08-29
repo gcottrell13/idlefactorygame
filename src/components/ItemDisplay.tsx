@@ -68,7 +68,7 @@ export function ItemDisplay({
 
     const recipeDisabled = state.disabledRecipes[itemName] === true;
     const thisPowerRequirements =
-        GAME.buildingPowerRequirementsPerSecond(itemName);
+        GAME.buildingPowerRequirementsPerSecond[itemName];
 
     const assemblers = keys(assemblersMakingThis).map((name) => (
         <Assembler
@@ -92,7 +92,7 @@ export function ItemDisplay({
         ) : null;
 
     const byproducts = _.uniq(
-        GAME.sideProducts(itemName).flatMap((x) => keys(x)),
+        GAME.sideProducts[itemName].flatMap((x) => keys(x)),
     ).filter((x) => x != itemName);
     const byproductString = byproducts.map(GAME.displayNames).join(", ");
 
@@ -106,15 +106,15 @@ export function ItemDisplay({
     const othersConsumingRate =
         _.sum(values(othersConsuming)) + othersConsumingAsPowerRate;
 
-    const recipeScale = GAME.recipeScaleFactor(itemName);
-    const recipe = GAME.recipes(itemName);
+    const recipeScale = GAME.recipeScaleFactor[itemName];
+    const recipe = GAME.recipes[itemName];
     const formatIngredients = keys(recipe)
         .map((name) => [name, recipe[name]!] as const)
         .filter(([_name, count]) => count > 0)
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
-                    {count * Math.pow(recipeScale, amt)}
+                    {d(count * Math.pow(recipeScale, amt))}
                 </td>
                 <td>
                     <Sprite name={name} />
@@ -131,16 +131,16 @@ export function ItemDisplay({
     const byproductOf = GAME.makesAsASideProduct(itemName).map(
         GAME.displayNames,
     );
-    const storageObjects = GAME.itemsCanBeStoreIn(itemName).map(
+    const storageObjects = GAME.itemsCanBeStoreIn[itemName].map(
         GAME.displayNames,
     );
 
-    const storageValueIfContainer = GAME.storageSizes(itemName);
+    const storageValueIfContainer = GAME.storageSizes[itemName];
 
     const maxValue = state.calculateStorage(itemName);
 
-    const assemblerSpeed = GAME.assemblerSpeeds(itemName);
-    const unlocks = GAME.unlocks(itemName).map(GAME.displayNames);
+    const assemblerSpeed = GAME.assemblerSpeeds[itemName];
+    const unlocks = GAME.unlocks[itemName].map(GAME.displayNames);
     const madeIn = GAME.requiredBuildings(itemName).map(GAME.displayNames);
 
     const historyVisible =
@@ -151,7 +151,7 @@ export function ItemDisplay({
             : "";
     const netRate = producingRate - othersConsumingRate;
 
-    const othersConsumingThis = GAME.recipesConsumingThis(itemName)
+    const othersConsumingThis = GAME.recipesConsumingThis[itemName]
         .filter((recipeName) => state.assemblers[recipeName])
         .map((recipeName) => {
             const states = keys(state.assemblers[recipeName]).map((an) =>
@@ -348,7 +348,7 @@ export function ItemDisplay({
             </div>
             <div className={"rate-container"}>
                 {
-                    hasStorage || amt > 0 ? (
+                    hasStorage || amt > 0 || producingRate > 0 ? (
                         <span className="item-count">
                             {historyDisplay} {d(amt)}
                         </span>
@@ -405,7 +405,7 @@ function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
             onMouseLeave={() => clearInterval(intervalId)}
             disabled={makeByHand === false}
         >
-            {GAME.byHandVerbs(itemName)} {count > 1 ? Math.floor(count) : ""}
+            {GAME.byHandVerbs[itemName]} {count > 1 ? Math.floor(count) : ""}
         </Button>
     );
 }

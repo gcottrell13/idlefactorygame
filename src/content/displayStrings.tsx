@@ -11,6 +11,8 @@ const byHandVerbs: partialItems<string> = {
 };
 
 const displayNames: partialItems<string> = {
+    youwin: "Win",
+
     lumberjack: "Lumberjack",
     "lumberjack-school": "Lumberjack School",
     food: "Basic Food",
@@ -147,6 +149,39 @@ const displayNames: partialItems<string> = {
     "boost-explorer": "Boost: Efficient Explorer",
     "boost-greenhouse": "Boost: Greener Greenhouse",
     "boost-manufacturer": "Boost: Manufacturer",
+    "boost-wizard": "Boost: Pointer Hats",
+
+    "anti-grav-thruster": "Anti-Grav Thruster",
+    "arcane-wizard": "Arcane Wizard",
+    "car-chassis": "Chassis",
+    "car-engine": "Engine",
+    "consume-arcane-wizard": "Consume Arcane Wizard",
+    "consume-fire-wizard": "Consume Fire Wizard",
+    "consume-necro-wizard": "Consume Necromancer",
+    "consume-wizard-pop": "Convert Pops",
+    "crank-shaft": "Crank Shaft",
+    "engine-block": "Engine Block",
+    "engine-electronics": "Engine Elec",
+    "fire-wizard": "Fire Wizard",
+    "lime-juice": "Lime Juice",
+    "mystical-catalyst": "Mystical Catalyst",
+    "necro-wizard": "Necromancer",
+    "powerful-mana": "Powerful Mana",
+    "raw-mana": "Raw Mana",
+    "refined-mana": "Refined Mana",
+    "research-money": "Research: Money",
+    "research-wizard-tower": "Find Wizard Tower",
+    "simple-syrup": "Simple Syrup",
+    "spark-plug": "Spark Plug",
+    "steering-wheel": "Steering Wheel",
+    "water-evaporator": "Water Evaportaor",
+    "wizard-degree": "Wizard Degree",
+    "wizard-essence": "Wizard Essence",
+    "wizard-orb": "Orb",
+    "wizard-paragon": "Paragon",
+    "wizard-pop": "Pop",
+    "wizard-power": "Power",
+    bank: "Bank",
 };
 
 const flavorText: partialItems<React.ReactNode> = {
@@ -156,6 +191,7 @@ const flavorText: partialItems<React.ReactNode> = {
     prospector: <i>Lets you find some land!</i>,
     electricity: <i>Power is Knowledge</i>,
     "lumberjack-school": <i>They learn all night, and they sleep all day.</i>,
+    youwin: "Craft this to WIN!",
 
     "boost-lumberjack": "Increase Lumberjack speed by 2x",
     "boost-miner-mk1": "Increase Miner Mark 1 speed by 2x",
@@ -174,6 +210,7 @@ const flavorText: partialItems<React.ReactNode> = {
     "boost-explorer": "Increase Explorer speed by 2x",
     "boost-greenhouse": "Increase Greenhouse speed by 2x",
     "boost-manufacturer": "Increase Manufacturer speed by 2x",
+    "boost-wizard": "Increase Wizard speed by 2x",
 };
 
 const units: partialItems<string> = {

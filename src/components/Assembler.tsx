@@ -43,13 +43,13 @@ export function Assembler({
     const [progressDisplay, setProgressDisplay] = useState<number>(progress);
     const knownActualProgress = useRef<number>(progress);
 
-    const baseCraftTime = GAME.timePerRecipe(itemName);
+    const baseCraftTime = GAME.timePerRecipe[itemName];
     // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
     const thisPowerState = state.powerConsumptionState[itemName] ?? {};
 
     const no = assemblersMakingThis[assemblerName] ?? 0;
     const boost = GAME.buildingBoosts[assemblerName];
-    let speedPer = GAME.assemblerSpeeds(assemblerName) / baseCraftTime;
+    let speedPer = GAME.assemblerSpeeds[assemblerName] / baseCraftTime;
     if (boost) {
         speedPer *= Math.pow(2, state.amountThatWeHave[boost] ?? 0);
     }
@@ -167,7 +167,7 @@ export function Assembler({
     }, [totalSpeed, progressDisplay, progressState, lastUpdateTimestamp]);
 
     const powerRequirements =
-        GAME.buildingPowerRequirementsPerSecond(assemblerName);
+        GAME.buildingPowerRequirementsPerSecond[assemblerName];
     if (keys(powerRequirements).length > 0) {
         const overlay = (
             <Popover className={"popover-no-max-width"}>

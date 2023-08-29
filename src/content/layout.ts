@@ -14,7 +14,7 @@ const sections: Sections = [
         SubSections: [
             {
                 Name: "Start",
-                Items: ["begin"],
+                Items: ["begin", "youwin"],
             },
             {
                 Name: "Land",
@@ -44,11 +44,11 @@ const sections: Sections = [
             },
             {
                 Name: "Buildings",
-                Items: ["lumberjack-school"],
+                Items: ["lumberjack-school", "telescope"],
             },
             {
                 Name: "Research",
-                Items: ["research-woodcutting"],
+                Items: ["research-woodcutting", "research-wizard-tower"],
             },
         ],
     },
@@ -100,6 +100,7 @@ const sections: Sections = [
                     "boost-explorer",
                     "boost-greenhouse",
                     "boost-manufacturer",
+                    "boost-wizard",
                 ],
             },
         ],
@@ -109,7 +110,7 @@ const sections: Sections = [
         SubSections: [
             {
                 Name: "Money",
-                Items: ["money", "research-money"],
+                Items: ["money", "bank", "research-money"],
             },
         ],
     },
@@ -226,7 +227,7 @@ const sections: Sections = [
             },
             {
                 Name: "Buildings",
-                Items: ["manufacturer", "explorer"],
+                Items: ["manufacturer"],
             },
             {
                 Name: "Research",
@@ -295,6 +296,63 @@ const sections: Sections = [
                 Name: "Research",
                 Items: ["science5", "research-uranium"],
             },
+        ],
+    },
+    {
+        Name: "Car Shop",
+        SubSections: [
+            {
+                Name: "Vehicles",
+                Items: [
+                    "car",
+                    "explorer",
+                ],
+            },
+            {
+                Name: "Parts",
+                Items: [
+                    "car-engine",
+                    "engine-block",
+                    "engine-electronics",
+                    "crank-shaft",
+                    "spark-plug",
+                    "piston",
+                    "car-chassis",
+                    "anti-grav-thruster",
+                    "chair",
+                    "steering-wheel",
+                ],
+            },
+        ],
+    },
+    {
+        Name: "The Wizard Tower",
+        SubSections: [
+            {
+                Name: "Wizards",
+                Items: [
+                    "fire-wizard",
+                    "arcane-wizard",
+                    "necro-wizard",
+                    "wizard-paragon",
+                ],
+            },
+            {
+                Name: "Mana",
+                Items: ["raw-mana", "refined-mana", "powerful-mana", "wizard-orb", "mystical-catalyst", "wizard-essence"],
+            },
+            {
+                Name: "Wizard Products",
+                Items: [
+                    "wizard-pop",
+                    "wizard-power",
+                    "wizard-degree",
+                    "consume-arcane-wizard",
+                    "consume-fire-wizard",
+                    "consume-necro-wizard",
+                    "consume-wizard-pop",
+                ]
+            }
         ],
     },
     {

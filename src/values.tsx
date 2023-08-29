@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { SMap, keys, mapValues, values } from "./smap";
-import { Items, partialItems } from "./content/itemNames";
+import { Items, itemsMap, partialItems } from "./content/itemNames";
 import buildings, { Buildings } from "./content/buildings";
 import byproducts from "./content/byproducts";
 import displayStrings from "./content/displayStrings";
@@ -24,32 +24,34 @@ keys(unlockedWith.unlockedWith).forEach((l) => {
     });
 });
 
+function fillWithDefault<T>(partial: partialItems<T>, defaultItem: () => any): itemsMap<T> {
+    allItemNames.forEach(name => {
+        if (partial[name] === undefined) {
+            partial[name] = defaultItem();
+        }
+    });
+    return partial as itemsMap<T>;
+}
+
 const ex = {
     sections: layout.sections,
-    assemblerSpeeds: (item: Items): number =>
-        (buildings.assemblerSpeeds as SMap<number>)[item] ?? 0,
-    byHandVerbs: (item: Items): string =>
-        displayStrings.byHandVerbs[item] ?? "craft",
+    assemblerSpeeds: fillWithDefault(buildings.assemblerSpeeds, () => 0),
+    byHandVerbs: fillWithDefault(displayStrings.byHandVerbs, () => "craft"),
     displayNames: (item: Items | "by-hand"): string =>
         item === "by-hand"
             ? "By Hand"
             : displayStrings.displayNames[item] ?? item,
     hideOnBuy: (item: Items): boolean => hideOnBuy.hideOnBuy.includes(item),
-    itemsCanBeStoreIn: (item: Items): Items[] =>
-        storage.itemsCanBeStoreIn[item] ?? [],
-    recipeScaleFactor: (item: Items): number =>
-        recipeValues.recipeScaleFactor[item] ?? 1.0,
-    recipes: (item: Items): Recipe => recipeValues.recipes[item],
+    itemsCanBeStoreIn: fillWithDefault(storage.itemsCanBeStoreIn, () => []) as itemsMap<Items[]>,
+    recipeScaleFactor: fillWithDefault(recipeValues.recipeScaleFactor, () => 1.0),
+    recipes: recipeValues.recipes,
     requiredBuildings: (item: Items): (Items | "by-hand")[] =>
         buildings.requiredBuildings[item] ?? ["by-hand"],
-    timePerRecipe: (item: Items): number => recipeValues.timePerRecipe[item],
-    sideProducts: (item: Items): partialItems<number>[] =>
-        byproducts.byproducts[item] ?? [],
-    storageSizes: (item: Items): number =>
-        (storage.storageSizes as SMap<number>)[item] ?? 0,
-    unlockedWith: (item: Items): Items[] =>
-        unlockedWith.unlockedWith[item] ?? [],
-    unlocks: (item: Items): Items[] => unlocks[item] ?? [],
+    timePerRecipe: recipeValues.timePerRecipe,
+    sideProducts: fillWithDefault(byproducts.byproducts, () => []),
+    storageSizes: fillWithDefault(storage.storageSizes, () => 0),
+    unlockedWith: fillWithDefault(unlockedWith.unlockedWith, () => []),
+    unlocks: fillWithDefault(unlocks, () => []),
 
     allItemNames: allItemNames,
     allAssemblers: keys(buildings.assemblerSpeeds),
@@ -65,13 +67,11 @@ const ex = {
         maxCraft.maxCraftAtATime[item] ?? maxCraft.ABSOLUTE_MAX_CRAFT,
 
     flavorText: displayStrings.flavorText,
-    byproductRatesPerSecond: (item: Items) =>
-        byproductRatesPerSecond[item] ?? {},
+    byproductRatesPerSecond: fillWithDefault(byproductRatesPerSecond, () => ({})),
 
-    recipesConsumingThis: (item: Items) => recipesConsumingThis[item] ?? [],
+    recipesConsumingThis: fillWithDefault(recipesConsumingThis, () => []),
     MIN_STORAGE: storage.MIN_STORAGE,
-    buildingPowerRequirementsPerSecond: (item: Items) =>
-        buildings.buildingPowerRequirementsPerSecond[item] ?? {},
+    buildingPowerRequirementsPerSecond: fillWithDefault(buildings.buildingPowerRequirementsPerSecond, () => ({})),
 
     buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
     buildingPowerDisplayWord: buildings.buildingPowerDisplayWord,
@@ -108,7 +108,7 @@ const makesAsASideProduct = mapValues(recipeValues.recipes, (_, item) => {
     return keys(byproducts.byproducts).filter(
         (mainOutput) =>
             mainOutput !== item &&
-            ex.sideProducts(mainOutput).some((p) => p[item]),
+            ex.sideProducts[mainOutput].some((p) => p[item]),
     );
 });
 

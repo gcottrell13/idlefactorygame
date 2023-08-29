@@ -50,13 +50,13 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         const production: partialItems<number> = {};
         effectiveProductionRates[itemName] = production;
 
-        mapPairs(GAME.byproductRatesPerSecond(itemName), (rate, producer) => {
+        mapPairs(GAME.byproductRatesPerSecond[itemName], (rate, producer) => {
             const speeds = mapPairs(
                 assemblers[producer],
                 (assemblerNumber, assemblerName) =>
                     producer != itemName && disabledRecipes[producer]
                         ? 0
-                        : GAME.assemblerSpeeds(assemblerName) *
+                        : GAME.assemblerSpeeds[assemblerName] *
                           getBoost(assemblerName) *
                           assemblerNumber *
                           rate,
@@ -64,12 +64,12 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             production[producer] = _.sum(speeds);
         });
 
-        if (GAME.sideProducts(itemName).length === 0) {
+        if (GAME.sideProducts[itemName].length === 0) {
             const assemblersMakingThis = assemblers[itemName] ?? {};
-            const baseCraftTime = GAME.timePerRecipe(itemName);
+            const baseCraftTime = GAME.timePerRecipe[itemName];
             mapPairs(assemblersMakingThis, (assemblerCount, assemblerName) => {
                 const speed =
-                    (GAME.assemblerSpeeds(assemblerName) *
+                    (GAME.assemblerSpeeds[assemblerName] *
                         getBoost(assemblerName) *
                         assemblerCount) /
                     baseCraftTime;
@@ -83,7 +83,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         count: number,
         recipeName: Items,
     ) {
-        const power = GAME.buildingPowerRequirementsPerSecond(assemblerName);
+        const power = GAME.buildingPowerRequirementsPerSecond[assemblerName];
         const counted = !assemblerIsStuckOrDisabled(recipeName, assemblerName);
         mapPairs(power, (requiredCount, ingredient) => {
             (powerConsumptionRates[ingredient] ??= {})[assemblerName] ??= [
@@ -108,15 +108,15 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             );
         });
         if (disabledRecipes[itemName]) return;
-        const recipe = GAME.recipes(itemName);
-        const baseCraftTime = GAME.timePerRecipe(itemName);
+        const recipe = GAME.recipes[itemName];
+        const baseCraftTime = GAME.timePerRecipe[itemName];
         mapPairs(recipe, (count, ingredient) => {
             let rate = 0;
 
             mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
                 if (assemblerIsStuckOrDisabled(itemName, assemblerName)) return;
                 rate +=
-                    (GAME.assemblerSpeeds(assemblerName) *
+                    (GAME.assemblerSpeeds[assemblerName] *
                         getBoost(assemblerName) *
                         assemblerCount) /
                     baseCraftTime;

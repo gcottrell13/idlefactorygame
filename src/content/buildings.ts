@@ -25,6 +25,10 @@ const assemblerSpeeds = {
     "coal-power": 100,
     "nuclear-reactor": 2500,
     hydroponics: 5,
+    "fire-wizard": 1.0,
+    "necro-wizard": 1.0,
+    "arcane-wizard": 1.0,
+    "wizard-orb": 1.0,
 } satisfies partialItems<number>;
 
 export type Buildings = keyof typeof assemblerSpeeds;
@@ -54,9 +58,13 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     "coal-power": { coal: 1 },
     "nuclear-reactor": { "nuclear-fuel": 1 },
     hydroponics: { electricity: 1, fertilizer: 1, "clean-water": 1 },
+    "arcane-wizard": { "powerful-mana": 1 },
+    "fire-wizard": { "powerful-mana": 1 },
+    "necro-wizard": { "powerful-mana": 1 },
+    "wizard-orb": { "powerful-mana": 1, },
 } satisfies {
-    [p in Buildings]: partialItems<number>;
-};
+        [p in Buildings]: partialItems<number>;
+    };
 
 const buildingPowerDisplayWord: partialItems<string> = {
     prospector: "Food",
@@ -86,11 +94,16 @@ const buildingBoosts: { [p in Buildings]?: Items } = {
     explorer: "boost-explorer",
     greenhouse: "boost-greenhouse",
     manufacturer: "boost-manufacturer",
+    "fire-wizard": "boost-wizard",
+    "arcane-wizard": "boost-wizard",
+    "necro-wizard": "boost-wizard",
+    "wizard-orb": "boost-wizard",
 };
 
 const requiredBuildings: {
     [p in Items]: (Buildings | "by-hand")[];
 } = {
+    youwin: ["manufacturer"],
     begin: ["by-hand"],
     prospector: ["by-hand"],
     lumberjack: ["lumberjack-school"],
@@ -253,6 +266,49 @@ const requiredBuildings: {
     box4: ["constructer"],
     box5: ["constructer"],
     tank: ["by-hand", "assembler"],
+
+    "anti-grav-thruster": ["manufacturer"],
+    "car-chassis": ["manufacturer"],
+    "car-engine": ["manufacturer"],
+    "crank-shaft": ["manufacturer"],
+    "engine-block": ["manufacturer"],
+    "engine-electronics": ["manufacturer"],
+    "lime-juice": ["hydroponics"],
+    "simple-syrup": ["hydroponics"],
+    tequila: ["hydroponics"],
+    "spark-plug": ["manufacturer"],
+    "steering-wheel": ["manufacturer"],
+    bank: ["by-hand"],
+    car: ["by-hand", "manufacturer"],
+    chair: ["manufacturer"],
+    margarita: ["by-hand"],
+    piston: ["manufacturer"],
+
+    "telescope": ["by-hand"],
+
+    "wizard-pop": ["necro-wizard", "fire-wizard", "arcane-wizard"],
+    "raw-mana": ["by-hand", "wizard-orb"],
+    "refined-mana": ["by-hand", "wizard-orb"],
+    "powerful-mana": ["by-hand", "wizard-orb"],
+    "mystical-catalyst": ["by-hand"],
+
+    "arcane-wizard": ["by-hand", "wizard-orb"],
+    "fire-wizard": ["by-hand", "wizard-orb"],
+    "necro-wizard": ["by-hand", "wizard-orb"],
+
+    "boost-wizard": ["by-hand"],
+    "wizard-degree": ["by-hand"],
+    "wizard-essence": ["by-hand"],
+    "wizard-orb": ["by-hand"],
+    "wizard-paragon": ["by-hand"],
+    "wizard-power": [],
+
+    'consume-arcane-wizard': ["by-hand", "wizard-orb"],
+    'consume-fire-wizard': ["by-hand", "wizard-orb"],
+    'consume-necro-wizard': ["by-hand", "wizard-orb"],
+    'consume-wizard-pop': ["by-hand", "wizard-orb"],
+
+    "research-wizard-tower": ["by-hand"],
 };
 
 export default {

@@ -86,7 +86,7 @@ export function App({ ticksPerSecond }: Props) {
             if (!visible[itemName]) return;
 
             const amt = amountThatWeHave[itemName] ?? 0;
-            const recipe = GAME.recipes(itemName);
+            const recipe = GAME.recipes[itemName];
             if (recipe === undefined) return;
 
             const buildingsToMakeThis = GAME.requiredBuildings(itemName);
@@ -99,7 +99,7 @@ export function App({ ticksPerSecond }: Props) {
             const assemblerButtons: JSX.Element[] = [];
             const boxButtons: JSX.Element[] = [];
 
-            GAME.itemsCanBeStoreIn(itemName).forEach((container) => {
+            GAME.itemsCanBeStoreIn[itemName].forEach((container) => {
                 if ((amountThatWeHave[container] ?? 0) > 0) {
                     boxButtons.push(
                         <Button

@@ -35,6 +35,10 @@ const storageSizes = {
     "wind-turbine": 1,
     "coal-power": 10,
     "nuclear-reactor": 10,
+    "arcane-wizard": 0,
+    "fire-wizard": 0,
+    "necro-wizard": 0,
+    "wizard-orb": 0,
 } satisfies partialItems<number> & { [p in Buildings]: number };
 
 // these items impose a limit on how much we can have.

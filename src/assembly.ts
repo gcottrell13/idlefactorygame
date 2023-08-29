@@ -23,13 +23,13 @@ export function howManyRecipesCanBeMade(
     itemName: Items,
     amounts: SMap<number>,
 ): number {
-    const recipe = GAME.recipes(itemName);
+    const recipe = GAME.recipes[itemName];
     if (recipe === undefined) return 0;
 
     let numberOfRecipesToMake = Number.MAX_SAFE_INTEGER;
 
     const scale = Math.pow(
-        GAME.recipeScaleFactor(itemName),
+        GAME.recipeScaleFactor[itemName],
         amounts[itemName] ?? 0,
     );
 
@@ -57,7 +57,7 @@ export function consumeMaterials(
 ) {
     const scale = itemName
         ? Math.pow(
-              GAME.recipeScaleFactor(itemName),
+              GAME.recipeScaleFactor[itemName],
               amountWeHave[itemName] ?? 0,
           )
         : 1;
@@ -77,7 +77,7 @@ export function consumeMaterialsFromRecipe(
     itemName: Items,
     amounts: SMap<number>,
 ): boolean {
-    const recipe = GAME.recipes(itemName);
+    const recipe = GAME.recipes[itemName];
     if (recipe === undefined) return false;
     // not producing, so let's try to grab materials
 
@@ -109,10 +109,10 @@ export function checkVisible(state: State) {
         discoveredSomething = false;
         GAME.allItemNames.forEach((itemName) => {
             if (visible[itemName] === undefined) {
-                const unlockedWith = GAME.unlockedWith(itemName).every(
+                const unlockedWith = GAME.unlockedWith[itemName].every(
                     (x) => (amountThatWeHave[x] ?? 0) > 0,
                 );
-                if (GAME.unlockedWith(itemName).length > 0 && unlockedWith) {
+                if (GAME.unlockedWith[itemName].length > 0 && unlockedWith) {
                     _visible(itemName);
                     return;
                 }
@@ -124,7 +124,7 @@ export function checkVisible(state: State) {
                 const haveBuilding =
                     required.some((x) => visible[x as Items]) ||
                     required.includes("by-hand");
-                const recipe = GAME.recipes(itemName);
+                const recipe = GAME.recipes[itemName];
                 const haveIngredients = keys(recipe).every(
                     (key) => visible[key as Items],
                 );

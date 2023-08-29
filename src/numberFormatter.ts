@@ -3,7 +3,9 @@ export function formatNumber(n: number | null | undefined) {
     if (n > 1e6) {
         return n.toPrecision(3);
     }
-    return (Math.round(n * 100) / 100).toFixed(2);
+    let value = (Math.round(n * 100) / 100).toFixed(2);
+    if (value.endsWith('.00')) return Math.floor(n);
+    return value.substring(0, value.indexOf('.') + 3);
 }
 
 export function formatSeconds(n: number) {

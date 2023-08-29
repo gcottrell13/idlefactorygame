@@ -33,7 +33,7 @@ export function useProduction(ticksPerSecond: number) {
     const [fps, setFps] = useState<number>(0);
 
     function calculateStorage(itemName: Items) {
-        const canBeStoredIn = GAME.itemsCanBeStoreIn(itemName);
+        const canBeStoredIn = GAME.itemsCanBeStoreIn[itemName];
         if (canBeStoredIn.length === 0) return Number.MAX_SAFE_INTEGER;
         const storage = stateRef.current.storage[itemName];
         if (storage === undefined) return GAME.MIN_STORAGE;
@@ -42,7 +42,7 @@ export function useProduction(ticksPerSecond: number) {
             Math.max(
                 _.sumBy(
                     keys(assemblers),
-                    (key) => GAME.storageSizes(key) * (assemblers[key] ?? 0),
+                    (key) => GAME.storageSizes[key] * (assemblers[key] ?? 0),
                 ),
                 0,
             ) +
@@ -51,7 +51,7 @@ export function useProduction(ticksPerSecond: number) {
                     keys(storage),
                     (key) =>
                         (canBeStoredIn.includes(key)
-                            ? GAME.storageSizes(key) ?? 0
+                            ? GAME.storageSizes[key] ?? 0
                             : 0) * (storage[key] ?? 0),
                 ),
                 0,
@@ -66,10 +66,10 @@ export function useProduction(ticksPerSecond: number) {
     }
 
     function addToTotal(itemName: Items, recipeCount: number): boolean {
-        if (GAME.sideProducts(itemName).length > 0) {
+        if (GAME.sideProducts[itemName].length > 0) {
             const itemsChosen: partialItems<number> = {};
 
-            GAME.sideProducts(itemName).forEach((sideProduct) => {
+            GAME.sideProducts[itemName].forEach((sideProduct) => {
                 const total = _.sum(values(sideProduct));
                 let runningTotal = 0;
                 _.forIn(keys(sideProduct), (key) => {
@@ -113,7 +113,7 @@ export function useProduction(ticksPerSecond: number) {
         const [power, state] = getPower(itemName, building);
         if (state === PRODUCTION_HAS_POWER && power >= ticksPerSecond) {
             let amount = stateRef.current.assemblers[itemName]![building]!;
-            const r = GAME.buildingPowerRequirementsPerSecond(building);
+            const r = GAME.buildingPowerRequirementsPerSecond[building];
             while (amount-- > 0)
                 consumeMaterials(
                     undefined,
@@ -126,7 +126,7 @@ export function useProduction(ticksPerSecond: number) {
     function checkPowerConsumption(itemName: Items, building: Items): boolean {
         const [power, state] = getPower(itemName, building);
         if (state === PRODUCTION_NO_POWER) {
-            const r = GAME.buildingPowerRequirementsPerSecond(building);
+            const r = GAME.buildingPowerRequirementsPerSecond[building];
             if (checkAmounts(stateRef.current.amountThatWeHave, r)) {
                 stateRef.current.powerConsumptionProgress[itemName]![
                     building
@@ -179,10 +179,10 @@ export function useProduction(ticksPerSecond: number) {
                         }
 
                         let amountAddPerTick =
-                            (GAME.assemblerSpeeds(assemblerName) *
+                            (GAME.assemblerSpeeds[assemblerName] *
                                 assemblerCount *
                                 timeStep) /
-                            GAME.timePerRecipe(itemName);
+                            GAME.timePerRecipe[itemName];
 
                         const booster = GAME.buildingBoosts[assemblerName];
                         if (booster) {

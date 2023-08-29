@@ -28,9 +28,11 @@ type allowedRecipeTimes =
     | 50
     | 60
     | 75
-    | 100;
+    | 100
+    | 31536000;
 
 const timePerRecipe: itemsMap<allowedRecipeTimes> = {
+    youwin: 31536000,
     "": 1,
 
     begin: 1,
@@ -320,9 +322,47 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "rock-crusher": 10,
     centrifuge: 10,
     "nuclear-reactor": 100,
+
+    "anti-grav-thruster": 100,
+    "arcane-wizard": 5,
+    "boost-wizard": 10,
+    "car-chassis": 10,
+    "car-engine": 10,
+    "consume-arcane-wizard": 1,
+    "consume-fire-wizard": 1,
+    "consume-necro-wizard": 1,
+    "consume-wizard-pop": 1,
+    "crank-shaft": 5,
+    "engine-block": 20,
+    "engine-electronics": 10,
+    "fire-wizard": 5,
+    "lime-juice": 1,
+    "mystical-catalyst": 1,
+    "necro-wizard": 5,
+    "powerful-mana": 1,
+    "raw-mana": 1,
+    "refined-mana": 1,
+    "research-wizard-tower": 1,
+    "simple-syrup": 1,
+    "spark-plug": 1,
+    "steering-wheel": 2,
+    "wizard-degree": 1,
+    "wizard-essence": 1,
+    "wizard-orb": 1,
+    "wizard-paragon": 100,
+    "wizard-pop": 1,
+    "wizard-power": 1,
+    bank: 1,
+    car: 30,
+    chair: 10,
+    margarita: 1,
+    piston: 1,
+    telescope: 1,
+    tequila: 1,
 };
 
 const recipes: Recipes = {
+    youwin: { "margarita": 100, "car": 100, "wizard-paragon": 100 },
     "": {},
     begin: {},
     prospector: { food: 2 },
@@ -431,6 +471,44 @@ const recipes: Recipes = {
 
     explorer: { steel: 10, "basic-circuit": 8 },
 
+    "engine-block": { steel: 10 },
+    "car-engine": { "engine-block": 1, "engine-electronics": 5, "crank-shaft": 1, "spark-plug": 7, "piston": 7 },
+    "car": { "car-chassis": 1, "car-engine": 1, "chair": 2, "steering-wheel": 1, "anti-grav-thruster": 1 },
+    "engine-electronics": { "basic-circuit": 10 },
+    "crank-shaft": { "steel": 1 },
+    "piston": { "steel": 1 },
+    "spark-plug": { "iron-bar": 1 },
+    "chair": { "steel": 1 },
+    "steering-wheel": { "steel": 1 },
+    "car-chassis": { "adamantium-frame": 5 },
+    "anti-grav-thruster": { "powerful-mana": 100, steel: 10, "advanced-circuit": 10 },
+
+    "telescope": { glass: 1, steel: 1 },
+    "research-wizard-tower": { telescope: 19 },
+    "fire-wizard": { money: 100 },
+    "arcane-wizard": { money: 90 },
+    "necro-wizard": { money: 95 },
+    "raw-mana": {},
+    "refined-mana": { "raw-mana": 2, "mystical-catalyst": 1 },
+    "mystical-catalyst": {},
+    "powerful-mana": { "refined-mana": 2, "mystical-catalyst": 1 },
+    "wizard-degree": { "wizard-power": 100 },
+    "wizard-power": {},
+    "wizard-pop": {},
+    "consume-arcane-wizard": { "arcane-wizard": 100 },
+    "consume-fire-wizard": { "fire-wizard": 100 },
+    "consume-necro-wizard": { "necro-wizard": 100 },
+    "consume-wizard-pop": { "wizard-pop": 180 },
+    "wizard-essence": { "arcane-wizard": 1, "fire-wizard": 1, "necro-wizard": 1 },
+    "wizard-orb": { glass: 100 },
+    "wizard-paragon": { "wizard-degree": 100 },
+
+    bank: { wood: 100 },
+    "lime-juice": { fertilizer: 1 },
+    "simple-syrup": { fertilizer: 1 },
+    tequila: { fertilizer: 1 },
+    margarita: { "lime-juice": 2, "simple-syrup": 1, tequila: 3 },
+
     "adamantium-drill": { "adamantium-frame": 20, computer: 5 },
     "rock-crusher": { aluminum: 10, "advanced-circuit": 5 },
     centrifuge: { "adamantium-frame": 50, "chemical-plant": 2 },
@@ -499,6 +577,7 @@ const recipes: Recipes = {
     "boost-greenhouse": { money: 100 },
     "boost-manufacturer": { money: 100 },
     "boost-constructor": { money: 100 },
+    "boost-wizard": { "wizard-essence": 100 },
 
     "research-box": { science1: 1 },
     "research-box2": { science1: 1, box: 10 },
@@ -527,6 +606,9 @@ const recipeScaleFactor: partialItems<number> = {
     "boost-greenhouse": 100,
     "boost-manufacturer": 100,
     "boost-constructor": 100,
+    "boost-wizard": 1.10,
+
+    "wizard-degree": 1.01,
 };
 
 export default {
