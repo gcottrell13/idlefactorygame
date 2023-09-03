@@ -28,7 +28,7 @@ const assemblerSpeeds = {
     "fire-wizard": 1.0,
     "necro-wizard": 1.0,
     "arcane-wizard": 1.0,
-    "wizard-orb": 1.0,
+    "wizard-orb": 2.0,
 } satisfies partialItems<number>;
 
 export type Buildings = keyof typeof assemblerSpeeds;

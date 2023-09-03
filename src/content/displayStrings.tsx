@@ -8,6 +8,12 @@ const byHandVerbs: partialItems<string> = {
     coal: "gather",
     seed: "gather",
     begin: "Begin",
+
+    "fire-wizard": "Hire",
+    "necro-wizard": "Hire",
+    "arcane-wizard": "Hire",
+
+    "wizard-orb": "ponder",
 };
 
 const displayNames: partialItems<string> = {

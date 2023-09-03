@@ -119,6 +119,7 @@ export function useProduction(ticksPerSecond: number) {
                     undefined,
                     stateRef.current.amountThatWeHave,
                     r,
+                    1,
                 );
         }
     }
@@ -222,6 +223,7 @@ export function useProduction(ticksPerSecond: number) {
                             const result = consumeMaterialsFromRecipe(
                                 itemName,
                                 amountThatWeHave,
+                                1,
                             );
                             if (!result) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
@@ -249,6 +251,7 @@ export function useProduction(ticksPerSecond: number) {
                                         !consumeMaterialsFromRecipe(
                                             itemName,
                                             amountThatWeHave,
+                                            amountToProduce,
                                         )
                                     ) {
                                         state = PRODUCTION_NO_INPUT;
@@ -288,15 +291,14 @@ export function useProduction(ticksPerSecond: number) {
         const now = new Date().getTime();
         if (makeByHandTimeRef.current > now - 200) return;
         makeByHandTimeRef.current = now;
-        for (let i = 0; i < count; i++) {
-            if (
-                consumeMaterialsFromRecipe(
-                    itemName,
-                    stateRef.current.amountThatWeHave,
-                )
-            ) {
-                addToTotal(itemName, 1);
-            }
+        if (
+            consumeMaterialsFromRecipe(
+                itemName,
+                stateRef.current.amountThatWeHave,
+                count,
+            )
+        ) {
+            addToTotal(itemName, count);
         }
         updateUI();
     }, []);

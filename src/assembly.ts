@@ -54,6 +54,7 @@ export function consumeMaterials(
     itemName: Items | undefined,
     amountWeHave: SMap<number>,
     recipe: SMap<number>,
+    recipeCount: number,
 ) {
     const scale = itemName
         ? Math.pow(
@@ -64,7 +65,7 @@ export function consumeMaterials(
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
-        requiredCount *= scale;
+        requiredCount *= scale * recipeCount;
 
         const toGrab = requiredCount;
 
@@ -76,14 +77,15 @@ export function consumeMaterials(
 export function consumeMaterialsFromRecipe(
     itemName: Items,
     amounts: SMap<number>,
+    recipeCount: number,
 ): boolean {
     const recipe = GAME.recipes[itemName];
     if (recipe === undefined) return false;
     // not producing, so let's try to grab materials
 
-    if (howManyRecipesCanBeMade(itemName, amounts) <= 0) return false;
+    if (howManyRecipesCanBeMade(itemName, amounts) < recipeCount) return false;
 
-    consumeMaterials(itemName, amounts, recipe);
+    consumeMaterials(itemName, amounts, recipe, recipeCount);
     return true;
 }
 
