@@ -25,7 +25,6 @@ import { formatNumber as d, formatSeconds } from "../numberFormatter";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
-import { useImages } from "../useImages";
 import { Sprite } from "./Sprite";
 
 type func = () => void;
@@ -114,7 +113,7 @@ export function ItemDisplay({
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
-                    {d(count * Math.pow(recipeScale, amt))}
+                    {d(count * Math.floor(Math.pow(recipeScale, amt)))}
                 </td>
                 <td>
                     <Sprite name={name} />

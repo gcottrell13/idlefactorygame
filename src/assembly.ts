@@ -57,10 +57,10 @@ export function consumeMaterials(
     recipeCount: number,
 ) {
     const scale = itemName
-        ? Math.pow(
+        ? Math.floor(Math.pow(
               GAME.recipeScaleFactor[itemName],
               amountWeHave[itemName] ?? 0,
-          )
+          ))
         : 1;
 
     _.toPairs(recipe).forEach((pair) => {

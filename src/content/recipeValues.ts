@@ -609,6 +609,9 @@ const recipeScaleFactor: partialItems<number> = {
     "boost-wizard": 1.10,
 
     "wizard-degree": 1.01,
+    "consume-necro-wizard": 1.01,
+    "consume-arcane-wizard": 1.01,
+    "consume-fire-wizard": 1.01,
 };
 
 export default {

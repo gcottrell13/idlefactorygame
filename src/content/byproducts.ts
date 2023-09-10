@@ -13,9 +13,9 @@ const byproducts: partialItems<partialItems<number>[]> = {
 
     "refined-mana": [{ "refined-mana": 1 }, { "mystical-catalyst": 1, "wizard-essence": 0.01 }],
     "powerful-mana": [{ "powerful-mana": 1 }, { "mystical-catalyst": 1, "wizard-essence": 0.01 }],
-    "consume-arcane-wizard": [{ "wizard-degree": 1 }],
-    "consume-fire-wizard": [{ "wizard-degree": 1 }],
-    "consume-necro-wizard": [{ "wizard-degree": 1 }],
+    "consume-arcane-wizard": [{ "wizard-degree": 1 }, { "consume-arcane-wizard": 1 }],
+    "consume-fire-wizard": [{ "wizard-degree": 1 }, { "consume-fire-wizard": 1 }],
+    "consume-necro-wizard": [{ "wizard-degree": 1 }, { "consume-necro-wizard": 1 }],
     "consume-wizard-pop": [{ "wizard-power": 1 }],
 };
 

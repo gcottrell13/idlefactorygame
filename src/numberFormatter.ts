@@ -1,9 +1,33 @@
+
+
+
+const powers: {[p: number]: string} = {
+    0: '',
+    1: 'K',
+    2: 'M',
+    3: 'B',
+    4: 'T',
+    5: 'Qu',
+    6: 'Qi',
+    7: 'Sx',
+    8: 'Sp',
+    9: 'Oc',
+    10: 'N',
+}
+
 export function formatNumber(n: number | null | undefined) {
     n ??= 0;
-    if (n > 1e6) {
-        return n.toPrecision(3);
+    if (n > 1e3) {
+        const exp = Math.log10(n);
+        const base = exp - (exp % 3);
+        const r = (n / Math.pow(10, base)).toFixed(2);
+        const step = Math.floor(exp / 3);
+        if (powers[step] !== undefined) {
+            return r + ' ' + powers[step];
+        }
+        return r + ' ' + powers_over_100(exp) + powers_under_30(exp) + powers_under_100(exp);
     }
-    let value = (Math.round(n * 100) / 100).toFixed(2);
+    let value = (Math.floor(n * 100) / 100).toFixed(2);
     if (value.endsWith('.00')) return Math.floor(n);
     return value.substring(0, value.indexOf('.') + 3);
 }
@@ -25,4 +49,50 @@ export function formatSeconds(n: number) {
         seconds = seconds % 60;
     }
     return `${hours}:${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+
+function powers_under_30(exp: number) {
+    return {
+        0: '',
+        1: 'U',
+        2: 'D',
+        3: 'T',
+        4: 'Qa',
+        5: 'Qi',
+        6: 'Sx',
+        7: 'St',
+        8: 'Oc',
+        9: 'N',
+    }[Math.floor(exp / 3) % 10];
+}
+
+function powers_under_100(exp: number) {
+    return {
+        0: '',
+        1: 'Dc',
+        2: 'Vi',
+        3: 'Tr',
+        4: 'Ta',
+        5: 'Qui',
+        6: 'Sxt',
+        7: 'Stt',
+        8: 'Oct',
+        9: 'Nc',
+    }[Math.floor(exp / 30) % 10];
+}
+
+function powers_over_100(exp: number) {
+    return {
+        0: '',
+        1: 'Ct',
+        2: 'VoiceChat',
+        3: 'TwitchStream',
+        4: 'QuantumTunnel',
+        5: 'QuickMart',
+        6: 'Sextant',
+        7: 'Stilts',
+        8: 'Octal',
+        9: 'Nonnonun',
+    }[Math.floor(exp / 300) % 10];
 }

@@ -51,7 +51,7 @@ export function Assembler({
     const boost = GAME.buildingBoosts[assemblerName];
     let speedPer = GAME.assemblerSpeeds[assemblerName] / baseCraftTime;
     if (boost) {
-        speedPer *= Math.pow(2, state.amountThatWeHave[boost] ?? 0);
+        speedPer *= Math.floor(Math.pow(2, state.amountThatWeHave[boost] ?? 0));
     }
     const totalSpeed = speedPer * no;
 
