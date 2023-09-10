@@ -32,6 +32,17 @@ function serializer(this: any, key: string, value: any) {
     if (typeof value === "number") {
         return Math.round(value * 1000) / 1000;
     }
+    if (typeof value === 'bigint') {
+        return `bigint=${value}`;
+    }
+    return value;
+}
+
+function deserializer(this: any, key: string, value: any) {
+    if (typeof value === 'string' && value.startsWith('bigint=')) {
+        const [, val] = value.split('=');
+        return BigInt(val);
+    }
     return value;
 }
 
@@ -48,7 +59,7 @@ function loadStorage(): State {
         keys(defaultState).forEach((k) => {
             const storage = localStorage.getItem(makeName(k));
             if (storage) {
-                state[k] = JSON.parse(storage);
+                state[k] = JSON.parse(storage, deserializer);
             } else {
                 state[k] = defaultState[k] as any;
             }

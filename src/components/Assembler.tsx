@@ -13,9 +13,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBolt } from "@fortawesome/free-solid-svg-icons";
 import { keys } from "../smap";
 import { Items, partialItems } from "../content/itemNames";
-import { formatNumber as d } from "../numberFormatter";
+import { formatScaledNumber as dScale, formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
+import { bigToNum, bigpow } from "../bigmath";
 
 type Props = {
     itemName: Items;
@@ -47,18 +48,18 @@ export function Assembler({
     // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
     const thisPowerState = state.powerConsumptionState[itemName] ?? {};
 
-    const no = assemblersMakingThis[assemblerName] ?? 0;
+    const no = BigInt(assemblersMakingThis[assemblerName] ?? 0);
     const boost = GAME.buildingBoosts[assemblerName];
     let speedPer = GAME.assemblerSpeeds[assemblerName] / baseCraftTime;
     if (boost) {
-        speedPer *= Math.floor(Math.pow(2, state.amountThatWeHave[boost] ?? 0));
+        speedPer *= bigToNum(bigpow(2, state.amountThatWeHave[boost] ?? 0n));
     }
-    const totalSpeed = speedPer * no;
+    const totalSpeed = speedPer * bigToNum(no);
 
     let label = (
         <span className={"assembler-count"}>
             <span className={"assembler-count-name"}>
-                {no} <Sprite name={assemblerName} />
+                {d(no)} <Sprite name={assemblerName} />
                 {GAME.displayNames(assemblerName)} ({d(speedPer)}/s):
             </span>{" "}
             ({d(totalSpeed)}/s)
@@ -172,7 +173,7 @@ export function Assembler({
         const overlay = (
             <Popover className={"popover-no-max-width"}>
                 <Popover.Body>
-                    {Math.floor(no)} {GAME.displayNames(assemblerName)}{" "}
+                    {d(no)} {GAME.displayNames(assemblerName)}{" "}
                     consuming:
                     <Table>
                         <tbody>
@@ -180,7 +181,7 @@ export function Assembler({
                                 .sort()
                                 .map((requirement) => {
                                     const rate =
-                                        powerRequirements[requirement] ?? 0;
+                                        powerRequirements[requirement] ?? 0n;
                                     return (
                                         <tr key={requirement}>
                                             <td>

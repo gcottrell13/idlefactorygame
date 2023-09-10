@@ -13,10 +13,13 @@ import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
 import { ReleaseNotes } from "./ReleaseNotes";
+import { bigMin } from "../bigmath";
 
 type Props = {
     ticksPerSecond: number;
 };
+
+const MAX_BIG = BigInt(Number.MAX_VALUE);
 
 export function App({ ticksPerSecond }: Props) {
     const {
@@ -36,8 +39,8 @@ export function App({ ticksPerSecond }: Props) {
         fps,
     } = useProduction(ticksPerSecond);
 
-    function calculateMaxMake(itemName: Items, n: number) {
-        return Math.min(
+    function calculateMaxMake(itemName: Items, n: bigint) {
+        return bigMin(
             currentClickAmount,
             howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
             state.calculateStorage(itemName) - n,
@@ -46,7 +49,7 @@ export function App({ ticksPerSecond }: Props) {
     }
 
     function calculateMaxAdd(itemName: Items) {
-        return Math.min(
+        return bigMin(
             currentClickAmount,
             state.amountThatWeHave[itemName] ?? 0,
         );
@@ -57,7 +60,7 @@ export function App({ ticksPerSecond }: Props) {
     );
 
     let [currentTab, setCurrentTab] = useState<string | null>(null);
-    const [currentClickAmount, setCurrentClickAmount] = useState<number>(1);
+    const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(1n);
 
     if (currentTab === null) {
         setCurrentTab(
@@ -85,7 +88,7 @@ export function App({ ticksPerSecond }: Props) {
         subSection.Items.forEach((itemName) => {
             if (!visible[itemName]) return;
 
-            const amt = amountThatWeHave[itemName] ?? 0;
+            const amt = amountThatWeHave[itemName] ?? 0n;
             const recipe = GAME.recipes[itemName];
             if (recipe === undefined) return;
 
@@ -94,7 +97,7 @@ export function App({ ticksPerSecond }: Props) {
             const assemblerCount = assemblers[itemName];
             const assemblersMakingThis = _.pickBy(
                 assemblerCount,
-                (x) => x !== 0,
+                (x) => x !== 0n,
             );
             const assemblerButtons: JSX.Element[] = [];
             const boxButtons: JSX.Element[] = [];
@@ -114,7 +117,7 @@ export function App({ ticksPerSecond }: Props) {
                             }}
                             variant="info"
                         >
-                            Add {calculateMaxAdd(container)}{" "}
+                            Add {formatNumber(calculateMaxAdd(container))}{" "}
                             {GAME.displayNames(container)}
                         </Button>,
                     );
@@ -137,7 +140,7 @@ export function App({ ticksPerSecond }: Props) {
                         }}
                         variant="secondary"
                     >
-                        Add {calculateMaxAdd(assemblerName)}{" "}
+                        Add {formatNumber(calculateMaxAdd(assemblerName))}{" "}
                         {GAME.displayNames(assemblerName)}
                     </Button>,
                 );
@@ -146,7 +149,7 @@ export function App({ ticksPerSecond }: Props) {
             thisSectionItems.push(
                 <ItemDisplay
                     key={itemName}
-                    amt={amt ?? 0}
+                    amt={amt ?? 0n}
                     state={state}
                     assemblersMakingThis={assemblersMakingThis}
                     boxButtons={boxButtons}
@@ -248,26 +251,26 @@ export function App({ ticksPerSecond }: Props) {
                     );
                 })}
             </Tabs>
-            {amountThatWeHave["research-mass-click"] === 1 ? (
+            {amountThatWeHave["research-mass-click"] === 1n ? (
                 <ButtonToolbar className={"per-click-amount-buttons"}>
                     Per Click:
                     <Button
-                        onClick={() => setCurrentClickAmount(1)}
-                        active={currentClickAmount == 1}
+                        onClick={() => setCurrentClickAmount(1n)}
+                        active={currentClickAmount === 1n}
                     >
                         1
                     </Button>
                     <Button
-                        onClick={() => setCurrentClickAmount(10)}
-                        active={currentClickAmount == 10}
+                        onClick={() => setCurrentClickAmount(10n)}
+                        active={currentClickAmount === 10n}
                     >
                         10
                     </Button>
                     <Button
                         onClick={() =>
-                            setCurrentClickAmount(Number.MAX_SAFE_INTEGER)
+                            setCurrentClickAmount(MAX_BIG)
                         }
-                        active={currentClickAmount == Number.MAX_SAFE_INTEGER}
+                        active={currentClickAmount === MAX_BIG}
                     >
                         MAX
                     </Button>

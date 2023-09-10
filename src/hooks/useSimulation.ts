@@ -20,6 +20,7 @@ import {
     consumeMaterialsFromRecipe,
     howManyRecipesCanBeMade,
 } from "../assembly";
+import { REALLY_BIG, SCALE_N, bigMax, bigMin, bigToNum, bigpow } from "../bigmath";
 
 export function useProduction(ticksPerSecond: number) {
     const { existingStorage, saveGame, resetGame } = useLocalStorage();
@@ -32,27 +33,29 @@ export function useProduction(ticksPerSecond: number) {
 
     const [fps, setFps] = useState<number>(0);
 
-    function calculateStorage(itemName: Items) {
+    function calculateStorage(itemName: Items): bigint {
         const canBeStoredIn = GAME.itemsCanBeStoreIn[itemName];
-        if (canBeStoredIn.length === 0) return Number.MAX_SAFE_INTEGER;
+        if (canBeStoredIn.length === 0) return REALLY_BIG;
         const storage = stateRef.current.storage[itemName];
         if (storage === undefined) return GAME.MIN_STORAGE;
         const assemblers = stateRef.current.assemblers[itemName] ?? {};
         return (
-            Math.max(
-                _.sumBy(
-                    keys(assemblers),
-                    (key) => GAME.storageSizes[key] * (assemblers[key] ?? 0),
+            bigMax(
+                _.sum(
+                    keys(assemblers).map(
+                        (key) => GAME.storageSizes[key] * (assemblers[key] ?? 0n)
+                    ),
                 ),
                 0,
             ) +
-            Math.max(
+            bigMax(
                 _.sumBy(
-                    keys(storage),
-                    (key) =>
-                        (canBeStoredIn.includes(key)
-                            ? GAME.storageSizes[key] ?? 0
-                            : 0) * (storage[key] ?? 0),
+                    keys(storage).map(
+                        (key) =>
+                            (canBeStoredIn.includes(key)
+                                ? GAME.storageSizes[key] ?? 0n
+                                : 0n) * (storage[key] ?? 0n),
+                    )
                 ),
                 0,
             ) +
@@ -60,14 +63,14 @@ export function useProduction(ticksPerSecond: number) {
         );
     }
 
-    function hasStorageCapacity(item: Items): number {
-        const currentAmount = stateRef.current.amountThatWeHave[item] ?? 0;
+    function hasStorageCapacity(item: Items): bigint {
+        const currentAmount = stateRef.current.amountThatWeHave[item] ?? 0n;
         return calculateStorage(item) - currentAmount;
     }
 
-    function addToTotal(itemName: Items, recipeCount: number): boolean {
+    function addToTotal(itemName: Items, recipeCount: bigint): boolean {
         if (GAME.sideProducts[itemName].length > 0) {
-            const itemsChosen: partialItems<number> = {};
+            const itemsChosen: partialItems<bigint> = {};
 
             GAME.sideProducts[itemName].forEach((sideProduct) => {
                 const total = _.sum(values(sideProduct));
@@ -81,8 +84,8 @@ export function useProduction(ticksPerSecond: number) {
                     }
                 });
             });
-            
-            const canProduce = Math.min(recipeCount, ...Object.values(itemsChosen));
+
+            const canProduce = bigMin(recipeCount, ...Object.values(itemsChosen));
 
             if (canProduce > 0) {
                 keys(itemsChosen).forEach((x) => addAmount(x, canProduce));
@@ -92,7 +95,7 @@ export function useProduction(ticksPerSecond: number) {
 
             return true;
         } else {
-            const capacity = Math.min(recipeCount, hasStorageCapacity(itemName));
+            const capacity = bigMin(recipeCount, hasStorageCapacity(itemName));
             if (capacity) {
                 addAmount(itemName, capacity);
                 return true;
@@ -119,7 +122,7 @@ export function useProduction(ticksPerSecond: number) {
                     undefined,
                     stateRef.current.amountThatWeHave,
                     r,
-                    1,
+                    1n,
                 );
         }
     }
@@ -181,16 +184,16 @@ export function useProduction(ticksPerSecond: number) {
 
                         let amountAddPerTick =
                             (GAME.assemblerSpeeds[assemblerName] *
-                                assemblerCount *
+                                bigToNum(assemblerCount) *
                                 timeStep) /
                             GAME.timePerRecipe[itemName];
 
                         const booster = GAME.buildingBoosts[assemblerName];
                         if (booster) {
-                            amountAddPerTick *= Math.pow(
-                                2,
-                                amountThatWeHave[booster] ?? 0,
-                            );
+                            amountAddPerTick *= bigToNum(bigpow(
+                                2n,
+                                amountThatWeHave[booster] ?? 0n,
+                            ));
                         }
 
                         let [time, state] = getProductionProgress(
@@ -205,7 +208,7 @@ export function useProduction(ticksPerSecond: number) {
                         // there's probably a better way to organize this code
 
                         if (state === PRODUCTION_OUTPUT_BLOCKED) {
-                            if (addToTotal(itemName, 1)) {
+                            if (addToTotal(itemName, 1n)) {
                                 time = 0;
                                 state = PRODUCTION_NO_INPUT;
                             } else {
@@ -223,7 +226,7 @@ export function useProduction(ticksPerSecond: number) {
                             const result = consumeMaterialsFromRecipe(
                                 itemName,
                                 amountThatWeHave,
-                                1,
+                                1n,
                             );
                             if (!result) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
@@ -242,10 +245,10 @@ export function useProduction(ticksPerSecond: number) {
                             t += amountAddPerTick;
                             time = t;
 
-                            const amountToProduce = Math.floor(t);
+                            const amountToProduce = BigInt(Math.floor(t));
                             if (amountToProduce > 0) {
                                 if (addToTotal(itemName, amountToProduce)) {
-                                    t -= amountToProduce;
+                                    t -= bigToNum(amountToProduce);
                                     time = t;
                                     if (
                                         !consumeMaterialsFromRecipe(
@@ -273,13 +276,10 @@ export function useProduction(ticksPerSecond: number) {
         };
     }
 
-    const addAmount = useCallback((itemName: Items, amount: number) => {
-        const k = stateRef.current.amountThatWeHave[itemName] ?? 0;
-        stateRef.current.amountThatWeHave[itemName] = Math.max(0, k + amount);
-        stateRef.current.displayAmount[itemName] =
-            stateRef.current.amountThatWeHave[itemName];
-
-        const b = stateRef.current.amountCreated[itemName] ?? 0;
+    const addAmount = useCallback((itemName: Items, amount: bigint) => {
+        const k = stateRef.current.amountThatWeHave[itemName] ?? 0n;
+        stateRef.current.amountThatWeHave[itemName] = bigMax(0, k + amount * SCALE_N);
+        const b = stateRef.current.amountCreated[itemName] ?? 0n;
         stateRef.current.amountCreated[itemName] = b + amount;
 
         if (GAME.hideOnBuy(itemName)) {
@@ -287,7 +287,7 @@ export function useProduction(ticksPerSecond: number) {
         }
     }, []);
 
-    const makeItemByhand = useCallback((itemName: Items, count: number) => {
+    const makeItemByhand = useCallback((itemName: Items, count: bigint) => {
         const now = new Date().getTime();
         if (makeByHandTimeRef.current > now - 200) return;
         makeByHandTimeRef.current = now;
@@ -317,12 +317,12 @@ export function useProduction(ticksPerSecond: number) {
     }, []);
 
     const addAssemblers = useCallback(
-        (level: Items, itemName: Items, amount: number) => {
+        (level: Items, itemName: Items, amount: bigint) => {
             const k = stateRef.current.assemblers[itemName] ?? {};
-            const appliedAssemblers = k[level] ?? 0;
+            const appliedAssemblers = k[level] ?? 0n;
             const haveAssemblers =
-                stateRef.current.amountThatWeHave[level] ?? 0;
-            amount = Math.min(amount, haveAssemblers);
+                stateRef.current.amountThatWeHave[level] ?? 0n;
+            amount = bigMin(amount, haveAssemblers);
             k[level] = appliedAssemblers + amount;
             stateRef.current.assemblers[itemName] = k;
             stateRef.current.amountThatWeHave[level] = haveAssemblers - amount;
@@ -332,13 +332,13 @@ export function useProduction(ticksPerSecond: number) {
     );
 
     const addContainer = useCallback(
-        (itemName: Items, container: Items, amount: number) => {
+        (itemName: Items, container: Items, amount: bigint) => {
             stateRef.current.storage[itemName] ??= {};
             const haveStorage =
-                stateRef.current.storage[itemName]![container] ?? 0;
+                stateRef.current.storage[itemName]![container] ?? 0n;
             const haveContainers =
-                stateRef.current.amountThatWeHave[container] ?? 0;
-            amount = Math.min(amount, haveContainers);
+                stateRef.current.amountThatWeHave[container] ?? 0n;
+            amount = bigMin(amount, haveContainers);
             stateRef.current.storage[itemName]![container] =
                 haveStorage + amount;
             stateRef.current.amountThatWeHave[container] =
@@ -384,7 +384,7 @@ export function useProduction(ticksPerSecond: number) {
     };
 
     const setAmount = (amount: number = 1, itemName: Items = "") => {
-        stateRef.current.amountThatWeHave[itemName] = amount;
+        stateRef.current.amountThatWeHave[itemName] = BigInt(amount);
         stateRef.current.visible[itemName] ??= true;
         updateUI();
     };

@@ -32,9 +32,11 @@ export interface State {
     /**
      * [what its making][the building]
      */
-    assemblers: partialItems<partialItems<number>>;
+    assemblers: partialItems<partialItems<bigint>>;
     displayAmount: partialItems<number>;
-    amountThatWeHave: partialItems<number>;
+
+    // actually a multiple of 10 x the actual amount, defined in GAME.AMOUNT_SCALE
+    amountThatWeHave: partialItems<bigint>;
 
     /**
      * all buildings making these recipes should not do so
@@ -55,7 +57,7 @@ export interface State {
 
     // for each item, how many storage containers are there.
     // this storage is a soft limit, the actual values may go over via direct production, but not from byproducts
-    storage: partialItems<partialItems<number>>;
+    storage: partialItems<partialItems<bigint>>;
 
     // true if visible, false or undefined if not.
     // undefined objects will check each tick if they should be revealed
@@ -64,5 +66,5 @@ export interface State {
     acknowledged: partialItems<boolean>;
 
     // how many of each item has been made
-    amountCreated: partialItems<number>;
+    amountCreated: partialItems<bigint>;
 }

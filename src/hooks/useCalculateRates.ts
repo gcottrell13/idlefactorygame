@@ -3,6 +3,7 @@ import { Items, partialItems } from "../content/itemNames";
 import { mapPairs, keys, fromPairs } from "../smap";
 import { PRODUCTION_OUTPUT_BLOCKED, State } from "../typeDefs/State";
 import GAME from "../values";
+import { bigToNum, bigpow } from "../bigmath";
 
 export function useCalculateRates(state: State, itemFilter: Items[]) {
     const effectiveProductionRates: partialItems<partialItems<number>> = {};
@@ -30,20 +31,20 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         return false;
     }
 
-    const assemblerBoosts: partialItems<number> = fromPairs(
+    const assemblerBoosts: partialItems<bigint> = fromPairs(
         GAME.allAssemblers.map((assemblerName) => [
             assemblerName,
-            Math.pow(
+            bigpow(
                 2,
                 state.amountThatWeHave[
-                    GAME.buildingBoosts[assemblerName] ?? ""
-                ] ?? 0,
+                GAME.buildingBoosts[assemblerName] ?? ""
+                ] ?? 0n,
             ),
         ]),
     );
 
     function getBoost(item: Items) {
-        return assemblerBoosts[item] ?? 1;
+        return bigToNum(assemblerBoosts[item]) ?? 1;
     }
 
     itemFilter.forEach((itemName) => {
@@ -56,10 +57,9 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
                 (assemblerNumber, assemblerName) =>
                     producer != itemName && disabledRecipes[producer]
                         ? 0
-                        : GAME.assemblerSpeeds[assemblerName] *
-                          getBoost(assemblerName) *
-                          assemblerNumber *
-                          rate,
+                        : bigToNum(assemblerNumber) * (GAME.assemblerSpeeds[assemblerName] *
+                            getBoost(assemblerName) *
+                            rate),
             );
             production[producer] = _.sum(speeds);
         });
@@ -69,10 +69,9 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             const baseCraftTime = GAME.timePerRecipe[itemName];
             mapPairs(assemblersMakingThis, (assemblerCount, assemblerName) => {
                 const speed =
-                    (GAME.assemblerSpeeds[assemblerName] *
-                        getBoost(assemblerName) *
-                        assemblerCount) /
-                    baseCraftTime;
+                    bigToNum(assemblerCount) * GAME.assemblerSpeeds[assemblerName] *
+                        getBoost(assemblerName) / baseCraftTime
+                    ;
                 production[assemblerName] = speed;
             });
         }
@@ -94,7 +93,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             k[1] += count;
             if (counted) {
                 k[0] += count;
-                k[2] += requiredCount * count;
+                k[2] += bigToNum(requiredCount) * count;
             }
         });
     }
@@ -103,7 +102,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
             addAssemblerPowerConsumption(
                 assemblerName,
-                assemblerCount,
+                bigToNum(assemblerCount),
                 itemName,
             );
         });
@@ -111,18 +110,17 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         const recipe = GAME.recipes[itemName];
         const baseCraftTime = GAME.timePerRecipe[itemName];
         mapPairs(recipe, (count, ingredient) => {
-            let rate = 0;
+            let rate = 0n;
 
             mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
                 if (assemblerIsStuckOrDisabled(itemName, assemblerName)) return;
                 rate +=
-                    (GAME.assemblerSpeeds[assemblerName] *
-                        getBoost(assemblerName) *
-                        assemblerCount) /
-                    baseCraftTime;
+                    assemblerCount / BigInt(1 / (GAME.assemblerSpeeds[assemblerName] *
+                        getBoost(assemblerName) / baseCraftTime)
+                    );
             });
             (effectiveConsumptionRates[ingredient] ??= {})[itemName] =
-                count * rate;
+                bigToNum(count * rate);
         });
     });
 

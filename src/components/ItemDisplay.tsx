@@ -21,16 +21,17 @@ import {
     faChevronCircleDown,
     faBolt,
 } from "@fortawesome/free-solid-svg-icons";
-import { formatNumber as d, formatSeconds } from "../numberFormatter";
+import { formatNumber as d, formatSeconds, formatScaledNumber as dscale } from "../numberFormatter";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
+import { REALLY_BIG, bigMin, bigToNum, bigpow } from "../bigmath";
 
 type func = () => void;
 
 type Props = {
-    amt: number;
+    amt: bigint;
     itemName: Items;
     state: ReturnType<typeof useProduction>["state"];
     assemblerButtons: JSX.Element[];
@@ -39,7 +40,7 @@ type Props = {
     makeByHand: func | false | null;
     onMouseover: func | undefined;
     disableRecipe: func;
-    currentClickAmount: number;
+    currentClickAmount: bigint;
 } & ReturnType<typeof useCalculateRates>;
 
 export function ItemDisplay({
@@ -58,7 +59,7 @@ export function ItemDisplay({
     powerConsumptionRates,
     assemblerIsStuckOrDisabled,
 }: Props) {
-    const canMakeByHand = Math.min(
+    const canMakeByHand = bigMin(
         currentClickAmount,
         howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
         state.calculateStorage(itemName) - amt,
@@ -113,7 +114,7 @@ export function ItemDisplay({
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
-                    {d(count * Math.floor(Math.pow(recipeScale, amt)))}
+                    {d(count * bigpow(recipeScale, amt))}
                 </td>
                 <td>
                     <Sprite name={name} />
@@ -184,7 +185,7 @@ export function ItemDisplay({
                 return (
                     <tr key={`power-${name}`}>
                         <td>
-                            {total} {GAME.displayNames(name)}
+                            {dscale(total)} {GAME.displayNames(name)}
                         </td>
                         <td>({d(consumption)}/s)</td>
                         <td className={color}>
@@ -268,7 +269,7 @@ export function ItemDisplay({
         ),
         storageValueIfContainer > 0 && (
             <div className={"storage-size"}>
-                Storage Size: {storageValueIfContainer}
+                Storage Size: {dscale(storageValueIfContainer)}
             </div>
         ),
         assemblerSpeed > 0 && (
@@ -317,14 +318,14 @@ export function ItemDisplay({
     );
 
     const isNew = state.acknowledged[itemName] !== true;
-    const hasStorage = maxValue !== Number.MAX_SAFE_INTEGER;
+    const hasStorage = maxValue !== REALLY_BIG;
 
     return (
         <div className="item-row" onMouseEnter={onMouseover}>
             <div className={"new-badge"}>
                 <ByHandButton
                     itemName={itemName}
-                    count={canMakeByHand}
+                    count={bigToNum(canMakeByHand)}
                     makeByHand={makeByHand}
                 />
             </div>
@@ -349,7 +350,7 @@ export function ItemDisplay({
                 {
                     hasStorage || amt > 0 || producingRate > 0 ? (
                         <span className="item-count">
-                            {historyDisplay} {d(amt)}
+                            {historyDisplay} {dscale(amt)}
                         </span>
                     ) : null
                 }

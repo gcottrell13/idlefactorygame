@@ -43,7 +43,7 @@ describe("tree-check", () => {
         while (true) {
             let addOne: Items | undefined;
             if ((addOne = addOneToItemQueue.pop())) {
-                state.amountThatWeHave[addOne] = 1;
+                state.amountThatWeHave[addOne] = 1n;
             } else {
                 break;
             }

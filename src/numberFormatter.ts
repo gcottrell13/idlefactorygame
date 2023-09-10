@@ -1,4 +1,4 @@
-
+import { SCALE, SCALE_N, bigToNum } from "./bigmath";
 
 
 const powers: {[p: number]: string} = {
@@ -15,20 +15,50 @@ const powers: {[p: number]: string} = {
     10: 'N',
 }
 
-export function formatNumber(n: number | null | undefined) {
-    n ??= 0;
-    if (n > 1e3) {
-        const exp = Math.log10(n);
-        const base = exp - (exp % 3);
-        const r = (n / Math.pow(10, base)).toFixed(2);
+export function formatScaledNumber(n: number | bigint | null | undefined) {
+    if (!n) {
+        return '0';
+    }
+
+    if (typeof n == 'number') {
+        n /= SCALE;
+    }
+    else if (n >= SCALE_N) {
+        n /= SCALE_N;
+    }
+    else {
+        n = bigToNum(n) / SCALE;
+    }
+    return formatNumber(n);
+}
+
+export function formatNumber(n: number | bigint | null | undefined) {
+    if (!n) {
+        return '0';
+    }
+
+    if (n >= 1000n) {
+        if (typeof n === 'number') {
+            n = BigInt(Math.floor(n));
+        }
+
+        const rep = n.toString();
+        const exp = rep.length;
+        const r = parseInt(rep.substring(0, (exp % 3) + 3)).toFixed(2);
         const step = Math.floor(exp / 3);
         if (powers[step] !== undefined) {
             return r + ' ' + powers[step];
         }
         return r + ' ' + powers_over_100(exp) + powers_under_30(exp) + powers_under_100(exp);
     }
-    let value = (Math.floor(n * 100) / 100).toFixed(2);
-    if (value.endsWith('.00')) return Math.floor(n);
+    if (typeof n === 'number') {
+        let value = n.toFixed(2);
+        if (value.endsWith('.00')) return Math.floor(n);
+        return value.substring(0, value.indexOf('.') + 3);
+    }
+    const rawVal = parseFloat(n.toString());
+    let value = rawVal.toFixed(2);
+    if (value.endsWith('.00')) return Math.floor(rawVal);
     return value.substring(0, value.indexOf('.') + 3);
 }
 

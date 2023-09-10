@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { SMap, keys, mapValues, values } from "./smap";
+import { SMap, keys, mapPairs, mapValues, values } from "./smap";
 import { Items, itemsMap, partialItems } from "./content/itemNames";
 import buildings, { Buildings } from "./content/buildings";
 import byproducts from "./content/byproducts";
@@ -33,7 +33,11 @@ function fillWithDefault<T>(partial: partialItems<T>, defaultItem: () => any): i
     return partial as itemsMap<T>;
 }
 
+type BigIntRecipes = itemsMap<partialItems<bigint>>;
+
 const ex = {
+    AMOUNT_SCALE: 100,
+
     sections: layout.sections,
     assemblerSpeeds: fillWithDefault(buildings.assemblerSpeeds, () => 0),
     byHandVerbs: fillWithDefault(displayStrings.byHandVerbs, () => "craft"),
@@ -44,12 +48,12 @@ const ex = {
     hideOnBuy: (item: Items): boolean => hideOnBuy.hideOnBuy.includes(item),
     itemsCanBeStoreIn: fillWithDefault(storage.itemsCanBeStoreIn, () => []) as itemsMap<Items[]>,
     recipeScaleFactor: fillWithDefault(recipeValues.recipeScaleFactor, () => 1.0),
-    recipes: recipeValues.recipes,
+    recipes: recipeValues.recipes as BigIntRecipes,
     requiredBuildings: (item: Items): (Items | "by-hand")[] =>
         buildings.requiredBuildings[item] ?? ["by-hand"],
     timePerRecipe: recipeValues.timePerRecipe,
     sideProducts: fillWithDefault(byproducts.byproducts, () => []),
-    storageSizes: fillWithDefault(storage.storageSizes, () => 0),
+    storageSizes: fillWithDefault(storage.storageSizes, () => 0n),
     unlockedWith: fillWithDefault(unlockedWith.unlockedWith, () => []),
     unlocks: fillWithDefault(unlocks, () => []),
 
@@ -70,8 +74,8 @@ const ex = {
     byproductRatesPerSecond: fillWithDefault(byproductRatesPerSecond, () => ({})),
 
     recipesConsumingThis: fillWithDefault(recipesConsumingThis, () => []),
-    MIN_STORAGE: storage.MIN_STORAGE,
-    buildingPowerRequirementsPerSecond: fillWithDefault(buildings.buildingPowerRequirementsPerSecond, () => ({})),
+    MIN_STORAGE: BigInt(storage.MIN_STORAGE),
+    buildingPowerRequirementsPerSecond: fillWithDefault(buildings.buildingPowerRequirementsPerSecond, () => ({})) as BigIntRecipes,
 
     buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
     buildingPowerDisplayWord: buildings.buildingPowerDisplayWord,
@@ -99,8 +103,16 @@ keys(recipeValues.recipes).forEach((item) => {
     }
 
     const recipe = recipeValues.recipes[item];
-    keys(recipe).forEach((ingredient) => {
+    mapPairs(recipe, (count, ingredient) => {
         (recipesConsumingThis[ingredient] ??= []).push(item);
+        ex.recipes[item][ingredient] = BigInt(count * ex.AMOUNT_SCALE);
+    });
+});
+
+keys(recipeValues.recipes).forEach((buildingName) => {
+    const requirements = buildings.buildingPowerRequirementsPerSecond[buildingName];
+    mapPairs(requirements, (amount, fuelName) => {
+        ex.buildingPowerRequirementsPerSecond[buildingName]![fuelName] = BigInt(amount * ex.AMOUNT_SCALE);
     });
 });
 
