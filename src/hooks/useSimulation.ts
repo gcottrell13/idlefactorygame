@@ -18,9 +18,10 @@ import {
     checkVisible,
     consumeMaterials,
     consumeMaterialsFromRecipe,
+    hideTheHideOnBuyItems,
     howManyRecipesCanBeMade,
 } from "../assembly";
-import { NumToBig, REALLY_BIG, SCALE, SCALE_N, bigMax, bigMin, bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
+import { NumToBig, REALLY_BIG, SCALE, SCALE_N, bigMax, bigMin, bigSum, bigToNum, scaleBigInt } from "../bigmath";
 
 export function useProduction(ticksPerSecond: number) {
     const { existingStorage, saveGame, resetGame } = useLocalStorage();
@@ -87,7 +88,7 @@ export function useProduction(ticksPerSecond: number) {
 
             const canProduce = bigMin(recipeCount, ...Object.values(itemsChosen));
 
-            if (canProduce > 0) {
+            if (canProduce >= SCALE_N) {
                 keys(itemsChosen).forEach((x) => addAmount(x, canProduce));
             } else {
                 return false;
@@ -96,7 +97,7 @@ export function useProduction(ticksPerSecond: number) {
             return true;
         } else {
             const capacity = bigMin(recipeCount, hasStorageCapacity(itemName));
-            if (capacity) {
+            if (capacity >= SCALE_N) {
                 addAmount(itemName, capacity);
                 return true;
             }
@@ -189,10 +190,8 @@ export function useProduction(ticksPerSecond: number) {
 
                         const booster = GAME.buildingBoosts[assemblerName];
                         if (booster) {
-                            amountAddPerTick *= Math.pow(
-                                2,
-                                bigToNum(amountThatWeHave[booster] ?? 0n),
-                            );
+                            const amt = amountThatWeHave[booster] ?? 0n;
+                            amountAddPerTick *= GAME.calculateBoost(booster, amt);
                         }
 
                         let [time, state] = getProductionProgress(
@@ -246,7 +245,7 @@ export function useProduction(ticksPerSecond: number) {
                             
                             const amtToProduce = Math.floor(t);
                             const amountToProduce = NumToBig(amtToProduce);
-                            if (amountToProduce > 0) {
+                            if (amountToProduce >= SCALE) {
                                 if (addToTotal(itemName, amountToProduce)) {
                                     t -= amtToProduce;
                                     time = t;
@@ -389,6 +388,18 @@ export function useProduction(ticksPerSecond: number) {
         stateRef.current.visible[itemName] ??= true;
         updateUI();
     };
+    const clearVisibles = () => {
+        const {timeUnlockedAt, acknowledged} = stateRef.current;
+        stateRef.current.visible = {};
+        checkVisible(stateRef.current);
+        hideTheHideOnBuyItems(stateRef.current);
+        keys(timeUnlockedAt).forEach(itemName => {
+            if (stateRef.current.visible[itemName] === undefined) {
+                delete timeUnlockedAt[itemName];
+                delete acknowledged[itemName];
+            }
+        });
+    };
 
     useEffect(() => {
         const i = setInterval(() => {
@@ -421,6 +432,7 @@ export function useProduction(ticksPerSecond: number) {
             resetAll();
         }
         (document as any).setAmount = setAmount;
+        (document as any).clearVisibles = clearVisibles;
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);
 

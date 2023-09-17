@@ -3,11 +3,19 @@ import { Items, partialItems } from "../content/itemNames";
 import { mapPairs, keys, fromPairs } from "../smap";
 import { PRODUCTION_OUTPUT_BLOCKED, State } from "../typeDefs/State";
 import GAME from "../values";
-import { bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
+import { bigSum, bigToNum, scaleBigInt } from "../bigmath";
 
 export function useCalculateRates(state: State, itemFilter: Items[]) {
     const effectiveProductionRates: partialItems<partialItems<bigint>> = {};
+    const maxConsumptionRates: partialItems<bigint> = {};
     const effectiveConsumptionRates: partialItems<partialItems<bigint>> = {};
+
+    function addToMaxRate(ingredient: Items, rate: bigint) {
+        if (maxConsumptionRates[ingredient] === undefined) {
+            maxConsumptionRates[ingredient] = 0n;
+        }
+        maxConsumptionRates[ingredient]! += rate;
+    }
 
     /**
      * [what's being consumed][the building]
@@ -34,12 +42,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
     const assemblerBoosts: partialItems<number> = fromPairs(
         GAME.allAssemblers.map((assemblerName) => [
             assemblerName,
-            Math.pow(
-                2,
-                bigToNum(state.amountThatWeHave[
-                GAME.buildingBoosts[assemblerName] ?? ""
-                ] ?? 0n),
-            ),
+            GAME.calculateBoost(GAME.buildingBoosts[assemblerName], state.amountThatWeHave[GAME.buildingBoosts[assemblerName] ?? '']),
         ]),
     );
 
@@ -89,11 +92,13 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
                 0, 0, 0n,
             ];
             const k = powerConsumptionRates[ingredient]![assemblerName]!;
+            const q = scaleBigInt(requiredCount, count);
+            addToMaxRate(ingredient, q);
 
             k[1] += count;
             if (counted) {
                 k[0] += count;
-                k[2] += scaleBigInt(requiredCount, count);
+                k[2] += q;
             }
         });
     }
@@ -111,16 +116,18 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         const baseCraftTime = GAME.timePerRecipe[itemName];
         mapPairs(recipe, (count, ingredient) => {
             let rate = 0;
+            let maxRate = 0;
 
             mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
+                const subRate = bigToNum(assemblerCount) * (GAME.assemblerSpeeds[assemblerName] *
+                    getBoost(assemblerName) / baseCraftTime
+                );
+                maxRate += subRate;
                 if (assemblerIsStuckOrDisabled(itemName, assemblerName)) return;
-                rate +=
-                    bigToNum(assemblerCount) * (GAME.assemblerSpeeds[assemblerName] *
-                        getBoost(assemblerName) / baseCraftTime
-                    );
+                rate += subRate;
             });
-            (effectiveConsumptionRates[ingredient] ??= {})[itemName] =
-                scaleBigInt(count, rate);
+            addToMaxRate(ingredient, scaleBigInt(count, maxRate));
+            (effectiveConsumptionRates[ingredient] ??= {})[itemName] = scaleBigInt(count, rate);
         });
     });
 
@@ -128,6 +135,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         effectiveConsumptionRates,
         effectiveProductionRates,
         powerConsumptionRates,
+        maxConsumptionRates,
         assemblerIsStuckOrDisabled,
     };
 }

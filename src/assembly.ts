@@ -1,9 +1,9 @@
 import GAME from "./values";
-import { Items } from "./content/itemNames";
+import { Items, partialItems } from "./content/itemNames";
 import _ from "lodash";
 import { SMap, keys, mapPairs } from "./smap";
 import { State } from "./typeDefs/State";
-import { NumToBig, REALLY_BIG, SCALE_N, bigMax, bigMin, bigToNum, bigpow, scaleBigInt } from "./bigmath";
+import { REALLY_BIG, SCALE_N, bigMax, bigMin, bigToNum, scaleBigInt } from "./bigmath";
 
 const PRECISION = 1e5;
 export function round(n: number) {
@@ -29,26 +29,23 @@ export function howManyRecipesCanBeMade(
 
     let numberOfRecipesToMake = REALLY_BIG;
 
-    const scale = Math.pow(
-        GAME.recipeScaleFactor[itemName],
-        bigToNum(amounts[itemName] ?? 0n),
-    );
+    const scale = GAME.calculateRecipeScale(itemName, amounts[itemName]);
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
-        const totalRequired = bigToNum(requiredCount) * scale;
+        const totalRequired = scaleBigInt(requiredCount, scale);
         const weHave = amounts[ingredientName] ?? 0;
         if (weHave < totalRequired) {
             numberOfRecipesToMake = 0n;
         } else {
             numberOfRecipesToMake = bigMin(
-                scaleBigInt(weHave, 1 / totalRequired),
+                weHave / totalRequired,
                 numberOfRecipesToMake,
             );
         }
     });
 
-    return numberOfRecipesToMake;
+    return numberOfRecipesToMake * SCALE_N;
 }
 
 export function consumeMaterials(
@@ -147,4 +144,16 @@ export function checkVisible(state: State) {
     }
 
     return itemsDiscovered;
+}
+
+export function hideTheHideOnBuyItems(state: State) {
+    const {
+        visible,
+        amountThatWeHave,
+    } = state;
+    GAME.allItemNames.forEach((itemName) => {
+        if (GAME.hideOnBuy(itemName) && (amountThatWeHave[itemName] ?? 0n) > 0) {
+            visible[itemName] = false;
+        }
+    });
 }

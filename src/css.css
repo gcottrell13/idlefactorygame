@@ -197,7 +197,10 @@ button.btn {
 }
 
 .assembler-count-name {
-    color: gray;
+}
+.rate-per {
+    color: gray !important;
+    padding-left: 5px;
 }
 
 .speed {

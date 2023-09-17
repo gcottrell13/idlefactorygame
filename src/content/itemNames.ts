@@ -153,6 +153,7 @@ export type Items =
     | "bank"
 
     // margaritas are required to win
+    | "research-marg"
     | "margarita"
     | "simple-syrup"
     | "lime-juice"
@@ -160,6 +161,7 @@ export type Items =
 
     // make some cars to win.
     // some ingredients are also required to make explorers
+    | "research-car"
     | "car-engine"
     | "engine-block"
     | "engine-electronics"
@@ -182,6 +184,7 @@ export type Items =
     // create wizard degree with wizard power
     // consume things to make wizard power
 
+    | "science6"
     | "telescope"
     | "wizard-essence"
     | "raw-mana"

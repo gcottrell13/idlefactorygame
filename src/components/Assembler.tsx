@@ -16,7 +16,7 @@ import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
-import { SCALE_N, bigToNum, bigpow } from "../bigmath";
+import { SCALE_N, bigToNum } from "../bigmath";
 
 type Props = {
     itemName: Items;
@@ -52,7 +52,7 @@ export function Assembler({
     const boost = GAME.buildingBoosts[assemblerName];
     let speedPer = GAME.assemblerSpeeds[assemblerName] / baseCraftTime;
     if (boost) {
-        speedPer *= bigpow(2, state.amountThatWeHave[boost] ?? 0n);
+        speedPer *= GAME.calculateBoost(boost, state.amountThatWeHave[boost]);
     }
     const totalSpeed = speedPer * bigToNum(no);
 
@@ -60,7 +60,8 @@ export function Assembler({
         <span className={"assembler-count"}>
             <span className={"assembler-count-name"}>
                 {d(no)} <Sprite name={assemblerName} />
-                {GAME.displayNames(assemblerName)} ({d(speedPer)}/s):
+                {GAME.displayNames(assemblerName)}
+                <span className={"rate-per"}>({d(speedPer)}/s):</span>
             </span>{" "}
             ({d(totalSpeed)}/s)
         </span>
@@ -191,11 +192,11 @@ export function Assembler({
                                             <td>
                                                 {d(
                                                     state.amountThatWeHave[
-                                                        requirement
+                                                    requirement
                                                     ],
                                                 )}
                                             </td>
-                                            <td className="assembler-count-name">
+                                            <td className="rate-per">
                                                 ({d(rate)}/s)
                                             </td>
                                             <td>{d(no * rate / SCALE_N)}/s</td>

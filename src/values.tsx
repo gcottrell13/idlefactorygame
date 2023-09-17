@@ -10,7 +10,7 @@ import storage from "./content/storage";
 import layout from "./content/layout";
 import unlockedWith from "./content/unlockedWith";
 import maxCraft from "./content/maxCraft";
-import { NumToBig } from "./bigmath";
+import { NumToBig, SCALE, SCALE_N, bigToNum, bigpow } from "./bigmath";
 
 const byproductRatesPerSecond: partialItems<partialItems<number>> = {};
 const recipesConsumingThis: partialItems<Items[]> = {};
@@ -77,7 +77,19 @@ const ex = {
     buildingPowerRequirementsPerSecond: fillWithDefault(buildings.buildingPowerRequirementsPerSecond, () => ({})) as BigIntRecipes,
 
     buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
+    buildingBoostTiers: fillWithDefault(buildings.buildingBoostTiers, () => buildings.defaultBuildingBoostTiers),
     buildingPowerDisplayWord: buildings.buildingPowerDisplayWord,
+    calculateBoost: (boostingItem: Items | undefined, amount: bigint | undefined): number => {
+        if (!amount || !boostingItem) return 1;
+        const boost = ex.buildingBoostTiers[boostingItem][Number(amount) / SCALE];
+        if (!boost) return 2 ** bigToNum(amount);
+        return boost;
+    },
+    calculateRecipeScale: (item: Items | undefined, amount: bigint | undefined): number => {
+        if (!item || !amount) return 1;
+        const scale = ex.recipeScaleFactor[item];
+        return bigpow(scale, amount);
+    },
 };
 
 keys(recipeValues.recipes).forEach((item) => {

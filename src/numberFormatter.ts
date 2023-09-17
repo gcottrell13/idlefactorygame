@@ -1,4 +1,4 @@
-import { SCALE, SCALE_N, bigToNum } from "./bigmath";
+import { NumToBig, SCALE, SCALE_N, bigToNum } from "./bigmath";
 
 
 const scale_exp = SCALE_N.toString().length;
@@ -22,10 +22,14 @@ export function formatNumber(n: number | bigint | null | undefined) {
         return '0';
     }
 
-    if (n >= 1000n * SCALE_N) {
+    const isBig = (typeof n === 'bigint' && n >= 1000n * SCALE_N) || (
+        typeof n === 'number' && n >= 1000
+    );
+
+    if (isBig) {
         if (typeof n === 'number') {
             if (n == Infinity) return "Infinity";
-            n = BigInt(Math.floor(n));
+            n = NumToBig(Math.floor(n));
         }
 
         const rep = n.toString();

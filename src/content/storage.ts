@@ -39,6 +39,7 @@ const storageSizes = {
     "fire-wizard": 0,
     "necro-wizard": 0,
     "wizard-orb": 0,
+    "bank": 0,
 } satisfies partialItems<number> & { [p in Buildings]: number };
 
 // these items impose a limit on how much we can have.
@@ -55,6 +56,8 @@ const itemsCanBeStoreIn: partialItems<(keyof typeof storageSizes)[]> = {
     "rock-crusher": ["box3"],
     centrifuge: ["box3"],
     "gold-filament": ["box"],
+
+    "water-evaporator": ["box3"],
 
     electricity: ["small-battery"],
     "small-battery": ["box3"],

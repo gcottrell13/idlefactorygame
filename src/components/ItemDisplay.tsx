@@ -26,7 +26,7 @@ import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
-import { REALLY_BIG, bigMin, bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
+import { REALLY_BIG, SCALE_N, bigMin, bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
 
 type func = () => void;
 
@@ -58,6 +58,7 @@ export function ItemDisplay({
     effectiveProductionRates,
     powerConsumptionRates,
     assemblerIsStuckOrDisabled,
+    maxConsumptionRates,
 }: Props) {
     const canMakeByHand = bigMin(
         currentClickAmount,
@@ -105,7 +106,6 @@ export function ItemDisplay({
     const othersConsumingRate =
         bigSum(values(othersConsuming)) + othersConsumingAsPowerRate;
 
-    const recipeScale = GAME.recipeScaleFactor[itemName];
     const recipe = GAME.recipes[itemName];
     const formatIngredients = keys(recipe)
         .map((name) => [name, recipe[name]!] as const)
@@ -113,7 +113,7 @@ export function ItemDisplay({
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
-                    {d(scaleBigInt(count, bigpow(recipeScale, amt)))}
+                    {d(scaleBigInt(count, GAME.calculateRecipeScale(itemName, amt)))}
                 </td>
                 <td>
                     <Sprite name={name} />
@@ -212,7 +212,10 @@ export function ItemDisplay({
                 <Popover.Body>
                     producing: {d(producingRate)}/s
                     <br />
-                    consumed: {d(othersConsumingRate)}/s
+                    consumed: {d(othersConsumingRate)}/s 
+                    <span className={'rate-per'}>
+                        (max {d(maxConsumptionRates[itemName])}/s)
+                    </span>
                     <Table>
                         <tbody>{othersConsumingThis}</tbody>
                     </Table>

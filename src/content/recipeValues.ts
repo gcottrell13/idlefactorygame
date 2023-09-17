@@ -360,6 +360,9 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     telescope: 1,
     tequila: 1,
     "research-the-end": 1,
+    "research-car": 1,
+    "research-marg": 1,
+    science6: 1,
 };
 
 const recipes: Recipes = {
@@ -473,6 +476,7 @@ const recipes: Recipes = {
 
     explorer: { steel: 10, "basic-circuit": 8 },
 
+    "research-car": { "science5": 100 },
     "engine-block": { steel: 10 },
     "car-engine": { "engine-block": 1, "engine-electronics": 5, "crank-shaft": 1, "spark-plug": 7, "piston": 7 },
     "car": { "car-chassis": 1, "car-engine": 1, "chair": 2, "steering-wheel": 1, "anti-grav-thruster": 1 },
@@ -485,7 +489,7 @@ const recipes: Recipes = {
     "car-chassis": { "adamantium-frame": 5 },
     "anti-grav-thruster": { "powerful-mana": 100, steel: 10, "advanced-circuit": 10 },
 
-    "telescope": { glass: 1, steel: 1 },
+    "telescope": { glass: 1, aluminum: 1, "science6": 10 },
     "research-wizard-tower": { telescope: 19 },
     "fire-wizard": { money: 100 },
     "arcane-wizard": { money: 90 },
@@ -506,6 +510,8 @@ const recipes: Recipes = {
     "wizard-paragon": { "wizard-degree": 100 },
 
     bank: { wood: 100 },
+
+    "research-marg": { "greenhouse": 10, "science5": 10 },
     "lime-juice": { fertilizer: 1 },
     "simple-syrup": { fertilizer: 1 },
     tequila: { fertilizer: 1 },
@@ -529,6 +535,7 @@ const recipes: Recipes = {
     science3: { science2: 3, plastic: 5 },
     science4: { science3: 4, "advanced-circuit": 2 },
     science5: { science4: 5, aluminum: 5 },
+    science6: { science5: 6 },
 
     // research
     "research-woodcutting": { food: 10 },

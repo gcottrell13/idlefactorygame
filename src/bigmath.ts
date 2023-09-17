@@ -13,7 +13,10 @@ export function bigpow(base: bigint | number, power: bigint): bigint | number {
         return base ** power;
     }
     if (base === 1) return base;
-    
+    if (power < Number.MAX_SAFE_INTEGER) {
+        return base ** bigToNum(power);
+    }
+    power /= SCALE_N;
     let result = 1;
     while (power > 0n) {
         result *= base;

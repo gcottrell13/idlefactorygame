@@ -21,7 +21,7 @@ const assemblerSpeeds = {
     centrifuge: 1,
     "water-evaporator": 1,
     "lumberjack-school": 1,
-    "wind-turbine": 2,
+    "wind-turbine": 5,
     "coal-power": 100,
     "nuclear-reactor": 2500,
     hydroponics: 5,
@@ -29,6 +29,7 @@ const assemblerSpeeds = {
     "necro-wizard": 1.0,
     "arcane-wizard": 1.0,
     "wizard-orb": 2.0,
+    "bank": 1.0,
 } satisfies partialItems<number>;
 
 export type Buildings = keyof typeof assemblerSpeeds;
@@ -41,7 +42,7 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     "miner-mk1": { electricity: 2 },
     "oil-pump": { electricity: 10 },
     "rock-crusher": { electricity: 20 },
-    "smelter-mk1": { wood: 0.01 },
+    "smelter-mk1": { wood: 0.1 },
     "smelter-mk2": { wood: 0.1 },
     "water-evaporator": { electricity: 5 },
     "water-filter": { electricity: 5 },
@@ -62,6 +63,7 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     "fire-wizard": { "powerful-mana": 1 },
     "necro-wizard": { "powerful-mana": 1 },
     "wizard-orb": { "powerful-mana": 1, },
+    "bank": { "gold": 0.25 },
 } satisfies {
         [p in Buildings]: partialItems<number>;
     };
@@ -71,6 +73,7 @@ const buildingPowerDisplayWord: partialItems<string> = {
     lumberjack: "Food",
     "smelter-mk1": "Fuel",
     "smelter-mk2": "Fuel",
+    "bank": "Gold",
 } satisfies { [p in Buildings]?: string };
 
 /**
@@ -100,6 +103,25 @@ const buildingBoosts: { [p in Buildings]?: Items } = {
     "wizard-orb": "boost-wizard",
 };
 
+// keys are the items that do the boosting, not the building.
+const buildingBoostTiers: { [p in Items]?: number[] } = {
+
+};
+
+const defaultBuildingBoostTiers: number[] = [
+    2 ** 0,
+    2 ** 1,
+    2 ** 2,
+    2 ** 3,
+    2 ** 4,
+    2 ** 5,
+    2 ** 6,
+    2 ** 7,
+    2 ** 8,
+    2 ** 9,
+    2 ** 10,
+];
+
 const requiredBuildings: {
     [p in Items]: (Buildings | "by-hand")[];
 } = {
@@ -119,7 +141,10 @@ const requiredBuildings: {
     "coal-power": ["by-hand", "manufacturer"],
     "nuclear-reactor": ["manufacturer"],
 
-    money: ["by-hand"],
+    money: ["by-hand", "bank"],
+    "research-car": ["by-hand"],
+    "research-marg": ["by-hand"],
+    science6: ["by-hand"],
 
     "adamantium-drill": ["manufacturer"],
     "advanced-circuit": ["assembler"],
@@ -318,4 +343,6 @@ export default {
     buildingPowerRequirementsPerSecond,
     buildingBoosts,
     buildingPowerDisplayWord,
+    buildingBoostTiers,
+    defaultBuildingBoostTiers,
 };

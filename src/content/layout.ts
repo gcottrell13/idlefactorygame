@@ -309,6 +309,12 @@ const sections: Sections = [
                 ],
             },
             {
+                Name: "Research",
+                Items: [
+                    "research-car",
+                ],
+            },
+            {
                 Name: "Parts",
                 Items: [
                     "car-engine",
@@ -321,6 +327,21 @@ const sections: Sections = [
                     "anti-grav-thruster",
                     "chair",
                     "steering-wheel",
+                ],
+            },
+        ],
+    },
+    {
+        Name: "The Bar",
+        SubSections: [
+            {
+                Name: "Drinks",
+                Items: [
+                    "research-marg",
+                    "margarita",
+                    "tequila",
+                    "simple-syrup",
+                    "lime-juice",
                 ],
             },
         ],

@@ -8,6 +8,9 @@ const byHandVerbs: partialItems<string> = {
     coal: "gather",
     seed: "gather",
     begin: "Begin",
+    money: "Mint",
+
+    bank: "Build",
 
     "fire-wizard": "Hire",
     "necro-wizard": "Hire",
@@ -25,6 +28,7 @@ const displayNames: partialItems<string> = {
     food: "Basic Food",
     assembler: "Assembler",
     constructer: "Constructor",
+    money: "Money",
 
     electricity: "Electricity",
 
@@ -81,6 +85,9 @@ const displayNames: partialItems<string> = {
     "research-mass-click": "Tech: Mass Click",
     "research-woodcutting": "Tech: Wood",
     "research-metal": "Tech: Metals",
+    "research-marg": "Tech: Marg",
+    "research-car": "Tech: Car",
+
     "rock-crusher": "Rock Crusher",
     adamantium: "Adamantium",
     "sulfuric-acid": "Sulfuric Acid",
@@ -126,6 +133,7 @@ const displayNames: partialItems<string> = {
     science3: "Intense Study",
     science4: "Research Paper",
     science5: "A.I. Generated Proof",
+    science6: "A Bit of Magic",
 
     "wet-land": "Wet Land",
     "sandy-land": "Sandy Land",
@@ -138,6 +146,8 @@ const displayNames: partialItems<string> = {
     "studonite-node": "Studonite Deposit",
     "bauxite-node": "Bauxite Deposit",
     "uranium-node": "Uranium Deposit",
+
+    telescope: "Telescope",
 
     "boost-lumberjack": "Boost: Sharper Axes",
     "boost-miner-mk1": "Boost: Tougher Drills",
@@ -171,6 +181,7 @@ const displayNames: partialItems<string> = {
     "engine-electronics": "Engine Elec",
     "fire-wizard": "Fire Wizard",
     "lime-juice": "Lime Juice",
+    "margarita": "Margarita",
     "mystical-catalyst": "Mystical Catalyst",
     "necro-wizard": "Necromancer",
     "powerful-mana": "Powerful Mana",
@@ -181,7 +192,7 @@ const displayNames: partialItems<string> = {
     "simple-syrup": "Simple Syrup",
     "spark-plug": "Spark Plug",
     "steering-wheel": "Steering Wheel",
-    "water-evaporator": "Water Evaportaor",
+    "water-evaporator": "Water Evaporator",
     "wizard-degree": "Wizard Degree",
     "wizard-essence": "Wizard Essence",
     "wizard-orb": "Orb",
@@ -199,6 +210,8 @@ const flavorText: partialItems<React.ReactNode> = {
     electricity: <i>Power is Knowledge</i>,
     "lumberjack-school": <i>They learn all night, and they sleep all day.</i>,
     youwin: "Craft this to WIN!",
+    money: "Cash Money",
+    bank: "Do you really need all this money?",
 
     "boost-lumberjack": "Increase Lumberjack speed by 2x",
     "boost-miner-mk1": "Increase Miner Mark 1 speed by 2x",
@@ -218,6 +231,10 @@ const flavorText: partialItems<React.ReactNode> = {
     "boost-greenhouse": "Increase Greenhouse speed by 2x",
     "boost-manufacturer": "Increase Manufacturer speed by 2x",
     "boost-wizard": "Increase Wizard speed by 2x",
+
+    margarita: "A wizard's favorite drink.",
+    car: "Transportation fit for a wizard.",
+    "wizard-paragon": "The wizard of all time!",
 };
 
 const units: partialItems<string> = {
