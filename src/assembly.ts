@@ -3,7 +3,7 @@ import { Items } from "./content/itemNames";
 import _ from "lodash";
 import { SMap, keys, mapPairs } from "./smap";
 import { State } from "./typeDefs/State";
-import { REALLY_BIG, bigMax, bigMin, bigToNum, bigpow } from "./bigmath";
+import { NumToBig, REALLY_BIG, SCALE_N, bigMax, bigMin, bigToNum, bigpow, scaleBigInt } from "./bigmath";
 
 const PRECISION = 1e5;
 export function round(n: number) {
@@ -29,20 +29,20 @@ export function howManyRecipesCanBeMade(
 
     let numberOfRecipesToMake = REALLY_BIG;
 
-    const scale = bigpow(
+    const scale = Math.pow(
         GAME.recipeScaleFactor[itemName],
-        amounts[itemName] ?? 0,
+        bigToNum(amounts[itemName] ?? 0n),
     );
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
-        const totalRequired = BigInt(requiredCount) * scale;
+        const totalRequired = bigToNum(requiredCount) * scale;
         const weHave = amounts[ingredientName] ?? 0;
         if (weHave < totalRequired) {
             numberOfRecipesToMake = 0n;
         } else {
             numberOfRecipesToMake = bigMin(
-                weHave / totalRequired,
+                scaleBigInt(weHave, 1 / totalRequired),
                 numberOfRecipesToMake,
             );
         }
@@ -57,16 +57,14 @@ export function consumeMaterials(
     recipe: SMap<bigint>,
     recipeCount: bigint
 ) {
-    if (!itemName) return;
-
-    const scale = recipeCount * bigpow(
+    const scale = itemName ? bigToNum(scaleBigInt(recipeCount, Math.pow(
         GAME.recipeScaleFactor[itemName],
-        amountWeHave[itemName] ?? 0,
-    );
+        bigToNum(amountWeHave[itemName] ?? 0n),
+    ))) : 1;
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
-        const toGrab = requiredCount * scale;
+        const toGrab = scaleBigInt(requiredCount, scale);
 
         const weHave = amountWeHave[ingredientName] ?? 0n;
         amountWeHave[ingredientName] = bigMax(0n, weHave - toGrab);

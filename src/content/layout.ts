@@ -14,7 +14,7 @@ const sections: Sections = [
         SubSections: [
             {
                 Name: "Start",
-                Items: ["begin", "youwin"],
+                Items: ["begin", "youwin", "research-the-end"],
             },
             {
                 Name: "Land",

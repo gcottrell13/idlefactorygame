@@ -1,6 +1,8 @@
+import { NumToBig } from "../bigmath";
+import { fromPairs, mapPairs } from "../smap";
 import { partialItems } from "./itemNames";
 
-const ABSOLUTE_MAX_CRAFT = 2;
+const ABSOLUTE_MAX_CRAFT = NumToBig(2);
 const maxCraftAtATime: partialItems<number> = {
     "copper-ore": 2,
     "iron-ore": 2,
@@ -11,5 +13,7 @@ const maxCraftAtATime: partialItems<number> = {
 
 export default {
     ABSOLUTE_MAX_CRAFT,
-    maxCraftAtATime,
+    maxCraftAtATime: fromPairs(mapPairs(maxCraftAtATime, (amount, item) => {
+        return [item, NumToBig(amount)];
+    })),
 };

@@ -1,6 +1,7 @@
 export type Items =
     | "begin"
     | "youwin"
+    | "research-the-end"
     | "food"
     | "lumberjack"
     | "prospector"

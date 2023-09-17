@@ -5,7 +5,7 @@ import GAME from "../values";
 import { Items } from "../content/itemNames";
 import { Button, Badge, Tabs, Tab, ButtonToolbar } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
-import { SMap } from "../smap";
+import { SMap, mapPairs } from "../smap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { VERSION } from "../version";
 import { ItemDisplay } from "./ItemDisplay";
@@ -13,13 +13,18 @@ import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
 import { ReleaseNotes } from "./ReleaseNotes";
-import { bigMin } from "../bigmath";
+import { NumToBig, SCALE_N, bigMin } from "../bigmath";
 
 type Props = {
     ticksPerSecond: number;
 };
 
 const MAX_BIG = BigInt(Number.MAX_VALUE);
+const MULTI_CLICK_OPTIONS = {
+    "1": NumToBig(1),
+    "10": NumToBig(10),
+    "MAX": MAX_BIG,
+}
 
 export function App({ ticksPerSecond }: Props) {
     const {
@@ -51,7 +56,7 @@ export function App({ ticksPerSecond }: Props) {
     function calculateMaxAdd(itemName: Items) {
         return bigMin(
             currentClickAmount,
-            state.amountThatWeHave[itemName] ?? 0,
+            state.amountThatWeHave[itemName] ?? 0n,
         );
     }
 
@@ -60,7 +65,7 @@ export function App({ ticksPerSecond }: Props) {
     );
 
     let [currentTab, setCurrentTab] = useState<string | null>(null);
-    const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(1n);
+    const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(MULTI_CLICK_OPTIONS["1"]);
 
     if (currentTab === null) {
         setCurrentTab(
@@ -160,13 +165,13 @@ export function App({ ticksPerSecond }: Props) {
                         makeByHand === null
                             ? null
                             : makeByHand === false
-                            ? false
-                            : () => {
-                                  makeItemByhand(
-                                      itemName as Items,
-                                      calculateMaxMake(itemName, amt),
-                                  );
-                              }
+                                ? false
+                                : () => {
+                                    makeItemByhand(
+                                        itemName as Items,
+                                        calculateMaxMake(itemName, amt),
+                                    );
+                                }
                     }
                     disableRecipe={() =>
                         disableRecipe(
@@ -177,8 +182,8 @@ export function App({ ticksPerSecond }: Props) {
                     onMouseover={
                         acknowledged[itemName] !== true
                             ? () => {
-                                  acknowledgeItem(itemName);
-                              }
+                                acknowledgeItem(itemName);
+                            }
                             : undefined
                     }
                     {...rates}
@@ -251,29 +256,21 @@ export function App({ ticksPerSecond }: Props) {
                     );
                 })}
             </Tabs>
-            {amountThatWeHave["research-mass-click"] === 1n ? (
+            {amountThatWeHave["research-mass-click"] === SCALE_N ? (
                 <ButtonToolbar className={"per-click-amount-buttons"}>
                     Per Click:
-                    <Button
-                        onClick={() => setCurrentClickAmount(1n)}
-                        active={currentClickAmount === 1n}
-                    >
-                        1
-                    </Button>
-                    <Button
-                        onClick={() => setCurrentClickAmount(10n)}
-                        active={currentClickAmount === 10n}
-                    >
-                        10
-                    </Button>
-                    <Button
-                        onClick={() =>
-                            setCurrentClickAmount(MAX_BIG)
-                        }
-                        active={currentClickAmount === MAX_BIG}
-                    >
-                        MAX
-                    </Button>
+                    {
+                        mapPairs(MULTI_CLICK_OPTIONS, (value, display) => {
+                            return (
+                                <Button
+                                    onClick={() => setCurrentClickAmount(value)}
+                                    active={currentClickAmount === value}
+                                >
+                                    {display}
+                                </Button>
+                            );
+                        })
+                    }
                 </ButtonToolbar>
             ) : null}
         </Container>

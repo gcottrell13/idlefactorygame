@@ -10,6 +10,7 @@ import storage from "./content/storage";
 import layout from "./content/layout";
 import unlockedWith from "./content/unlockedWith";
 import maxCraft from "./content/maxCraft";
+import { NumToBig } from "./bigmath";
 
 const byproductRatesPerSecond: partialItems<partialItems<number>> = {};
 const recipesConsumingThis: partialItems<Items[]> = {};
@@ -36,8 +37,6 @@ function fillWithDefault<T>(partial: partialItems<T>, defaultItem: () => any): i
 type BigIntRecipes = itemsMap<partialItems<bigint>>;
 
 const ex = {
-    AMOUNT_SCALE: 100,
-
     sections: layout.sections,
     assemblerSpeeds: fillWithDefault(buildings.assemblerSpeeds, () => 0),
     byHandVerbs: fillWithDefault(displayStrings.byHandVerbs, () => "craft"),
@@ -74,7 +73,7 @@ const ex = {
     byproductRatesPerSecond: fillWithDefault(byproductRatesPerSecond, () => ({})),
 
     recipesConsumingThis: fillWithDefault(recipesConsumingThis, () => []),
-    MIN_STORAGE: BigInt(storage.MIN_STORAGE),
+    MIN_STORAGE: NumToBig(storage.MIN_STORAGE),
     buildingPowerRequirementsPerSecond: fillWithDefault(buildings.buildingPowerRequirementsPerSecond, () => ({})) as BigIntRecipes,
 
     buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
@@ -84,7 +83,7 @@ const ex = {
 keys(recipeValues.recipes).forEach((item) => {
     if (item.startsWith("research-")) {
         displayStrings.byHandVerbs[item] = "research";
-        maxCraft.maxCraftAtATime[item] = 1;
+        maxCraft.maxCraftAtATime[item] = NumToBig(1);
     }
 
     // calculate side product rates per second (assuming constructor rate 1x)
@@ -105,14 +104,14 @@ keys(recipeValues.recipes).forEach((item) => {
     const recipe = recipeValues.recipes[item];
     mapPairs(recipe, (count, ingredient) => {
         (recipesConsumingThis[ingredient] ??= []).push(item);
-        ex.recipes[item][ingredient] = BigInt(count * ex.AMOUNT_SCALE);
+        ex.recipes[item][ingredient] = NumToBig(count);
     });
 });
 
 keys(recipeValues.recipes).forEach((buildingName) => {
     const requirements = buildings.buildingPowerRequirementsPerSecond[buildingName];
     mapPairs(requirements, (amount, fuelName) => {
-        ex.buildingPowerRequirementsPerSecond[buildingName]![fuelName] = BigInt(amount * ex.AMOUNT_SCALE);
+        ex.buildingPowerRequirementsPerSecond[buildingName]![fuelName] = NumToBig(amount);
     });
 });
 

@@ -20,7 +20,7 @@ import {
     consumeMaterialsFromRecipe,
     howManyRecipesCanBeMade,
 } from "../assembly";
-import { REALLY_BIG, SCALE_N, bigMax, bigMin, bigToNum, bigpow } from "../bigmath";
+import { NumToBig, REALLY_BIG, SCALE, SCALE_N, bigMax, bigMin, bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
 
 export function useProduction(ticksPerSecond: number) {
     const { existingStorage, saveGame, resetGame } = useLocalStorage();
@@ -41,23 +41,23 @@ export function useProduction(ticksPerSecond: number) {
         const assemblers = stateRef.current.assemblers[itemName] ?? {};
         return (
             bigMax(
-                _.sum(
+                bigSum(
                     keys(assemblers).map(
-                        (key) => GAME.storageSizes[key] * (assemblers[key] ?? 0n)
+                        (key) => scaleBigInt(assemblers[key] ?? 0n, GAME.storageSizes[key])
                     ),
                 ),
-                0,
+                0n,
             ) +
             bigMax(
-                _.sumBy(
+                bigSum(
                     keys(storage).map(
                         (key) =>
-                            (canBeStoredIn.includes(key)
-                                ? GAME.storageSizes[key] ?? 0n
-                                : 0n) * (storage[key] ?? 0n),
+                            scaleBigInt(storage[key] ?? 0n, canBeStoredIn.includes(key)
+                                ? GAME.storageSizes[key] ?? 0
+                                : 0),
                     )
                 ),
-                0,
+                0n,
             ) +
             GAME.MIN_STORAGE
         );
@@ -117,13 +117,12 @@ export function useProduction(ticksPerSecond: number) {
         if (state === PRODUCTION_HAS_POWER && power >= ticksPerSecond) {
             let amount = stateRef.current.assemblers[itemName]![building]!;
             const r = GAME.buildingPowerRequirementsPerSecond[building];
-            while (amount-- > 0)
-                consumeMaterials(
-                    undefined,
-                    stateRef.current.amountThatWeHave,
-                    r,
-                    1n,
-                );
+            consumeMaterials(
+                undefined,
+                stateRef.current.amountThatWeHave,
+                r,
+                amount,
+            );
         }
     }
 
@@ -182,18 +181,18 @@ export function useProduction(ticksPerSecond: number) {
                             return;
                         }
 
-                        let amountAddPerTick =
-                            (GAME.assemblerSpeeds[assemblerName] *
-                                bigToNum(assemblerCount) *
-                                timeStep) /
-                            GAME.timePerRecipe[itemName];
+                        let amountAddPerTick = bigToNum(scaleBigInt(
+                            assemblerCount,
+                            1000 * GAME.assemblerSpeeds[assemblerName] * timeStep /
+                            GAME.timePerRecipe[itemName]
+                        )) / 1000;
 
                         const booster = GAME.buildingBoosts[assemblerName];
                         if (booster) {
-                            amountAddPerTick *= bigToNum(bigpow(
-                                2n,
-                                amountThatWeHave[booster] ?? 0n,
-                            ));
+                            amountAddPerTick *= Math.pow(
+                                2,
+                                bigToNum(amountThatWeHave[booster] ?? 0n),
+                            );
                         }
 
                         let [time, state] = getProductionProgress(
@@ -208,7 +207,7 @@ export function useProduction(ticksPerSecond: number) {
                         // there's probably a better way to organize this code
 
                         if (state === PRODUCTION_OUTPUT_BLOCKED) {
-                            if (addToTotal(itemName, 1n)) {
+                            if (addToTotal(itemName, NumToBig(1))) {
                                 time = 0;
                                 state = PRODUCTION_NO_INPUT;
                             } else {
@@ -226,7 +225,7 @@ export function useProduction(ticksPerSecond: number) {
                             const result = consumeMaterialsFromRecipe(
                                 itemName,
                                 amountThatWeHave,
-                                1n,
+                                NumToBig(1),
                             );
                             if (!result) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
@@ -244,11 +243,12 @@ export function useProduction(ticksPerSecond: number) {
                             let t: number = time as any;
                             t += amountAddPerTick;
                             time = t;
-
-                            const amountToProduce = BigInt(Math.floor(t));
+                            
+                            const amtToProduce = Math.floor(t);
+                            const amountToProduce = NumToBig(amtToProduce);
                             if (amountToProduce > 0) {
                                 if (addToTotal(itemName, amountToProduce)) {
-                                    t -= bigToNum(amountToProduce);
+                                    t -= amtToProduce;
                                     time = t;
                                     if (
                                         !consumeMaterialsFromRecipe(
@@ -278,7 +278,7 @@ export function useProduction(ticksPerSecond: number) {
 
     const addAmount = useCallback((itemName: Items, amount: bigint) => {
         const k = stateRef.current.amountThatWeHave[itemName] ?? 0n;
-        stateRef.current.amountThatWeHave[itemName] = bigMax(0, k + amount * SCALE_N);
+        stateRef.current.amountThatWeHave[itemName] = bigMax(0n, k + amount);
         const b = stateRef.current.amountCreated[itemName] ?? 0n;
         stateRef.current.amountCreated[itemName] = b + amount;
 
@@ -310,10 +310,10 @@ export function useProduction(ticksPerSecond: number) {
             howManyRecipesCanBeMade(
                 itemName,
                 stateRef.current.amountThatWeHave,
-            ) <= 0
+            ) < SCALE_N
         )
             return false;
-        return hasStorageCapacity(itemName) > 0;
+        return hasStorageCapacity(itemName) >= SCALE_N;
     }, []);
 
     const addAssemblers = useCallback(
@@ -383,8 +383,9 @@ export function useProduction(ticksPerSecond: number) {
         updateUI();
     };
 
-    const setAmount = (amount: number = 1, itemName: Items = "") => {
-        stateRef.current.amountThatWeHave[itemName] = BigInt(amount);
+    const setAmount = (amount: number | bigint = 1, itemName: Items = "") => {
+        if (typeof amount === 'number') amount = NumToBig(amount);
+        stateRef.current.amountThatWeHave[itemName] = amount;
         stateRef.current.visible[itemName] ??= true;
         updateUI();
     };

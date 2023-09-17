@@ -5,7 +5,7 @@ const unlockedWith: partialItems<Items[]> = {
     assembler: ["research-assembler"],
 
     prospector: ["begin"],
-    youwin: ["begin"],
+    youwin: ["research-the-end"],
 
     "small-battery": ["research-small-battery"],
     electricity: ["research-small-battery"],

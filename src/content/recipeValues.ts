@@ -359,10 +359,12 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     piston: 1,
     telescope: 1,
     tequila: 1,
+    "research-the-end": 1,
 };
 
 const recipes: Recipes = {
     youwin: { "margarita": 100, "car": 100, "wizard-paragon": 100 },
+    "research-the-end": { "wizard-power": 100000 },
     "": {},
     begin: {},
     prospector: { food: 2 },

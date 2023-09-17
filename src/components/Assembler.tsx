@@ -13,10 +13,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBolt } from "@fortawesome/free-solid-svg-icons";
 import { keys } from "../smap";
 import { Items, partialItems } from "../content/itemNames";
-import { formatScaledNumber as dScale, formatNumber as d } from "../numberFormatter";
+import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
-import { bigToNum, bigpow } from "../bigmath";
+import { SCALE_N, bigToNum, bigpow } from "../bigmath";
 
 type Props = {
     itemName: Items;
@@ -52,7 +52,7 @@ export function Assembler({
     const boost = GAME.buildingBoosts[assemblerName];
     let speedPer = GAME.assemblerSpeeds[assemblerName] / baseCraftTime;
     if (boost) {
-        speedPer *= bigToNum(bigpow(2, state.amountThatWeHave[boost] ?? 0n));
+        speedPer *= bigpow(2, state.amountThatWeHave[boost] ?? 0n);
     }
     const totalSpeed = speedPer * bigToNum(no);
 
@@ -198,7 +198,7 @@ export function Assembler({
                                             <td className="assembler-count-name">
                                                 ({d(rate)}/s)
                                             </td>
-                                            <td>{d(no * rate)}/s</td>
+                                            <td>{d(no * rate / SCALE_N)}/s</td>
                                         </tr>
                                     );
                                 })}

@@ -1,6 +1,8 @@
 import { SCALE, SCALE_N, bigToNum } from "./bigmath";
 
 
+const scale_exp = SCALE_N.toString().length;
+
 const powers: {[p: number]: string} = {
     0: '',
     1: 'K',
@@ -15,50 +17,34 @@ const powers: {[p: number]: string} = {
     10: 'N',
 }
 
-export function formatScaledNumber(n: number | bigint | null | undefined) {
-    if (!n) {
-        return '0';
-    }
-
-    if (typeof n == 'number') {
-        n /= SCALE;
-    }
-    else if (n >= SCALE_N) {
-        n /= SCALE_N;
-    }
-    else {
-        n = bigToNum(n) / SCALE;
-    }
-    return formatNumber(n);
-}
-
 export function formatNumber(n: number | bigint | null | undefined) {
     if (!n) {
         return '0';
     }
 
-    if (n >= 1000n) {
+    if (n >= 1000n * SCALE_N) {
         if (typeof n === 'number') {
+            if (n == Infinity) return "Infinity";
             n = BigInt(Math.floor(n));
         }
 
         const rep = n.toString();
-        const exp = rep.length;
-        const r = parseInt(rep.substring(0, (exp % 3) + 3)).toFixed(2);
-        const step = Math.floor(exp / 3);
-        if (powers[step] !== undefined) {
-            return r + ' ' + powers[step];
+        const exp = rep.length - scale_exp;
+        const majorExp = Math.floor(exp / 3);
+        const minorExp = exp % 3;
+
+        const r = (parseInt(rep.substring(0, minorExp + 3)) / 100).toFixed(2);
+        if (powers[majorExp] !== undefined) {
+            return r + ' ' + powers[majorExp];
         }
         return r + ' ' + powers_over_100(exp) + powers_under_30(exp) + powers_under_100(exp);
     }
-    if (typeof n === 'number') {
-        let value = n.toFixed(2);
-        if (value.endsWith('.00')) return Math.floor(n);
-        return value.substring(0, value.indexOf('.') + 3);
+    
+    if (typeof n === 'bigint')  {
+        n = bigToNum(n);
     }
-    const rawVal = parseFloat(n.toString());
-    let value = rawVal.toFixed(2);
-    if (value.endsWith('.00')) return Math.floor(rawVal);
+    let value = n.toFixed(2);
+    if (value.endsWith('.00')) return Math.floor(n);
     return value.substring(0, value.indexOf('.') + 3);
 }
 

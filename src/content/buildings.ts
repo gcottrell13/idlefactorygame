@@ -104,6 +104,7 @@ const requiredBuildings: {
     [p in Items]: (Buildings | "by-hand")[];
 } = {
     youwin: ["manufacturer"],
+    "research-the-end": ["by-hand"],
     begin: ["by-hand"],
     prospector: ["by-hand"],
     lumberjack: ["lumberjack-school"],

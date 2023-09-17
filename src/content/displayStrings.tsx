@@ -18,6 +18,7 @@ const byHandVerbs: partialItems<string> = {
 
 const displayNames: partialItems<string> = {
     youwin: "Win",
+    "research-the-end": "The Beginning of The End",
 
     lumberjack: "Lumberjack",
     "lumberjack-school": "Lumberjack School",

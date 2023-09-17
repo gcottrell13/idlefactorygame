@@ -46,7 +46,7 @@ function deserializer(this: any, key: string, value: any) {
     return value;
 }
 
-function loadStorage(): State {
+function getStorage(): State {
     const monoState = localStorage.getItem("state");
     if (monoState) {
         const existingStorage = {
@@ -68,6 +68,14 @@ function loadStorage(): State {
     }
 }
 
+function loadAndCheckStorage(): State {
+    const state = getStorage();
+    if (state.version[0] != VERSION()[0]) {
+        return defaultState;
+    }
+    return state;
+}
+
 function saveGame(state: State) {
     keys(state).forEach((key) => {
         localStorage.setItem(
@@ -81,7 +89,7 @@ function saveGame(state: State) {
 }
 
 export function useLocalStorage() {
-    const existingStorage = useMemo(loadStorage, []);
+    const existingStorage = useMemo(loadAndCheckStorage, []);
     const resetGame = useCallback(() => {
         saveGame(defaultState);
         return defaultState;

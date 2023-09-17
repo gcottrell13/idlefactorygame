@@ -21,12 +21,12 @@ import {
     faChevronCircleDown,
     faBolt,
 } from "@fortawesome/free-solid-svg-icons";
-import { formatNumber as d, formatSeconds, formatScaledNumber as dscale } from "../numberFormatter";
+import { formatNumber as d, formatSeconds } from "../numberFormatter";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
-import { REALLY_BIG, bigMin, bigToNum, bigpow } from "../bigmath";
+import { REALLY_BIG, bigMin, bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
 
 type func = () => void;
 
@@ -96,15 +96,14 @@ export function ItemDisplay({
     ).filter((x) => x != itemName);
     const byproductString = byproducts.map(GAME.displayNames).join(", ");
 
-    const producingRate = _.sum(values(effectiveProductionRates[itemName]));
+    const producingRate = bigSum(values(effectiveProductionRates[itemName]));
     const othersConsuming = effectiveConsumptionRates[itemName] ?? {};
     const othersConsumingAsPower = powerConsumptionRates[itemName] ?? {};
-    const othersConsumingAsPowerRate = _.sumBy(
-        values(othersConsumingAsPower),
-        (k) => k[2],
+    const othersConsumingAsPowerRate = bigSum(
+        values(othersConsumingAsPower).map((k) => k[2]),
     );
     const othersConsumingRate =
-        _.sum(values(othersConsuming)) + othersConsumingAsPowerRate;
+        bigSum(values(othersConsuming)) + othersConsumingAsPowerRate;
 
     const recipeScale = GAME.recipeScaleFactor[itemName];
     const recipe = GAME.recipes[itemName];
@@ -114,7 +113,7 @@ export function ItemDisplay({
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
-                    {d(count * bigpow(recipeScale, amt))}
+                    {d(scaleBigInt(count, bigpow(recipeScale, amt)))}
                 </td>
                 <td>
                     <Sprite name={name} />
@@ -185,7 +184,7 @@ export function ItemDisplay({
                 return (
                     <tr key={`power-${name}`}>
                         <td>
-                            {dscale(total)} {GAME.displayNames(name)}
+                            {d(total)} {GAME.displayNames(name)}
                         </td>
                         <td>({d(consumption)}/s)</td>
                         <td className={color}>
@@ -269,7 +268,7 @@ export function ItemDisplay({
         ),
         storageValueIfContainer > 0 && (
             <div className={"storage-size"}>
-                Storage Size: {dscale(storageValueIfContainer)}
+                Storage Size: {d(storageValueIfContainer)}
             </div>
         ),
         assemblerSpeed > 0 && (
@@ -350,13 +349,13 @@ export function ItemDisplay({
                 {
                     hasStorage || amt > 0 || producingRate > 0 ? (
                         <span className="item-count">
-                            {historyDisplay} {dscale(amt)}
+                            {historyDisplay} {d(amt)}
                         </span>
                     ) : null
                 }
                 <span className="item-max">
                     {hasStorage
-                        ? `/ ${maxValue}`
+                        ? `/ ${d(maxValue)}`
                         : ""}
                 </span>
                 {producingRate > 0 && (
