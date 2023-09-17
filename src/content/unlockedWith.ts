@@ -40,6 +40,7 @@ const unlockedWith: partialItems<Items[]> = {
     "chair": ["research-car"],
     "spark-plug": ["research-car"],
     "steering-wheel": ["research-car"],
+    "car-chassis": ["research-car"],
 
     "boost-lumberjack": ["lumberjack", "money"],
     "boost-miner-mk1": ["research-miner-mk1", "money"],

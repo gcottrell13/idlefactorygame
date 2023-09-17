@@ -316,6 +316,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
 
     // research
     "research-uranium": 1, // science 5
+    "research-science-6": 1,
 
     // buildings
     hydroponics: 20,
@@ -552,10 +553,10 @@ const recipes: Recipes = {
     "research-natural-gas": { science3: 50, nitrogen: 1000 },
     "research-explorer": { science2: 200 },
     "research-manufacturer": { science3: 200 },
-    "research-studonite": { science4: 500 },
-    "research-aluminum": { science4: 200 },
+    "research-studonite": { science4: 100 },
+    "research-aluminum": { science4: 400, adamantium: 100 },
     "research-adamantium-drill": { science4: 200 },
-    "research-computer": { science4: 500 },
+    "research-computer": { science4: 100 },
     "research-uranium": { science5: 500 },
     "research-constructor": { science1: 5 },
     "research-miner-mk1": { science1: 30 },
@@ -568,6 +569,7 @@ const recipes: Recipes = {
     "research-science-3": { science2: 300, plastic: 50, "basic-circuit": 50 },
     "research-science-4": { science3: 400, "advanced-circuit": 100 },
     "research-science-5": { science4: 500, aluminum: 500, computer: 50 },
+    "research-science-6": { science5: 700, u234: 1500, computer: 50 },
 
     "boost-lumberjack": { money: 100 },
     "boost-miner-mk1": { money: 100 },

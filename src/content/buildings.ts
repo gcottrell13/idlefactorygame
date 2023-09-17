@@ -201,6 +201,7 @@ const requiredBuildings: {
     "research-science-3": ["by-hand"],
     "research-science-4": ["by-hand"],
     "research-science-5": ["by-hand"],
+    "research-science-6": ["by-hand"],
 
     "research-box2": ["by-hand"],
     "research-box3": ["by-hand"],

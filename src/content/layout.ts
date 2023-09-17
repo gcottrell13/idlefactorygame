@@ -263,9 +263,9 @@ const sections: Sections = [
                 Items: [
                     "science4",
                     "research-studonite",
-                    "research-aluminum",
-                    "research-adamantium-drill",
                     "research-computer",
+                    "research-adamantium-drill",
+                    "research-aluminum",
                     "research-science-5",
                 ],
             },
@@ -294,7 +294,7 @@ const sections: Sections = [
             },
             {
                 Name: "Research",
-                Items: ["science5", "research-uranium"],
+                Items: ["science5", "research-uranium", "research-science-6"],
             },
         ],
     },

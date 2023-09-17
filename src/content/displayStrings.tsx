@@ -213,6 +213,14 @@ const flavorText: partialItems<React.ReactNode> = {
     money: "Cash Money",
     bank: "Do you really need all this money?",
 
+    science0: "Science 0",
+    science1: "Science 1",
+    science2: "Science 2",
+    science3: "Science 3",
+    science4: "Science 4",
+    science5: "Science 5",
+    science6: "The 6th Science",
+
     "boost-lumberjack": "Increase Lumberjack speed by 2x",
     "boost-miner-mk1": "Increase Miner Mark 1 speed by 2x",
     "boost-constructor": "Increase Constructor speed by 2x",

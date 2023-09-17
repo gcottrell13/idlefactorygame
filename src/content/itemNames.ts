@@ -184,6 +184,7 @@ export type Items =
     // create wizard degree with wizard power
     // consume things to make wizard power
 
+    | "research-science-6"
     | "science6"
     | "telescope"
     | "wizard-essence"
