@@ -49,7 +49,7 @@ export function App({ ticksPerSecond }: Props) {
             currentClickAmount,
             howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
             state.calculateStorage(itemName) - n,
-            GAME.maxCraftAtATime(itemName),
+            GAME.maxCraftAtATime(itemName, state),
         );
     }
 

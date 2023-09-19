@@ -283,6 +283,7 @@ export function useProduction(ticksPerSecond: number) {
 
         if (GAME.hideOnBuy(itemName)) {
             markVisibility(itemName, false);
+            stateRef.current.assemblers[itemName] = {};
         }
     }, []);
 
@@ -389,14 +390,22 @@ export function useProduction(ticksPerSecond: number) {
         updateUI();
     };
     const clearVisibles = () => {
-        const {timeUnlockedAt, acknowledged} = stateRef.current;
         stateRef.current.visible = {};
+        const {
+            timeUnlockedAt, 
+            acknowledged, 
+            assemblers,
+            visible,
+        } = stateRef.current;
         checkVisible(stateRef.current);
         hideTheHideOnBuyItems(stateRef.current);
         keys(timeUnlockedAt).forEach(itemName => {
-            if (stateRef.current.visible[itemName] === undefined) {
+            if (visible[itemName] === undefined) {
                 delete timeUnlockedAt[itemName];
                 delete acknowledged[itemName];
+            }
+            if (visible[itemName] === false) {
+                delete assemblers[itemName];
             }
         });
     };

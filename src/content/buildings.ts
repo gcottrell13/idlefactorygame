@@ -30,6 +30,7 @@ const assemblerSpeeds = {
     "arcane-wizard": 1.0,
     "wizard-orb": 2.0,
     "bank": 1.0,
+    "desktop-computer": 1,
 } satisfies partialItems<number>;
 
 export type Buildings = keyof typeof assemblerSpeeds;
@@ -57,13 +58,14 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     lumberjack: { food: 0.05 },
     "wind-turbine": {},
     "coal-power": { coal: 1 },
-    "nuclear-reactor": { "nuclear-fuel": 1 },
+    "nuclear-reactor": { "nuclear-fuel": 0.1 },
     hydroponics: { electricity: 1, fertilizer: 1, "clean-water": 1 },
     "arcane-wizard": { "powerful-mana": 1 },
     "fire-wizard": { "powerful-mana": 1 },
     "necro-wizard": { "powerful-mana": 1 },
     "wizard-orb": { "powerful-mana": 1, },
     "bank": { "gold": 0.25 },
+    "desktop-computer": { electricity: 1 },
 } satisfies {
         [p in Buildings]: partialItems<number>;
     };
@@ -101,6 +103,8 @@ const buildingBoosts: { [p in Buildings]?: Items } = {
     "arcane-wizard": "boost-wizard",
     "necro-wizard": "boost-wizard",
     "wizard-orb": "boost-wizard",
+    "bank": "boost-bank",
+    "desktop-computer": "boost-desktop-computer",
 };
 
 // keys are the items that do the boosting, not the building.
@@ -142,7 +146,7 @@ const requiredBuildings: {
     "nuclear-reactor": ["manufacturer"],
 
     money: ["by-hand", "bank"],
-    "research-car": ["by-hand"],
+    "research-car": ["desktop-computer"],
     "research-marg": ["by-hand"],
     science6: ["by-hand"],
 
@@ -195,6 +199,8 @@ const requiredBuildings: {
     "boost-greenhouse": ["by-hand"],
     "boost-manufacturer": ["by-hand"],
     "boost-constructor": ["by-hand"],
+    "boost-bank": ["by-hand"],
+    "boost-desktop-computer": ["by-hand"],
 
     "research-science-1": ["by-hand"],
     "research-science-2": ["by-hand"],
@@ -220,7 +226,7 @@ const requiredBuildings: {
     science2: ["by-hand", "assembler"],
     science3: ["assembler"],
     science4: ["manufacturer"],
-    science5: ["manufacturer"],
+    science5: ["desktop-computer"],
     seed: ["by-hand"],
     u235: ["centrifuge"],
     centrifuge: ["manufacturer"],
@@ -294,6 +300,8 @@ const requiredBuildings: {
     box5: ["constructer"],
     tank: ["by-hand", "assembler"],
 
+    "desk": ["by-hand"],
+    "desktop-computer": ["by-hand"],
     "anti-grav-thruster": ["manufacturer"],
     "car-chassis": ["manufacturer"],
     "car-engine": ["manufacturer"],
@@ -317,17 +325,16 @@ const requiredBuildings: {
     "raw-mana": ["by-hand", "wizard-orb"],
     "refined-mana": ["by-hand", "wizard-orb"],
     "powerful-mana": ["by-hand", "wizard-orb"],
-    "mystical-catalyst": ["by-hand"],
 
     "arcane-wizard": ["by-hand", "wizard-orb"],
     "fire-wizard": ["by-hand", "wizard-orb"],
     "necro-wizard": ["by-hand", "wizard-orb"],
 
     "boost-wizard": ["by-hand"],
-    "wizard-degree": ["by-hand"],
-    "wizard-essence": ["by-hand"],
+    "wizard-degree": ["by-hand", "wizard-orb"],
+    "wizard-essence": ["by-hand", "wizard-orb"],
     "wizard-orb": ["by-hand"],
-    "wizard-paragon": ["by-hand"],
+    "wizard-paragon": ["by-hand", "wizard-orb"],
     "wizard-power": [],
 
     'consume-arcane-wizard': ["by-hand", "wizard-orb"],

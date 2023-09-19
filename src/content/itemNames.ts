@@ -148,6 +148,8 @@ export type Items =
     | "boost-greenhouse"
     | "boost-manufacturer"
     | "boost-constructor"
+    | "boost-bank"
+    | "boost-desktop-computer"
 
     // convert gold to money
     | "bank"
@@ -162,6 +164,8 @@ export type Items =
     // make some cars to win.
     // some ingredients are also required to make explorers
     | "research-car"
+    | "desk"
+    | "desktop-computer"
     | "car-engine"
     | "engine-block"
     | "engine-electronics"
@@ -180,7 +184,7 @@ export type Items =
     // spend money to buy wizards
     // wizards make wizard-pop
     // create mana
-    // each tier of mana requires 2 of the previous + mystical catalyst
+    // each tier of mana requires 2 of the previous
     // create wizard degree with wizard power
     // consume things to make wizard power
 
@@ -191,7 +195,6 @@ export type Items =
     | "raw-mana"
     | "refined-mana"
     | "powerful-mana"
-    | "mystical-catalyst"
     | "wizard-orb"
     | "research-wizard-tower"
     | "wizard-paragon"

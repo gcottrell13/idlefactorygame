@@ -40,6 +40,7 @@ const storageSizes = {
     "necro-wizard": 0,
     "wizard-orb": 0,
     "bank": 0,
+    "desktop-computer": 0,
 } satisfies partialItems<number> & { [p in Buildings]: number };
 
 // these items impose a limit on how much we can have.

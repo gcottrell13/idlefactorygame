@@ -57,7 +57,7 @@ export function consumeMaterials(
     const scale = itemName ? bigToNum(scaleBigInt(recipeCount, Math.pow(
         GAME.recipeScaleFactor[itemName],
         bigToNum(amountWeHave[itemName] ?? 0n),
-    ))) : 1;
+    ))) : bigToNum(recipeCount);
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;

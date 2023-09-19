@@ -9,7 +9,7 @@ const powers: {[p: number]: string} = {
     2: 'M',
     3: 'B',
     4: 'T',
-    5: 'Qu',
+    5: 'Qa',
     6: 'Qi',
     7: 'Sx',
     8: 'Sp',

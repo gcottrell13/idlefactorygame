@@ -17,6 +17,9 @@ const byHandVerbs: partialItems<string> = {
     "arcane-wizard": "Hire",
 
     "wizard-orb": "ponder",
+
+    "research-car": "Order Online",
+    "desktop-computer": "set up",
 };
 
 const displayNames: partialItems<string> = {
@@ -31,6 +34,9 @@ const displayNames: partialItems<string> = {
     money: "Money",
 
     electricity: "Electricity",
+
+    desk: "Desk",
+    "desktop-computer": "Desktop Computer",
 
     "small-battery": "Small Battery",
     "research-small-battery": "Tech: Electricity",
@@ -86,7 +92,7 @@ const displayNames: partialItems<string> = {
     "research-woodcutting": "Tech: Wood",
     "research-metal": "Tech: Metals",
     "research-marg": "Tech: Marg",
-    "research-car": "Tech: Car",
+    "research-car": "Car Parts Assembly Manual",
 
     "rock-crusher": "Rock Crusher",
     adamantium: "Adamantium",
@@ -102,6 +108,7 @@ const displayNames: partialItems<string> = {
     "research-science-2": "Tech: Science 2",
     "research-science-4": "Tech: Science 4",
     "research-science-5": "Tech: Science 5",
+    "research-science-6": "Tech: Science 6",
     "research-box2": "Tech: Box of a Bigger Size 1",
     "research-box3": "Tech: Box of a Bigger Size 2",
     "research-box4": "Tech: Box of a Bigger Size 3",
@@ -167,6 +174,8 @@ const displayNames: partialItems<string> = {
     "boost-greenhouse": "Boost: Greener Greenhouse",
     "boost-manufacturer": "Boost: Manufacturer",
     "boost-wizard": "Boost: Pointer Hats",
+    "boost-bank": "Boost: Faster Bean Counters",
+    "boost-desktop-computer": "Boost: Faster Internet",
 
     "anti-grav-thruster": "Anti-Grav Thruster",
     "arcane-wizard": "Arcane Wizard",
@@ -182,7 +191,6 @@ const displayNames: partialItems<string> = {
     "fire-wizard": "Fire Wizard",
     "lime-juice": "Lime Juice",
     "margarita": "Margarita",
-    "mystical-catalyst": "Mystical Catalyst",
     "necro-wizard": "Necromancer",
     "powerful-mana": "Powerful Mana",
     "raw-mana": "Raw Mana",
@@ -219,7 +227,8 @@ const flavorText: partialItems<React.ReactNode> = {
     science3: "Science 3",
     science4: "Science 4",
     science5: "Science 5",
-    science6: "The 6th Science",
+    science6: <span>The 6th Science.<br/>Allows you to see dead people.</span>,
+    "research-science-6": "Something strange is happening...",
 
     "boost-lumberjack": "Increase Lumberjack speed by 2x",
     "boost-miner-mk1": "Increase Miner Mark 1 speed by 2x",

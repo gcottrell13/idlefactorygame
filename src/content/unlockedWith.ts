@@ -20,7 +20,6 @@ const unlockedWith: partialItems<Items[]> = {
     "lime-juice": ["research-marg"],
 
     "raw-mana": ["research-wizard-tower"],
-    "mystical-catalyst": ["research-wizard-tower"],
     "wizard-orb": ["research-wizard-tower"],
     "arcane-wizard": ["research-wizard-tower"],
     "fire-wizard": ["research-wizard-tower"],
@@ -32,6 +31,7 @@ const unlockedWith: partialItems<Items[]> = {
 
     money: ["research-money"],
     bank: ["research-money"],
+
 
     "engine-block": ["research-car"],
     "engine-electronics": ["research-car"],
@@ -59,6 +59,7 @@ const unlockedWith: partialItems<Items[]> = {
     "boost-greenhouse": ["greenhouse", "money"],
     "boost-manufacturer": ["manufacturer", "money"],
     "boost-constructor": ["constructer", "money"],
+    "boost-desktop-computer": ["desktop-computer"],
 
     "iron-node": ["research-metal"],
     "copper-node": ["research-metal"],
@@ -101,6 +102,7 @@ const unlockedWith: partialItems<Items[]> = {
     science3: ["research-science-3"],
     science4: ["research-science-4"],
     science5: ["research-science-5"],
+    science6: ["research-science-6"],
 
     box: ["research-box"],
     "box-box": ["research-box2"],

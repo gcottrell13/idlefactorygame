@@ -64,7 +64,7 @@ export function ItemDisplay({
         currentClickAmount,
         howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
         state.calculateStorage(itemName) - amt,
-        GAME.maxCraftAtATime(itemName),
+        GAME.maxCraftAtATime(itemName, state),
     );
 
     const recipeDisabled = state.disabledRecipes[itemName] === true;
@@ -117,6 +117,8 @@ export function ItemDisplay({
                 </td>
                 <td>
                     <Sprite name={name} />
+                </td>
+                <td>
                     {GAME.displayNames(name)}
                 </td>
                 <td>
@@ -212,7 +214,7 @@ export function ItemDisplay({
                 <Popover.Body>
                     producing: {d(producingRate)}/s
                     <br />
-                    consumed: {d(othersConsumingRate)}/s 
+                    consumed: {d(othersConsumingRate)}/s
                     <span className={'rate-per'}>
                         (max {d(maxConsumptionRates[itemName])}/s)
                     </span>
@@ -245,11 +247,17 @@ export function ItemDisplay({
     );
 
     const unlockedAt = formatSeconds(state.timeUnlockedAt[itemName] ?? 0);
+    const costScale = GAME.recipeScaleFactor[itemName];
+
+    const boostedBy = GAME.buildingBoosts[itemName];
 
     const parts = [
         GAME.flavorText[itemName] && <div>{GAME.flavorText[itemName]}</div>,
         madeIn.length > 0 && (
             <div className={"made-in"}>Made with: {madeIn.join(", ")}</div>
+        ),
+        costScale !== 1 && (
+            <div>Cost scales {costScale}x per item owned</div>
         ),
         formatIngredients.length > 0 && (
             <div className={"ingredient-list"}>
@@ -289,6 +297,9 @@ export function ItemDisplay({
                 Byproduct of: {byproductOf.join(", ")}
             </div>
         ),
+        boostedBy && (
+            <div>Boosted by: <Sprite name={boostedBy} /> {GAME.displayNames(boostedBy)}</div>
+        ),
         unlocks.length > 0 && (
             <div className={"unlock-list"}>
                 <b>Unlocks:</b> {unlocks.join(", ")}
@@ -327,25 +338,30 @@ export function ItemDisplay({
             <div className={"new-badge"}>
                 <ByHandButton
                     itemName={itemName}
-                    count={bigToNum(canMakeByHand)}
+                    count={canMakeByHand}
                     makeByHand={makeByHand}
                 />
             </div>
             <div className={"item-name-container"}>
                 <OverlayTrigger placement="right" overlay={tooltip}>
-                    <span>
-                        <Sprite name={itemName} />
-                        &nbsp;
-                        <span className="item-name">
-                            {GAME.displayNames(itemName)}
-                        </span>
-                        {isNew && (
-                            <Badge className={"new-item-badge"}>New</Badge>
-                        )}
-                        {recipeDisabled ? (
-                            <Badge bg={"danger"}>DISABLED</Badge>
-                        ) : null}
-                    </span>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td><Sprite name={itemName} /></td>
+                                <td>
+                                    <span className="item-name">
+                                        {GAME.displayNames(itemName)}
+                                    </span>
+                                    {isNew && (
+                                        <Badge className={"new-item-badge"}>New</Badge>
+                                    )}
+                                    {recipeDisabled ? (
+                                        <Badge bg={"danger"}>DISABLED</Badge>
+                                    ) : null}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </OverlayTrigger>
             </div>
             <div className={"rate-container"}>
@@ -382,7 +398,7 @@ export function ItemDisplay({
 interface ByHandButtonProps {
     makeByHand: false | null | (() => void);
     itemName: Items;
-    count: number;
+    count: bigint;
 }
 
 function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
@@ -407,7 +423,7 @@ function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
             onMouseLeave={() => clearInterval(intervalId)}
             disabled={makeByHand === false}
         >
-            {GAME.byHandVerbs[itemName]} {count > 1 ? Math.floor(count) : ""}
+            {GAME.byHandVerbs[itemName]} {count > 1 ? d(count) : ""}
         </Button>
     );
 }

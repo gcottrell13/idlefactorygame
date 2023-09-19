@@ -1,16 +1,17 @@
 import _ from "lodash";
-import { SMap, keys, mapPairs, mapValues, values } from "./smap";
+import { keys, mapPairs, mapValues, values } from "./smap";
 import { Items, itemsMap, partialItems } from "./content/itemNames";
-import buildings, { Buildings } from "./content/buildings";
+import buildings from "./content/buildings";
 import byproducts from "./content/byproducts";
 import displayStrings from "./content/displayStrings";
 import hideOnBuy from "./content/hideOnBuy";
-import recipeValues, { Recipe } from "./content/recipeValues";
+import recipeValues from "./content/recipeValues";
 import storage from "./content/storage";
 import layout from "./content/layout";
 import unlockedWith from "./content/unlockedWith";
 import maxCraft from "./content/maxCraft";
-import { NumToBig, SCALE, SCALE_N, bigToNum, bigpow } from "./bigmath";
+import { NumToBig, SCALE, bigToNum, bigpow } from "./bigmath";
+import { State } from "./typeDefs/State";
 
 const byproductRatesPerSecond: partialItems<partialItems<number>> = {};
 const recipesConsumingThis: partialItems<Items[]> = {};
@@ -66,8 +67,13 @@ const ex = {
      */
     makesAsASideProduct: (item: Items) => makesAsASideProduct[item],
 
-    maxCraftAtATime: (item: Items) =>
-        maxCraft.maxCraftAtATime[item] ?? maxCraft.ABSOLUTE_MAX_CRAFT,
+    maxCraftAtATime: (item: Items, state: State) => {
+        const max = maxCraft.maxCraftAtATime[item] ?? maxCraft.ABSOLUTE_MAX_CRAFT;
+        if (typeof max === 'bigint') {
+            return max;
+        }
+        return max(ex, state);
+    },
 
     flavorText: displayStrings.flavorText,
     byproductRatesPerSecond: fillWithDefault(byproductRatesPerSecond, () => ({})),
@@ -135,4 +141,6 @@ const makesAsASideProduct = mapValues(recipeValues.recipes, (_, item) => {
     );
 });
 
+
+export type GAMEVALUES = typeof ex;
 export default ex;

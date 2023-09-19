@@ -29,6 +29,7 @@ type allowedRecipeTimes =
     | 60
     | 75
     | 100
+    | 3600
     | 31536000;
 
 const timePerRecipe: itemsMap<allowedRecipeTimes> = {
@@ -78,6 +79,8 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "boost-greenhouse": 10,
     "boost-manufacturer": 10,
     "boost-constructor": 10,
+    "boost-bank": 1,
+    "boost-desktop-computer": 1,
 
     //region : science 0 -----------------------------------------------------------------
     //                           ___
@@ -338,7 +341,6 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "engine-electronics": 10,
     "fire-wizard": 5,
     "lime-juice": 1,
-    "mystical-catalyst": 1,
     "necro-wizard": 5,
     "powerful-mana": 1,
     "raw-mana": 1,
@@ -348,7 +350,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "spark-plug": 1,
     "steering-wheel": 2,
     "wizard-degree": 1,
-    "wizard-essence": 1,
+    "wizard-essence": 0.5,
     "wizard-orb": 1,
     "wizard-paragon": 100,
     "wizard-pop": 1,
@@ -361,8 +363,10 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     telescope: 1,
     tequila: 1,
     "research-the-end": 1,
-    "research-car": 1,
+    "research-car": 3600,
     "research-marg": 1,
+    "desk": 1,
+    "desktop-computer": 1,
     science6: 1,
 };
 
@@ -478,6 +482,8 @@ const recipes: Recipes = {
     explorer: { steel: 10, "basic-circuit": 8 },
 
     "research-car": { "science5": 100 },
+    "desk": { "wood": 10 },
+    "desktop-computer": { "desk": 1, "computer": 4, "plastic": 10, "copper-wire": 10 },
     "engine-block": { steel: 10 },
     "car-engine": { "engine-block": 1, "engine-electronics": 5, "crank-shaft": 1, "spark-plug": 7, "piston": 7 },
     "car": { "car-chassis": 1, "car-engine": 1, "chair": 2, "steering-wheel": 1, "anti-grav-thruster": 1 },
@@ -496,9 +502,8 @@ const recipes: Recipes = {
     "arcane-wizard": { money: 90 },
     "necro-wizard": { money: 95 },
     "raw-mana": {},
-    "refined-mana": { "raw-mana": 2, "mystical-catalyst": 1 },
-    "mystical-catalyst": {},
-    "powerful-mana": { "refined-mana": 2, "mystical-catalyst": 1 },
+    "refined-mana": { "raw-mana": 2 },
+    "powerful-mana": { "refined-mana": 2 },
     "wizard-degree": { "wizard-power": 100 },
     "wizard-power": {},
     "wizard-pop": {},
@@ -506,11 +511,11 @@ const recipes: Recipes = {
     "consume-fire-wizard": { "fire-wizard": 100 },
     "consume-necro-wizard": { "necro-wizard": 100 },
     "consume-wizard-pop": { "wizard-pop": 180 },
-    "wizard-essence": { "arcane-wizard": 1, "fire-wizard": 1, "necro-wizard": 1 },
+    "wizard-essence": {},
     "wizard-orb": { glass: 100 },
     "wizard-paragon": { "wizard-degree": 100 },
 
-    bank: { wood: 100 },
+    bank: { money: 100 },
 
     "research-marg": { "greenhouse": 10, "science5": 10 },
     "lime-juice": { fertilizer: 1 },
@@ -589,6 +594,8 @@ const recipes: Recipes = {
     "boost-manufacturer": { money: 100 },
     "boost-constructor": { money: 100 },
     "boost-wizard": { "wizard-essence": 100 },
+    "boost-bank": { money: 100, bank: 1 },
+    "boost-desktop-computer": { "copper-wire": 42, "money": 10 },
 
     "research-box": { science1: 1 },
     "research-box2": { science1: 1, box: 10 },
@@ -600,24 +607,26 @@ const recipes: Recipes = {
 const recipeScaleFactor: partialItems<number> = {
     // default 1.0
 
-    "boost-lumberjack": 100,
-    "boost-miner-mk1": 100,
-    "boost-chemical-plant": 100,
-    "boost-adamantium-drill": 100,
-    "boost-gas-extractor": 100,
-    "boost-lumberjack-school": 100,
-    "boost-oil-pump": 100,
-    "boost-rock-crusher": 100,
-    "boost-smelter-mk1": 100,
-    "boost-smelter-mk2": 100,
-    "boost-assembler": 100,
-    "boost-water-pump": 100,
-    "boost-centrifuge": 100,
-    "boost-explorer": 100,
-    "boost-greenhouse": 100,
-    "boost-manufacturer": 100,
-    "boost-constructor": 100,
-    "boost-wizard": 1.10,
+    "boost-lumberjack": 50,
+    "boost-miner-mk1": 50,
+    "boost-chemical-plant": 50,
+    "boost-adamantium-drill": 50,
+    "boost-gas-extractor": 50,
+    "boost-lumberjack-school": 50,
+    "boost-oil-pump": 50,
+    "boost-rock-crusher": 50,
+    "boost-smelter-mk1": 50,
+    "boost-smelter-mk2": 50,
+    "boost-assembler": 50,
+    "boost-water-pump": 50,
+    "boost-centrifuge": 50,
+    "boost-explorer": 50,
+    "boost-greenhouse": 50,
+    "boost-manufacturer": 50,
+    "boost-constructor": 50,
+    "boost-bank": 100,
+    "boost-desktop-computer": 2,
+    "boost-wizard": 5,
 
     "wizard-degree": 1.01,
     "consume-necro-wizard": 1.01,

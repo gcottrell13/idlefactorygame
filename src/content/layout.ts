@@ -48,7 +48,7 @@ const sections: Sections = [
             },
             {
                 Name: "Research",
-                Items: ["research-woodcutting", "research-wizard-tower"],
+                Items: ["research-woodcutting", "research-wizard-tower", "science6"],
             },
         ],
     },
@@ -101,6 +101,9 @@ const sections: Sections = [
                     "boost-greenhouse",
                     "boost-manufacturer",
                     "boost-wizard",
+                    "boost-bank",
+                    "boost-desktop-computer",
+                    "desk",
                 ],
             },
         ],
@@ -256,7 +259,7 @@ const sections: Sections = [
             },
             {
                 Name: "High-Tech Materials",
-                Items: ["adamantium-frame", "computer"],
+                Items: ["adamantium-frame", "computer", "desktop-computer"],
             },
             {
                 Name: "Research",
@@ -276,7 +279,7 @@ const sections: Sections = [
         ],
     },
     {
-        Name: "Tier 5",
+        Name: "Uranium",
         SubSections: [
             {
                 Name: "Uranium",
@@ -360,7 +363,7 @@ const sections: Sections = [
             },
             {
                 Name: "Mana",
-                Items: ["raw-mana", "refined-mana", "powerful-mana", "wizard-orb", "mystical-catalyst", "wizard-essence"],
+                Items: ["raw-mana", "refined-mana", "powerful-mana", "wizard-orb", "wizard-essence"],
             },
             {
                 Name: "Wizard Products",
