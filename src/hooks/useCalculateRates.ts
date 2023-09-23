@@ -3,7 +3,7 @@ import { Items, partialItems } from "../content/itemNames";
 import { mapPairs, keys, fromPairs } from "../smap";
 import { PRODUCTION_OUTPUT_BLOCKED, State } from "../typeDefs/State";
 import GAME from "../values";
-import { bigSum, bigToNum, scaleBigInt } from "../bigmath";
+import { bigMul, bigSum, bigToNum, scaleBigInt } from "../bigmath";
 
 export function useCalculateRates(state: State, itemFilter: Items[]) {
     const effectiveProductionRates: partialItems<partialItems<bigint>> = {};
@@ -21,11 +21,10 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
      * [what's being consumed][the building]
      */
     const powerConsumptionRates: partialItems<
-        partialItems<[count: number, total: number, consumption: bigint]>
+        partialItems<[count: bigint, total: bigint, consumption: bigint]>
     > = {};
 
-    const { assemblers, disabledRecipes, productionProgress, productionState } =
-        state;
+    const { assemblers, disabledRecipes, productionState } = state;
 
     function assemblerStuck(itemName: Items, assembler: Items) {
         return (
@@ -82,17 +81,17 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
 
     function addAssemblerPowerConsumption(
         assemblerName: Items,
-        count: number,
+        count: bigint,
         recipeName: Items,
     ) {
         const power = GAME.buildingPowerRequirementsPerSecond[assemblerName];
         const counted = !assemblerIsStuckOrDisabled(recipeName, assemblerName);
         mapPairs(power, (requiredCount, ingredient) => {
             (powerConsumptionRates[ingredient] ??= {})[assemblerName] ??= [
-                0, 0, 0n,
+                0n, 0n, 0n,
             ];
             const k = powerConsumptionRates[ingredient]![assemblerName]!;
-            const q = scaleBigInt(requiredCount, count);
+            const q = bigMul(requiredCount, count);
             addToMaxRate(ingredient, q);
 
             k[1] += count;
@@ -107,7 +106,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
             addAssemblerPowerConsumption(
                 assemblerName,
-                bigToNum(assemblerCount),
+                assemblerCount,
                 itemName,
             );
         });

@@ -26,7 +26,7 @@ import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
-import { REALLY_BIG, SCALE_N, bigMin, bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
+import { REALLY_BIG, SCALE_N, bigMin, bigMul, bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
 
 type func = () => void;
 
@@ -113,7 +113,7 @@ export function ItemDisplay({
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
-                    {d(scaleBigInt(count, GAME.calculateRecipeScale(itemName, amt)))}
+                    {d(bigMul(count, GAME.calculateRecipeScale(itemName, amt)))}
                 </td>
                 <td>
                     <Sprite name={name} />
@@ -190,7 +190,7 @@ export function ItemDisplay({
                         </td>
                         <td>({d(consumption)}/s)</td>
                         <td className={color}>
-                            {count} / {total}
+                            {d(count)} / {d(total)}
                         </td>
                     </tr>
                 );

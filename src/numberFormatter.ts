@@ -1,21 +1,8 @@
-import { NumToBig, SCALE, SCALE_N, bigToNum } from "./bigmath";
+import _ from "lodash";
+import { NumToBig, SCALE, SCALE_N, bigToNum, REALLY_BIG, bigpow, scaleBigInt } from "./bigmath";
 
 
 const scale_exp = SCALE_N.toString().length;
-
-const powers: {[p: number]: string} = {
-    0: '',
-    1: 'K',
-    2: 'M',
-    3: 'B',
-    4: 'T',
-    5: 'Qa',
-    6: 'Qi',
-    7: 'Sx',
-    8: 'Sp',
-    9: 'Oc',
-    10: 'N',
-}
 
 export function formatNumber(n: number | bigint | null | undefined) {
     if (!n) {
@@ -38,13 +25,10 @@ export function formatNumber(n: number | bigint | null | undefined) {
         const minorExp = exp % 3;
 
         const r = (parseInt(rep.substring(0, minorExp + 3)) / 100).toFixed(2);
-        if (powers[majorExp] !== undefined) {
-            return r + ' ' + powers[majorExp];
-        }
-        return r + ' ' + powers_over_100(exp) + powers_under_30(exp) + powers_under_100(exp);
+        return r + ' ' + (bigExponents[majorExp] ?? `e${exp}`);
     }
-    
-    if (typeof n === 'bigint')  {
+
+    if (typeof n === 'bigint') {
         n = bigToNum(n);
     }
     let value = n.toFixed(2);
@@ -72,47 +56,89 @@ export function formatSeconds(n: number) {
 }
 
 
-function powers_under_30(exp: number) {
-    return {
-        0: '',
-        1: 'U',
-        2: 'D',
-        3: 'T',
-        4: 'Qa',
-        5: 'Qi',
-        6: 'Sx',
-        7: 'St',
-        8: 'Oc',
-        9: 'N',
-    }[Math.floor(exp / 3) % 10];
-}
+const under30 = [
+    '',
+    'K',
+    'M',
+    'B',
+    'T',
+    'Qa',
+    'Qi',
+    'Sx',
+    'Sp',
+    'Oc',
+    'N',
+];
+const firstOrder = [
+    '',
+    'U',
+    'D',
+    'T',
+    'Q',
+    'Qi',
+    'Sx',
+    'St',
+    'Oc',
+    'N',
+];
 
-function powers_under_100(exp: number) {
-    return {
-        0: '',
-        1: 'Dc',
-        2: 'Vi',
-        3: 'Tr',
-        4: 'Ta',
-        5: 'Qui',
-        6: 'Sxt',
-        7: 'Stt',
-        8: 'Oct',
-        9: 'Nc',
-    }[Math.floor(exp / 30) % 10];
-}
+const secondOrder = [
+    'Dc',
+    'Vi',
+    'Tr',
+    'Ta',
+    'Qui',
+    'Sxt',
+    'Stt',
+    'Oct',
+    'Nc',
+];
 
-function powers_over_100(exp: number) {
-    return {
-        0: '',
-        1: 'Ct',
-        2: 'VoiceChat',
-        3: 'TwitchStream',
-        4: 'QuantumTunnel',
-        5: 'QuickMart',
-        6: 'Sextant',
-        7: 'Stilts',
-        8: 'Octal',
-        9: 'Nonnonun',
-    }[Math.floor(exp / 300) % 10];
+const thirdOrder = [
+    '',
+    'Ct',
+    'Vc',
+    'Tc',
+    'Qc',
+    'Qmc',
+    'Sic',
+    'Stc',
+    'Occ',
+    'Ntc',
+];
+
+
+const crossproduct = _.flatMapDeep(thirdOrder.map(third => {
+    const s = secondOrder.map(second => {
+        return firstOrder.map(first => {
+            return `${third}${first}${second}`;
+        });
+    });
+    return ['Ct', ...s];
+}));
+const bigExponents = _.concat(under30, crossproduct);
+
+const bigLookup = _.fromPairs(bigExponents.map((exp, i) => {
+    return [exp, i];
+}));
+
+((document as any).game ??= {}).REALLY_BIG_FORMATTED = formatNumber(REALLY_BIG);
+((document as any).game ??= {}).bigExponents = bigExponents;
+
+export function parseFormat(str: string): bigint {
+    let [mantissaStr, exp] = str.split(' ');
+    const mantissa = parseFloat(mantissaStr);
+
+    function scale(exponent: string | number) {
+        if (typeof exponent === 'string') exponent = parseInt(exponent);
+        const power = 10n ** BigInt(exponent);
+        return scaleBigInt(power, mantissa) * SCALE_N;
+    }
+
+    const power = bigLookup[exp] ?? -1;
+
+    if (power == -1)
+        throw new Error(`unable to parse ${str}`);
+
+    return scale(power * 3);
 }

@@ -112,19 +112,8 @@ const buildingBoostTiers: { [p in Items]?: number[] } = {
 
 };
 
-const defaultBuildingBoostTiers: number[] = [
-    2 ** 0,
-    2 ** 1,
-    2 ** 2,
-    2 ** 3,
-    2 ** 4,
-    2 ** 5,
-    2 ** 6,
-    2 ** 7,
-    2 ** 8,
-    2 ** 9,
-    2 ** 10,
-];
+const defaultBuildingBoostTiers: number[] = Array(20).map((v, i) => 2 ** i);
+
 
 const requiredBuildings: {
     [p in Items]: (Buildings | "by-hand")[];

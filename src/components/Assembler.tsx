@@ -16,7 +16,7 @@ import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
-import { NumToBig, SCALE_N, bigToNum } from "../bigmath";
+import { NumToBig, SCALE_N, bigGt, bigToNum, scaleBigInt } from "../bigmath";
 import { PRODUCTION_SCALE, PRODUCTION_SCALE_N } from "../hooks/useSimulation";
 
 type Props = {
@@ -45,7 +45,7 @@ export function Assembler({
     const [progressDisplay, setProgressDisplay] = useState(progress);
     const knownActualProgress = useRef(progress);
 
-    const progressDisplayNumber = bigToNum(progressDisplay / PRODUCTION_SCALE_N);
+    const progressDisplayNumber = bigToNum(progressDisplay) / PRODUCTION_SCALE;
 
     const baseCraftTime = GAME.timePerRecipe[itemName];
     // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
@@ -57,7 +57,7 @@ export function Assembler({
     if (boost) {
         speedPer *= GAME.calculateBoost(boost, state.amountThatWeHave[boost]);
     }
-    const totalSpeed = speedPer * bigToNum(no);
+    const totalSpeed = scaleBigInt(no, speedPer);
 
     let label = (
         <span className={"assembler-count"}>
@@ -70,7 +70,7 @@ export function Assembler({
         </span>
     );
     let stateDisplay: JSX.Element | null = null;
-    const updateSpeed = Math.min(20, Math.max(4, 4 * totalSpeed));
+    const updateSpeed = bigGt(totalSpeed, 20) ? 20 : bigToNum(totalSpeed) * 4;
 
     if (thisPowerState[assemblerName] === PRODUCTION_NO_POWER) {
         const word = GAME.buildingPowerDisplayWord[assemblerName] ?? "Power";
@@ -135,8 +135,8 @@ export function Assembler({
 
     useEffect(() => {
         if (progressState === PRODUCTION_RUNNING) {
-            if (totalSpeed > 5) {
-                setProgressDisplay(100n);
+            if (bigGt(totalSpeed, 5)) {
+                setProgressDisplay(100n * PRODUCTION_SCALE_N);
                 return;
             }
             const intervalHandle = setTimeout(() => {
@@ -156,8 +156,8 @@ export function Assembler({
                     const l = lastUpdateTimestamp ?? now;
                     const timeDelta = (now - l) / 1000;
                     const newProgress =
-                    progressDisplayNumber + Math.floor(totalSpeed * timeDelta * PRODUCTION_SCALE);
-                    setProgressDisplay(NumToBig(newProgress));
+                    progressDisplay + scaleBigInt(totalSpeed, Math.floor(timeDelta * PRODUCTION_SCALE));
+                    setProgressDisplay(newProgress);
                 }
                 setLastUpdateTimestamp(now);
             }, 1000 / updateSpeed);

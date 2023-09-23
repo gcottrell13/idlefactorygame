@@ -6,23 +6,17 @@ export const SCALE_N = BigInt(SCALE);
 
 
 
-export function bigpow(base: number, power: bigint): number;
+export function bigpow(base: number, power: bigint): bigint;
 export function bigpow(base: bigint, power: bigint): bigint;
-export function bigpow(base: bigint | number, power: bigint): bigint | number {
-    if (typeof base === 'bigint') {
-        return base ** power;
-    }
-    if (base === 1) return base;
-    if (power < Number.MAX_SAFE_INTEGER) {
-        return base ** bigToNum(power);
-    }
+export function bigpow(base: bigint | number, power: bigint): bigint {
+    if (base == 1) return NumToBig(base);
     power /= SCALE_N;
-    let result = 1;
-    while (power > 0n) {
-        result *= base;
-        power--;
+    if (power === 1n) return NumToBig(base);
+    if (typeof base === 'number') {
+        base = NumToBig(base);
     }
-    return result;
+
+    return (base ** power) / (SCALE_N ** (power - 1n));
 }
 
 export function bigMax(...nums: bigint[]): bigint {
@@ -33,6 +27,17 @@ export function bigMax(...nums: bigint[]): bigint {
     return BigInt(max);
 }
 
+export function bigMul(...nums: bigint[]): bigint {
+    let product = 1n;
+    nums.forEach(n => product *= n);
+    return product / (SCALE_N ** BigInt(nums.length - 1));
+}
+
+export function bigDiv(a: bigint, b: bigint): bigint {
+    if (b === 0n) debugger;
+    return a * SCALE_N / b;
+}
+
 export function bigMin(...nums: bigint[]): bigint {
     let min = nums[0];
     nums.forEach(n => {
@@ -41,7 +46,8 @@ export function bigMin(...nums: bigint[]): bigint {
     return BigInt(min);
 }
 
-export function NumToBig(n: number) {
+export function NumToBig(n: number | bigint) {
+    if (typeof n === 'bigint') return n;
     return BigInt(n * SCALE);
 }
 
@@ -63,4 +69,17 @@ export function bigSum(nums: bigint[]) : bigint {
     return sum;
 }
 
-export const REALLY_BIG = bigpow(BigInt(1e10), BigInt(10));
+export const REALLY_BIG = 10n ** 1000n;
+
+export function bigGt(a: bigint, b: number | bigint): boolean {
+    return a > NumToBig(b);
+}
+export function bigGtE(a: bigint, b: number | bigint): boolean {
+    return a >= NumToBig(b);
+}
+export function bigLt(a: bigint, b: number | bigint): boolean {
+    return a < NumToBig(b);
+}
+export function bigLtE(a: bigint, b: number | bigint): boolean {
+    return a <= NumToBig(b);
+}

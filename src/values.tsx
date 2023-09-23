@@ -10,7 +10,7 @@ import storage from "./content/storage";
 import layout from "./content/layout";
 import unlockedWith from "./content/unlockedWith";
 import maxCraft from "./content/maxCraft";
-import { NumToBig, SCALE, bigToNum, bigpow } from "./bigmath";
+import { NumToBig, SCALE, SCALE_N, bigToNum, bigpow } from "./bigmath";
 import { State } from "./typeDefs/State";
 
 const byproductRatesPerSecond: partialItems<partialItems<number>> = {};
@@ -48,7 +48,7 @@ const ex = {
     hideOnBuy: (item: Items): boolean => hideOnBuy.hideOnBuy.includes(item),
     itemsCanBeStoreIn: fillWithDefault(storage.itemsCanBeStoreIn, () => []) as itemsMap<Items[]>,
     recipeScaleFactor: fillWithDefault(recipeValues.recipeScaleFactor, () => 1.0),
-    recipes: recipeValues.recipes as BigIntRecipes,
+    recipes: mapValues(recipeValues.recipes, recipe => mapValues(recipe, v => NumToBig(v))) as BigIntRecipes,
     requiredBuildings: (item: Items): (Items | "by-hand")[] =>
         buildings.requiredBuildings[item] ?? ["by-hand"],
     timePerRecipe: recipeValues.timePerRecipe,
@@ -80,7 +80,10 @@ const ex = {
 
     recipesConsumingThis: fillWithDefault(recipesConsumingThis, () => []),
     MIN_STORAGE: NumToBig(storage.MIN_STORAGE),
-    buildingPowerRequirementsPerSecond: fillWithDefault(buildings.buildingPowerRequirementsPerSecond, () => ({})) as BigIntRecipes,
+    buildingPowerRequirementsPerSecond: fillWithDefault(
+        mapValues(buildings.buildingPowerRequirementsPerSecond, recipe => mapValues(recipe, v => NumToBig(v))), 
+        () => ({}),
+    ) as BigIntRecipes,
 
     buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
     buildingBoostTiers: fillWithDefault(buildings.buildingBoostTiers, () => buildings.defaultBuildingBoostTiers),
@@ -91,8 +94,8 @@ const ex = {
         if (!boost) return 2 ** bigToNum(amount);
         return boost;
     },
-    calculateRecipeScale: (item: Items | undefined, amount: bigint | undefined): number => {
-        if (!item || !amount) return 1;
+    calculateRecipeScale: (item: Items | undefined, amount: bigint | undefined): bigint => {
+        if (!item || !amount) return SCALE_N;
         const scale = ex.recipeScaleFactor[item];
         return bigpow(scale, amount);
     },
@@ -122,14 +125,6 @@ keys(recipeValues.recipes).forEach((item) => {
     const recipe = recipeValues.recipes[item];
     mapPairs(recipe, (count, ingredient) => {
         (recipesConsumingThis[ingredient] ??= []).push(item);
-        ex.recipes[item][ingredient] = NumToBig(count);
-    });
-});
-
-keys(recipeValues.recipes).forEach((buildingName) => {
-    const requirements = buildings.buildingPowerRequirementsPerSecond[buildingName];
-    mapPairs(requirements, (amount, fuelName) => {
-        ex.buildingPowerRequirementsPerSecond[buildingName]![fuelName] = NumToBig(amount);
     });
 });
 

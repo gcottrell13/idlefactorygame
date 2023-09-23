@@ -22,6 +22,7 @@ import {
     howManyRecipesCanBeMade,
 } from "../assembly";
 import { NumToBig, REALLY_BIG, SCALE, SCALE_N, bigMax, bigMin, bigSum, bigToNum, scaleBigInt } from "../bigmath";
+import { parseFormat } from "../numberFormatter";
 
 export const PRODUCTION_SCALE = 10000;
 export const PRODUCTION_SCALE_N = BigInt(PRODUCTION_SCALE);
@@ -380,7 +381,10 @@ export function useProduction(ticksPerSecond: number) {
         updateUI();
     };
 
-    const setAmount = (amount: number | bigint = 1, itemName: Items = "") => {
+    const setAmount = (amount: string | number | bigint = 1, itemName: Items = "") => {
+        if (typeof amount === 'string') {
+            amount = parseFormat(amount);
+        }
         if (typeof amount === 'number') amount = NumToBig(amount);
         stateRef.current.amountThatWeHave[itemName] = amount;
         stateRef.current.visible[itemName] ??= true;
@@ -437,7 +441,7 @@ export function useProduction(ticksPerSecond: number) {
         if (existingStorage.version[0] !== VERSION()[0]) {
             resetAll();
         }
-        (document as any).game = {};
+        (document as any).game ??= {};
         (document as any).game.setAmount = setAmount;
         (document as any).game.clearVisibles = clearVisibles;
         setInterval(() => saveGame(stateRef.current), 10 * 1000);

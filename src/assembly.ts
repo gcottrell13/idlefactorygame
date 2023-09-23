@@ -1,14 +1,10 @@
 import GAME from "./values";
-import { Items, partialItems } from "./content/itemNames";
+import { Items } from "./content/itemNames";
 import _ from "lodash";
 import { SMap, keys, mapPairs } from "./smap";
 import { State } from "./typeDefs/State";
-import { REALLY_BIG, SCALE_N, bigMax, bigMin, bigToNum, scaleBigInt } from "./bigmath";
+import { REALLY_BIG, SCALE_N, bigDiv, bigMax, bigMin, bigMul, bigToNum, bigpow, scaleBigInt } from "./bigmath";
 
-const PRECISION = 1e5;
-export function round(n: number) {
-    return Math.round(n * PRECISION) / PRECISION;
-}
 
 export function checkAmounts(
     amounts: SMap<bigint>,
@@ -33,13 +29,14 @@ export function howManyRecipesCanBeMade(
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
-        const totalRequired = scaleBigInt(requiredCount, scale);
+        const totalRequired = bigMul(requiredCount, scale);
+        // const totalRequired = requiredCount * scale;
         const weHave = amounts[ingredientName] ?? 0;
         if (weHave < totalRequired) {
             numberOfRecipesToMake = 0n;
         } else {
             numberOfRecipesToMake = bigMin(
-                weHave / totalRequired,
+                bigDiv(weHave, totalRequired),
                 numberOfRecipesToMake,
             );
         }
@@ -54,14 +51,14 @@ export function consumeMaterials(
     recipe: SMap<bigint>,
     recipeCount: bigint
 ) {
-    const scale = itemName ? bigToNum(scaleBigInt(recipeCount, Math.pow(
+    const scale = itemName ? bigMul(recipeCount, bigpow(
         GAME.recipeScaleFactor[itemName],
-        bigToNum(amountWeHave[itemName] ?? 0n),
-    ))) : bigToNum(recipeCount);
+        amountWeHave[itemName] ?? 0n,
+    )) : recipeCount;
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
-        const toGrab = scaleBigInt(requiredCount, scale);
+        const toGrab = bigMul(requiredCount, scale);
 
         const weHave = amountWeHave[ingredientName] ?? 0n;
         amountWeHave[ingredientName] = bigMax(0n, weHave - toGrab);
