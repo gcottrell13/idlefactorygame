@@ -23,6 +23,9 @@ import {
 } from "../assembly";
 import { NumToBig, REALLY_BIG, SCALE, SCALE_N, bigMax, bigMin, bigSum, bigToNum, scaleBigInt } from "../bigmath";
 
+export const PRODUCTION_SCALE = 10000;
+export const PRODUCTION_SCALE_N = BigInt(PRODUCTION_SCALE);
+
 export function useProduction(ticksPerSecond: number) {
     const { existingStorage, saveGame, resetGame } = useLocalStorage();
     const stateRef = useRef<State>(existingStorage);
@@ -154,7 +157,7 @@ export function useProduction(ticksPerSecond: number) {
     function getProductionProgress(itemName: Items, assemblerName: Items) {
         const time = ((stateRef.current.productionProgress[itemName] ??= {})[
             assemblerName
-        ] ??= 0);
+        ] ??= 0n);
         const state = ((stateRef.current.productionState[itemName] ??= {})[
             assemblerName
         ] ??= PRODUCTION_NO_INPUT);
@@ -182,16 +185,16 @@ export function useProduction(ticksPerSecond: number) {
                             return;
                         }
 
-                        let amountAddPerTick = bigToNum(scaleBigInt(
+                        let amountAddPerTick = scaleBigInt(
                             assemblerCount,
-                            1000 * GAME.assemblerSpeeds[assemblerName] * timeStep /
+                            PRODUCTION_SCALE * GAME.assemblerSpeeds[assemblerName] * timeStep /
                             GAME.timePerRecipe[itemName]
-                        )) / 1000;
+                        );
 
                         const booster = GAME.buildingBoosts[assemblerName];
                         if (booster) {
                             const amt = amountThatWeHave[booster] ?? 0n;
-                            amountAddPerTick *= GAME.calculateBoost(booster, amt);
+                            amountAddPerTick = scaleBigInt(amountAddPerTick, GAME.calculateBoost(booster, amt));
                         }
 
                         let [time, state] = getProductionProgress(
@@ -199,15 +202,13 @@ export function useProduction(ticksPerSecond: number) {
                             assemblerName,
                         );
 
-                        if (Number.isNaN(time) || time === undefined) time = 0;
-
                         if (!storage[itemName]) storage[itemName] = {};
 
                         // there's probably a better way to organize this code
 
                         if (state === PRODUCTION_OUTPUT_BLOCKED) {
                             if (addToTotal(itemName, NumToBig(1))) {
-                                time = 0;
+                                time = 0n;
                                 state = PRODUCTION_NO_INPUT;
                             } else {
                                 return;
@@ -228,7 +229,7 @@ export function useProduction(ticksPerSecond: number) {
                             );
                             if (!result) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
-                                time = -fps * amountAddPerTick;
+                                time = scaleBigInt(amountAddPerTick, -fps);
                                 state = PRODUCTION_RUNNING;
                             }
                         }
@@ -239,16 +240,12 @@ export function useProduction(ticksPerSecond: number) {
                             }
                             doPowerConsumption(itemName, assemblerName);
 
-                            let t: number = time as any;
-                            t += amountAddPerTick;
-                            time = t;
+                            time += amountAddPerTick;
                             
-                            const amtToProduce = Math.floor(t);
-                            const amountToProduce = NumToBig(amtToProduce);
-                            if (amountToProduce >= SCALE) {
+                            const amountToProduce = time / PRODUCTION_SCALE_N / SCALE_N;
+                            if (amountToProduce >= 1) {
                                 if (addToTotal(itemName, amountToProduce)) {
-                                    t -= amtToProduce;
-                                    time = t;
+                                    time -= amountToProduce * PRODUCTION_SCALE_N;
                                     if (
                                         !consumeMaterialsFromRecipe(
                                             itemName,
@@ -440,8 +437,9 @@ export function useProduction(ticksPerSecond: number) {
         if (existingStorage.version[0] !== VERSION()[0]) {
             resetAll();
         }
-        (document as any).setAmount = setAmount;
-        (document as any).clearVisibles = clearVisibles;
+        (document as any).game = {};
+        (document as any).game.setAmount = setAmount;
+        (document as any).game.clearVisibles = clearVisibles;
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);
 

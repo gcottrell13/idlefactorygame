@@ -46,7 +46,7 @@ export interface State {
     /**
      * [whats being made] [the building making it]
      */
-    productionProgress: partialItems<partialItems<number>>;
+    productionProgress: partialItems<partialItems<bigint>>;
     productionState: partialItems<partialItems<PRODUCTION_STATE>>;
 
     /**

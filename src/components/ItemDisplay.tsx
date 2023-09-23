@@ -63,7 +63,7 @@ export function ItemDisplay({
     const canMakeByHand = bigMin(
         currentClickAmount,
         howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
-        state.calculateStorage(itemName) - amt,
+        ((state.calculateStorage(itemName) - amt) / SCALE_N) * SCALE_N,
         GAME.maxCraftAtATime(itemName, state),
     );
 
@@ -423,7 +423,7 @@ function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
             onMouseLeave={() => clearInterval(intervalId)}
             disabled={makeByHand === false}
         >
-            {GAME.byHandVerbs[itemName]} {count > 1 ? d(count) : ""}
+            {GAME.byHandVerbs[itemName]} {count > SCALE_N ? d(count) : ""}
         </Button>
     );
 }

@@ -108,44 +108,50 @@ export function App({ ticksPerSecond }: Props) {
             const boxButtons: JSX.Element[] = [];
 
             GAME.itemsCanBeStoreIn[itemName].forEach((container) => {
-                if ((amountThatWeHave[container] ?? 0) > 0) {
-                    boxButtons.push(
-                        <Button
-                            className={"add-container"}
-                            key={container}
-                            onClick={() => {
-                                addContainer(
-                                    itemName,
-                                    container,
-                                    currentClickAmount,
-                                );
-                            }}
-                            variant="info"
-                        >
-                            Add {formatNumber(calculateMaxAdd(container))}{" "}
-                            {GAME.displayNames(container)}
-                        </Button>,
-                    );
-                }
+                if (!state.visible[container]) return;
+                const num = calculateMaxAdd(container);
+                const disabled = (amountThatWeHave[container] ?? 0n) < SCALE_N;
+                boxButtons.push(
+                    <Button
+                        className={"add-container"}
+                        key={container}
+                        onClick={() => {
+                            addContainer(
+                                itemName,
+                                container,
+                                currentClickAmount,
+                            );
+                        }}
+                        variant="info"
+                        disabled={disabled}
+                    >
+                        Add {num > 0 ? formatNumber(num) : ''}{" "}
+                        {GAME.displayNames(container)}
+                    </Button>,
+                );
             });
 
-            haveAssemblers.forEach((assemblerName) => {
-                if (buildingsToMakeThis.includes(assemblerName) === false)
-                    return;
+            buildingsToMakeThis.forEach((assemblerName) => {
+                if (assemblerName === 'by-hand') return;
+                if (!state.visible[assemblerName]) return;
+                const a = assemblerName as (typeof haveAssemblers)[0];
+                const haveAny = haveAssemblers.includes(assemblerName as any);
+                const num = calculateMaxAdd(a);
                 assemblerButtons.push(
                     <Button
                         className={"add-assembler"}
                         key={assemblerName}
                         onClick={() => {
                             addAssemblers(
-                                assemblerName,
+                                a,
                                 itemName,
                                 currentClickAmount,
                             );
                         }}
                         variant="secondary"
+                        disabled={!haveAny}
                     >
-                        Add {formatNumber(calculateMaxAdd(assemblerName))}{" "}
+                        Add {num > 0 ? formatNumber(num) : ''}{" "}
                         {GAME.displayNames(assemblerName)}
                     </Button>,
                 );

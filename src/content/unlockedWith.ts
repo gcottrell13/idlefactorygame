@@ -24,6 +24,7 @@ const unlockedWith: partialItems<Items[]> = {
     "arcane-wizard": ["research-wizard-tower"],
     "fire-wizard": ["research-wizard-tower"],
     "necro-wizard": ["research-wizard-tower"],
+    "wizard-essence": ["research-wizard-tower"],
 
     "gas-extractor": ["research-nitrogen"],
     "coal-node": ["research-steel"],
@@ -60,6 +61,8 @@ const unlockedWith: partialItems<Items[]> = {
     "boost-manufacturer": ["manufacturer", "money"],
     "boost-constructor": ["constructer", "money"],
     "boost-desktop-computer": ["desktop-computer"],
+
+    "desk": ["research-science-5"],
 
     "iron-node": ["research-metal"],
     "copper-node": ["research-metal"],

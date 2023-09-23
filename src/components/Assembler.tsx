@@ -16,7 +16,8 @@ import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
-import { SCALE_N, bigToNum } from "../bigmath";
+import { NumToBig, SCALE_N, bigToNum } from "../bigmath";
+import { PRODUCTION_SCALE, PRODUCTION_SCALE_N } from "../hooks/useSimulation";
 
 type Props = {
     itemName: Items;
@@ -37,12 +38,14 @@ export function Assembler({
     const [instantAnim, setInstantAnim] = useState(false);
 
     const progress =
-        (state.productionProgress[itemName] ?? {})[assemblerName] ?? 0;
+        (state.productionProgress[itemName] ?? {})[assemblerName] ?? 0n;
     const progressState =
         (state.productionState[itemName] ?? {})[assemblerName] ?? null;
 
-    const [progressDisplay, setProgressDisplay] = useState<number>(progress);
-    const knownActualProgress = useRef<number>(progress);
+    const [progressDisplay, setProgressDisplay] = useState(progress);
+    const knownActualProgress = useRef(progress);
+
+    const progressDisplayNumber = bigToNum(progressDisplay / PRODUCTION_SCALE_N);
 
     const baseCraftTime = GAME.timePerRecipe[itemName];
     // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
@@ -125,7 +128,7 @@ export function Assembler({
         stateDisplay = (
             <ProgressBar
                 className={"building-progress " + speedClass}
-                now={progressDisplay * 100}
+                now={progressDisplayNumber * 100}
             />
         );
     }
@@ -133,7 +136,7 @@ export function Assembler({
     useEffect(() => {
         if (progressState === PRODUCTION_RUNNING) {
             if (totalSpeed > 5) {
-                setProgressDisplay(1);
+                setProgressDisplay(100n);
                 return;
             }
             const intervalHandle = setTimeout(() => {
@@ -141,7 +144,7 @@ export function Assembler({
                 if (knownActualProgress.current !== progress) {
                     if (progress < knownActualProgress.current) {
                         setInstantAnim(true);
-                        setProgressDisplay(0);
+                        setProgressDisplay(0n);
                     } else {
                         setInstantAnim(false);
                         setProgressDisplay(progress);
@@ -153,8 +156,8 @@ export function Assembler({
                     const l = lastUpdateTimestamp ?? now;
                     const timeDelta = (now - l) / 1000;
                     const newProgress =
-                        progressDisplay + totalSpeed * timeDelta;
-                    setProgressDisplay(newProgress);
+                    progressDisplayNumber + Math.floor(totalSpeed * timeDelta * PRODUCTION_SCALE);
+                    setProgressDisplay(NumToBig(newProgress));
                 }
                 setLastUpdateTimestamp(now);
             }, 1000 / updateSpeed);
@@ -162,7 +165,7 @@ export function Assembler({
                 clearTimeout(intervalHandle);
             };
         } else {
-            setProgressDisplay(0);
+            setProgressDisplay(0n);
             setLastUpdateTimestamp(null);
             setInstantAnim(true);
         }
