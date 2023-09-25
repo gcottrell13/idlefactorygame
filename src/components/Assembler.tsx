@@ -16,7 +16,7 @@ import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
-import { NumToBig, SCALE_N, bigGt, bigToNum, scaleBigInt } from "../bigmath";
+import { NumToBig, bigGt, bigToNum, scaleBigInt, bigMul } from "../bigmath";
 import { PRODUCTION_SCALE, PRODUCTION_SCALE_N } from "../hooks/useSimulation";
 
 type Props = {
@@ -70,7 +70,7 @@ export function Assembler({
         </span>
     );
     let stateDisplay: JSX.Element | null = null;
-    const updateSpeed = bigGt(totalSpeed, 20) ? 20 : bigToNum(totalSpeed) * 4;
+    const updateSpeed = bigGt(totalSpeed, 20) ? 20 : Math.max(4, bigToNum(totalSpeed) * 4);
 
     if (thisPowerState[assemblerName] === PRODUCTION_NO_POWER) {
         const word = GAME.buildingPowerDisplayWord[assemblerName] ?? "Power";
@@ -202,7 +202,7 @@ export function Assembler({
                                             <td className="rate-per">
                                                 ({d(rate)}/s)
                                             </td>
-                                            <td>{d(no * rate / SCALE_N)}/s</td>
+                                            <td>{d(bigMul(no, rate))}/s</td>
                                         </tr>
                                     );
                                 })}

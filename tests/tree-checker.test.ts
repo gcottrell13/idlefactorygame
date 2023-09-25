@@ -28,6 +28,7 @@ describe("tree-check", () => {
             lastUIUpdateTimestamp: 0,
             powerConsumptionState: {},
             productionState: {},
+            hideAddButtons: {},
         };
 
         const discoveryLog: string[] = [];
@@ -48,7 +49,11 @@ describe("tree-check", () => {
                 break;
             }
 
-            const itemsDiscovered = checkVisible(state);
+            const itemsDiscovered = checkVisible(state, (a) => {
+                if (a.action === 'unhide-item') {
+                    state.visible[a.itemName] = true;
+                }
+            });
             if (itemsDiscovered.length > 0)
                 discoveryLog.push(
                     addOne.padEnd(maxItemLength) +

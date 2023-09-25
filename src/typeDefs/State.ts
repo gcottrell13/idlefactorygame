@@ -67,4 +67,7 @@ export interface State {
 
     // how many of each item has been made
     amountCreated: partialItems<bigint>;
+
+    // if true, hide the button to add this item to something
+    hideAddButtons: partialItems<boolean>;
 }

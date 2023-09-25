@@ -26,7 +26,7 @@ import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
-import { REALLY_BIG, SCALE_N, bigMin, bigMul, bigSum, bigToNum, bigpow, scaleBigInt } from "../bigmath";
+import { REALLY_BIG, bigFloor, bigGt, bigMin, bigMul, bigSum } from "../bigmath";
 
 type func = () => void;
 
@@ -63,7 +63,7 @@ export function ItemDisplay({
     const canMakeByHand = bigMin(
         currentClickAmount,
         howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
-        ((state.calculateStorage(itemName) - amt) / SCALE_N) * SCALE_N,
+        bigFloor(state.calculateStorage(itemName) - amt),
         GAME.maxCraftAtATime(itemName, state),
     );
 
@@ -153,7 +153,7 @@ export function ItemDisplay({
     const netRate = producingRate - othersConsumingRate;
 
     const othersConsumingThis = GAME.recipesConsumingThis[itemName]
-        .filter((recipeName) => state.assemblers[recipeName])
+        .filter((recipeName) => keys(state.assemblers[recipeName]).length > 0)
         .map((recipeName) => {
             const states = keys(state.assemblers[recipeName]).map((an) =>
                 assemblerIsStuckOrDisabled(recipeName, an),
@@ -423,7 +423,7 @@ function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
             onMouseLeave={() => clearInterval(intervalId)}
             disabled={makeByHand === false}
         >
-            {GAME.byHandVerbs[itemName]} {count > SCALE_N ? d(count) : ""}
+            {GAME.byHandVerbs[itemName]} {bigGt(count, 1) ? d(count) : ""}
         </Button>
     );
 }

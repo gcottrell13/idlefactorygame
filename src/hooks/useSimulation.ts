@@ -21,8 +21,9 @@ import {
     hideTheHideOnBuyItems,
     howManyRecipesCanBeMade,
 } from "../assembly";
-import { NumToBig, REALLY_BIG, SCALE, SCALE_N, bigMax, bigMin, bigSum, bigToNum, scaleBigInt } from "../bigmath";
+import { NumToBig, REALLY_BIG, bigFloor, bigGtE, bigLt, bigMax, bigMin, bigSum, bigToNum, scaleBigInt } from "../bigmath";
 import { parseFormat } from "../numberFormatter";
+import { ACTIONS } from "../content/actions";
 
 export const PRODUCTION_SCALE = 10000;
 export const PRODUCTION_SCALE_N = BigInt(PRODUCTION_SCALE);
@@ -92,7 +93,7 @@ export function useProduction(ticksPerSecond: number) {
 
             const canProduce = bigMin(recipeCount, ...Object.values(itemsChosen));
 
-            if (canProduce >= SCALE_N) {
+            if (bigGtE(canProduce, 1)) {
                 keys(itemsChosen).forEach((x) => addAmount(x, canProduce));
             } else {
                 return false;
@@ -101,7 +102,7 @@ export function useProduction(ticksPerSecond: number) {
             return true;
         } else {
             const capacity = bigMin(recipeCount, hasStorageCapacity(itemName));
-            if (capacity >= SCALE_N) {
+            if (bigGtE(capacity, 1)) {
                 addAmount(itemName, capacity);
                 return true;
             }
@@ -243,15 +244,15 @@ export function useProduction(ticksPerSecond: number) {
 
                             time += amountAddPerTick;
                             
-                            const amountToProduce = time / PRODUCTION_SCALE_N / SCALE_N;
-                            if (amountToProduce >= 1) {
-                                if (addToTotal(itemName, amountToProduce)) {
+                            const amountToProduce = time / PRODUCTION_SCALE_N;
+                            if (bigGtE(amountToProduce, 1)) {
+                                if (addToTotal(itemName, bigFloor(amountToProduce))) {
                                     time -= amountToProduce * PRODUCTION_SCALE_N;
                                     if (
                                         !consumeMaterialsFromRecipe(
                                             itemName,
                                             amountThatWeHave,
-                                            amountToProduce,
+                                            bigFloor(amountToProduce),
                                         )
                                     ) {
                                         state = PRODUCTION_NO_INPUT;
@@ -298,20 +299,19 @@ export function useProduction(ticksPerSecond: number) {
         ) {
             addToTotal(itemName, count);
         }
-        updateUI();
     }, []);
 
     const canMakeItemByHand = useCallback((itemName: Items) => {
         if (GAME.requiredBuildings(itemName).includes("by-hand") === false)
             return null;
         if (
-            howManyRecipesCanBeMade(
+            bigLt(howManyRecipesCanBeMade(
                 itemName,
                 stateRef.current.amountThatWeHave,
-            ) < SCALE_N
+            ), 1)
         )
             return false;
-        return hasStorageCapacity(itemName) >= SCALE_N;
+        return bigGtE(hasStorageCapacity(itemName), 1);
     }, []);
 
     const addAssemblers = useCallback(
@@ -324,7 +324,6 @@ export function useProduction(ticksPerSecond: number) {
             k[level] = appliedAssemblers + amount;
             stateRef.current.assemblers[itemName] = k;
             stateRef.current.amountThatWeHave[level] = haveAssemblers - amount;
-            updateUI();
         },
         [],
     );
@@ -341,7 +340,6 @@ export function useProduction(ticksPerSecond: number) {
                 haveStorage + amount;
             stateRef.current.amountThatWeHave[container] =
                 haveContainers - amount;
-            updateUI();
         },
         [],
     );
@@ -362,23 +360,19 @@ export function useProduction(ticksPerSecond: number) {
 
     const resetAll = useCallback(() => {
         setState(resetGame());
-        updateUI();
     }, []);
 
     const markVisibility = useCallback((item: Items, b: boolean) => {
         stateRef.current.visible[item] = b;
         stateRef.current.acknowledged[item] ??= false;
-        updateUI();
     }, []);
 
     const disableRecipe = useCallback((itemName: Items, disable: boolean) => {
         stateRef.current.disabledRecipes[itemName] = disable;
-        updateUI();
     }, []);
 
     const acknowledgeItem = (item: Items) => {
         stateRef.current.acknowledged[item] = true;
-        updateUI();
     };
 
     const setAmount = (amount: string | number | bigint = 1, itemName: Items = "") => {
@@ -388,8 +382,8 @@ export function useProduction(ticksPerSecond: number) {
         if (typeof amount === 'number') amount = NumToBig(amount);
         stateRef.current.amountThatWeHave[itemName] = amount;
         stateRef.current.visible[itemName] ??= true;
-        updateUI();
     };
+
     const clearVisibles = () => {
         stateRef.current.visible = {};
         const {
@@ -398,7 +392,7 @@ export function useProduction(ticksPerSecond: number) {
             assemblers,
             visible,
         } = stateRef.current;
-        checkVisible(stateRef.current);
+        checkVisible(stateRef.current, doAction);
         hideTheHideOnBuyItems(stateRef.current);
         keys(timeUnlockedAt).forEach(itemName => {
             if (visible[itemName] === undefined) {
@@ -447,7 +441,77 @@ export function useProduction(ticksPerSecond: number) {
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);
 
-    checkVisible(stateRef.current);
+    function doAction(action: ACTIONS) {
+        switch (action.action) {
+            case 'add-box': {
+                addContainer(action.recipe, action.box, action.amount); break;
+            }
+            case 'add-building': {
+                addAssemblers(action.building, action.recipe, action.amount); break;
+            }
+            case 'craft-byhand': {
+                makeItemByhand(action.recipe, action.amount); break;
+            }
+            case 'hide-item': {
+                if (!stateRef.current.visible[action.itemName]) return;
+                stateRef.current.visible[action.itemName] = false;
+                break;
+            }
+            case 'unhide-item': {
+                if (stateRef.current.visible[action.itemName]) return;
+                const {
+                    visible,
+                    acknowledged,
+                    timeSpentPlaying,
+                    timeUnlockedAt,
+                } = stateRef.current;
+                visible[action.itemName] = true;
+                acknowledged[action.itemName] ??= false;
+                timeUnlockedAt[action.itemName] ??= timeSpentPlaying;
+                break;
+            }
+            case 'remove-building': {
+                addAssemblers(action.building, action.recipe, -action.amount);
+                break;
+            }
+            case 'ack': {
+                acknowledgeItem(action.recipe);
+                break;
+            }
+            case 'disable-recipe': {
+                disableRecipe(action.recipe, true);
+                break;
+            }
+            case 'enable-recipe': {
+                disableRecipe(action.recipe, false);
+                break;
+            }
+            case 'reset-game': {
+                resetAll();
+                break;
+            }
+            case 'set-amount': {
+                setAmount(action.amount, action.item);
+                break;
+            }
+            case 'hide-building-add-button': {
+                if (stateRef.current.hideAddButtons[action.building]) return;
+                stateRef.current.hideAddButtons[action.building] = true;
+                break;
+            }
+            case 'unhide-building-add-button': {
+                if (!stateRef.current.hideAddButtons[action.building]) return;
+                stateRef.current.hideAddButtons[action.building] = false;
+                break;
+            }
+            default: {
+                const _EXHAUSTIVE: never = action;
+            }
+        }
+        updateUI();
+    }
+
+    checkVisible(stateRef.current, doAction);
 
     return {
         ...stateRef.current,
@@ -456,13 +520,7 @@ export function useProduction(ticksPerSecond: number) {
             calculateStorage,
         },
         fps,
-        addAmount,
-        addAssemblers,
-        resetAll,
-        makeItemByhand,
         canMakeItemByHand,
-        addContainer,
-        acknowledgeItem,
-        disableRecipe,
+        doAction,
     };
 }

@@ -22,6 +22,7 @@ const defaultState = {
     lastUIUpdateTimestamp: 0,
     powerConsumptionState: {},
     productionState: {},
+    hideAddButtons: {},
 } satisfies State;
 
 function makeName(name: string) {

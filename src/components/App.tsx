@@ -13,7 +13,7 @@ import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
 import { ReleaseNotes } from "./ReleaseNotes";
-import { NumToBig, SCALE_N, bigMin } from "../bigmath";
+import { NumToBig, bigMin, bigLt, bigEq } from "../bigmath";
 
 type Props = {
     ticksPerSecond: number;
@@ -31,14 +31,9 @@ export function App({ ticksPerSecond }: Props) {
         assemblers,
         amountThatWeHave,
         visible,
-        acknowledgeItem,
+        doAction,
         acknowledged,
-        addAssemblers,
-        resetAll,
-        makeItemByhand,
         canMakeItemByHand,
-        addContainer,
-        disableRecipe,
         disabledRecipes,
         state,
         fps,
@@ -110,17 +105,18 @@ export function App({ ticksPerSecond }: Props) {
             GAME.itemsCanBeStoreIn[itemName].forEach((container) => {
                 if (!state.visible[container]) return;
                 const num = calculateMaxAdd(container);
-                const disabled = (amountThatWeHave[container] ?? 0n) < SCALE_N;
+                const disabled = bigLt(amountThatWeHave[container] ?? 0n, 1);
                 boxButtons.push(
                     <Button
                         className={"add-container"}
                         key={container}
                         onClick={() => {
-                            addContainer(
-                                itemName,
-                                container,
-                                currentClickAmount,
-                            );
+                            doAction({
+                                action: 'add-box',
+                                amount: currentClickAmount,
+                                box: container,
+                                recipe: itemName,
+                            });
                         }}
                         variant="info"
                         disabled={disabled}
@@ -142,11 +138,12 @@ export function App({ ticksPerSecond }: Props) {
                         className={"add-assembler"}
                         key={assemblerName}
                         onClick={() => {
-                            addAssemblers(
-                                a,
-                                itemName,
-                                currentClickAmount,
-                            );
+                            doAction({
+                                action: 'add-building',
+                                amount: currentClickAmount,
+                                building: a,
+                                recipe: itemName,
+                            })
                         }}
                         variant="secondary"
                         disabled={!haveAny}
@@ -173,22 +170,29 @@ export function App({ ticksPerSecond }: Props) {
                             : makeByHand === false
                                 ? false
                                 : () => {
-                                    makeItemByhand(
-                                        itemName as Items,
-                                        calculateMaxMake(itemName, amt),
-                                    );
+                                    doAction({
+                                        action: 'craft-byhand',
+                                        amount: calculateMaxMake(itemName, amt),
+                                        recipe: itemName,
+                                    })
                                 }
                     }
-                    disableRecipe={() =>
-                        disableRecipe(
-                            itemName,
-                            !(disabledRecipes[itemName] ?? false),
-                        )
+                    disableRecipe={
+                        () => disabledRecipes[itemName] ? doAction({
+                            action: 'disable-recipe',
+                            recipe: itemName
+                        }) : doAction({
+                            action: 'enable-recipe',
+                            recipe: itemName,
+                        })
                     }
                     onMouseover={
                         acknowledged[itemName] !== true
                             ? () => {
-                                acknowledgeItem(itemName);
+                                doAction({
+                                    action: 'ack',
+                                    recipe: itemName,
+                                })
                             }
                             : undefined
                     }
@@ -213,7 +217,7 @@ export function App({ ticksPerSecond }: Props) {
     return (
         <Container fluid className={"game-container"}>
             <div className={"sticky"}>
-                <Button onClick={resetAll} variant={"secondary"}>
+                <Button onClick={() => doAction({action: 'reset-game'})} variant={"secondary"}>
                     Reset
                 </Button>{" "}
                 <ReleaseNotes version={VERSION().join(".")} />{" "}
@@ -262,7 +266,7 @@ export function App({ ticksPerSecond }: Props) {
                     );
                 })}
             </Tabs>
-            {amountThatWeHave["research-mass-click"] === SCALE_N ? (
+            {bigEq(amountThatWeHave["research-mass-click"] ?? 0n, 1) ? (
                 <ButtonToolbar className={"per-click-amount-buttons"}>
                     Per Click:
                     {

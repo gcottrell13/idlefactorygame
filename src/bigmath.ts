@@ -83,3 +83,9 @@ export function bigLt(a: bigint, b: number | bigint): boolean {
 export function bigLtE(a: bigint, b: number | bigint): boolean {
     return a <= NumToBig(b);
 }
+export function bigEq(a: bigint, b: number | bigint): boolean {
+    return a === NumToBig(b);
+}
+export function bigFloor(a: bigint): bigint {
+    return a - (a % SCALE_N);
+}

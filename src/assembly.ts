@@ -4,6 +4,7 @@ import _ from "lodash";
 import { SMap, keys, mapPairs } from "./smap";
 import { State } from "./typeDefs/State";
 import { REALLY_BIG, SCALE_N, bigDiv, bigMax, bigMin, bigMul, bigToNum, bigpow, scaleBigInt } from "./bigmath";
+import { dispatch } from "./content/actions";
 
 
 export function checkAmounts(
@@ -80,22 +81,17 @@ export function consumeMaterialsFromRecipe(
     return true;
 }
 
-export function checkVisible(state: State) {
+export function checkVisible(state: State, dispatch: dispatch) {
     const {
         visible,
         amountThatWeHave,
-        acknowledged,
-        timeSpentPlaying,
-        timeUnlockedAt,
     } = state;
     let discoveredSomething = true;
     const itemsDiscovered: Items[] = [];
     function _visible(itemName: Items) {
-        visible[itemName] = true;
-        acknowledged[itemName] ??= false;
+        dispatch({action: 'unhide-item', itemName: itemName});
         itemsDiscovered.push(itemName);
         discoveredSomething = true;
-        timeUnlockedAt[itemName] ??= timeSpentPlaying;
     }
 
     while (discoveredSomething) {
