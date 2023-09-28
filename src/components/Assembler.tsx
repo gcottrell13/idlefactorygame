@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import GAME from "../values";
-import { OverlayTrigger, Badge, Table } from "react-bootstrap";
+import { OverlayTrigger, Badge, Table, Button } from "react-bootstrap";
 import {
     PRODUCTION_NO_INPUT,
     PRODUCTION_NO_POWER,
@@ -10,7 +10,7 @@ import {
 } from "../typeDefs/State";
 import Popover from "react-bootstrap/Popover";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBolt } from "@fortawesome/free-solid-svg-icons";
+import { faBolt, faMinusCircle } from "@fortawesome/free-solid-svg-icons";
 import { keys } from "../smap";
 import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
@@ -18,12 +18,13 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
 import { NumToBig, bigGt, bigToNum, scaleBigInt, bigMul } from "../bigmath";
 import { PRODUCTION_SCALE, PRODUCTION_SCALE_N } from "../hooks/useSimulation";
+import { useGameState } from "../hooks/useGameState";
 
 type Props = {
     itemName: Items;
     assemblerName: Items;
     state: State;
-    assemblersMakingThis: partialItems<number>;
+    assemblersMakingThis: partialItems<bigint>;
 };
 
 export function Assembler({
@@ -36,6 +37,7 @@ export function Assembler({
         number | null
     >(null);
     const [instantAnim, setInstantAnim] = useState(false);
+    const { dispatchAction } = useGameState();
 
     const progress =
         (state.productionProgress[itemName] ?? {})[assemblerName] ?? 0n;
@@ -51,7 +53,7 @@ export function Assembler({
     // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
     const thisPowerState = state.powerConsumptionState[itemName] ?? {};
 
-    const no = BigInt(assemblersMakingThis[assemblerName] ?? 0);
+    const no = assemblersMakingThis[assemblerName] ?? 0n;
     const boost = GAME.buildingBoosts[assemblerName];
     let speedPer = GAME.assemblerSpeeds[assemblerName] / baseCraftTime;
     if (boost) {
@@ -156,7 +158,7 @@ export function Assembler({
                     const l = lastUpdateTimestamp ?? now;
                     const timeDelta = (now - l) / 1000;
                     const newProgress =
-                    progressDisplay + scaleBigInt(totalSpeed, Math.floor(timeDelta * PRODUCTION_SCALE));
+                        progressDisplay + scaleBigInt(totalSpeed, Math.floor(timeDelta * PRODUCTION_SCALE));
                     setProgressDisplay(newProgress);
                 }
                 setLastUpdateTimestamp(now);
@@ -193,11 +195,7 @@ export function Assembler({
                                                 {GAME.displayNames(requirement)}
                                             </td>
                                             <td>
-                                                {d(
-                                                    state.amountThatWeHave[
-                                                    requirement
-                                                    ],
-                                                )}
+                                                {d(state.amountThatWeHave[requirement])}
                                             </td>
                                             <td className="rate-per">
                                                 ({d(rate)}/s)
@@ -221,6 +219,22 @@ export function Assembler({
     return (
         <>
             <span className={"building-label"}>{label}</span>
+            <span className={'remove-building-container'}>
+                <OverlayTrigger placement={"left"} overlay={<Popover><Popover.Body>Remove All</Popover.Body></Popover>}>
+                    <Button
+                        className={'assembler-remove-button'}
+                        onClick={() => dispatchAction({
+                            action: 'remove-building',
+                            amount: no,
+                            building: assemblerName,
+                            recipe: itemName,
+                        })}
+                        variant={'secondary'}
+                    >
+                        -
+                    </Button>
+                </OverlayTrigger>
+            </span>
             <span className={"building-state-display"}>{stateDisplay}</span>
         </>
     );

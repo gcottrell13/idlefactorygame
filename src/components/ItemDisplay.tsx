@@ -20,6 +20,8 @@ import {
     faThumbsUp,
     faChevronCircleDown,
     faBolt,
+    faEye,
+    faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { formatNumber as d, formatSeconds } from "../numberFormatter";
 import { useCalculateRates } from "../hooks/useCalculateRates";
@@ -27,6 +29,7 @@ import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
 import { REALLY_BIG, bigFloor, bigGt, bigMin, bigMul, bigSum } from "../bigmath";
+import { useGameState } from "../hooks/useGameState";
 
 type func = () => void;
 
@@ -35,7 +38,7 @@ type Props = {
     itemName: Items;
     state: ReturnType<typeof useProduction>["state"];
     assemblerButtons: JSX.Element[];
-    assemblersMakingThis: partialItems<number>;
+    assemblersMakingThis: partialItems<bigint>;
     boxButtons: JSX.Element[];
     makeByHand: func | false | null;
     onMouseover: func | undefined;
@@ -66,6 +69,8 @@ export function ItemDisplay({
         bigFloor(state.calculateStorage(itemName) - amt),
         GAME.maxCraftAtATime(itemName, state),
     );
+
+    const { dispatchAction } = useGameState();
 
     const recipeDisabled = state.disabledRecipes[itemName] === true;
     const thisPowerRequirements =
@@ -333,6 +338,20 @@ export function ItemDisplay({
     const isNew = state.acknowledged[itemName] !== true;
     const hasStorage = maxValue !== REALLY_BIG;
 
+    const hideButton = GAME.allAssemblers.includes(itemName as any) ? (
+        <OverlayTrigger placement={"left"} overlay={<Popover><Popover.Body>Hide Add Buttons</Popover.Body></Popover>}>
+            <Button
+                onClick={() => dispatchAction({
+                    action: state.hideAddButtons[itemName] ? 'unhide-building-add-button' : 'hide-building-add-button',
+                    building: itemName,
+                })}
+                variant={'secondary'}
+            >
+                <FontAwesomeIcon icon={state.hideAddButtons[itemName] ? faEyeSlash : faEye} />
+            </Button>
+        </OverlayTrigger>
+    ) : null;
+
     return (
         <div className="item-row" onMouseEnter={onMouseover}>
             <div className={"new-badge"}>
@@ -391,6 +410,9 @@ export function ItemDisplay({
                     {assemblerButtons}
                 </div>
             </div>
+            <div className={'hide-add-button-container'}>
+                {hideButton}
+            </div>
         </div>
     );
 }
@@ -406,9 +428,10 @@ function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
 
     return makeByHand === null ? undefined : (
         <Button
-            className={"make-by-hand"}
+            className={`make-by-hand ${intervalId ? "shake" : ""}`}
             onMouseDown={() => {
                 if (makeByHand) {
+                    makeByHand();
                     setIntervalId(
                         setInterval(() => {
                             makeByHand();
@@ -419,8 +442,12 @@ function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
             onMouseUp={() => {
                 clearInterval(intervalId);
                 if (makeByHand) makeByHand();
+                setIntervalId(0);
             }}
-            onMouseLeave={() => clearInterval(intervalId)}
+            onMouseLeave={() => {
+                clearInterval(intervalId);
+                setIntervalId(0);
+            }}
             disabled={makeByHand === false}
         >
             {GAME.byHandVerbs[itemName]} {bigGt(count, 1) ? d(count) : ""}

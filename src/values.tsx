@@ -27,12 +27,16 @@ keys(unlockedWith.unlockedWith).forEach((l) => {
 });
 
 function fillWithDefault<T>(partial: partialItems<T>, defaultItem: () => any): itemsMap<T> {
+    const t: partialItems<T> = {};
     allItemNames.forEach(name => {
         if (partial[name] === undefined) {
-            partial[name] = defaultItem();
+            t[name] = defaultItem();
+        }
+        else {
+            t[name] = partial[name];
         }
     });
-    return partial as itemsMap<T>;
+    return t as itemsMap<T>;
 }
 
 type BigIntRecipes = itemsMap<partialItems<bigint>>;

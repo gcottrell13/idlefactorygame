@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import GAME from "../values";
 import { Items } from "../content/itemNames";
 import _ from "lodash";
@@ -25,6 +25,8 @@ import { useGameState } from "./useGameState";
 export const PRODUCTION_SCALE = 10000;
 export const PRODUCTION_SCALE_N = BigInt(PRODUCTION_SCALE);
 
+const updateTimestamps: number[] = [];
+
 export function useProduction(ticksPerSecond: number) {
     const { 
         stateRef,
@@ -38,7 +40,8 @@ export function useProduction(ticksPerSecond: number) {
         calculateStorage,
     } = useGameState();
 
-    const [fps, setFps] = useState<number>(0);
+    const [fps, setFps] = useState(0);
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
 
     function checkPowerConsumption(itemName: Items, building: Items): boolean {
         const [power, state] = getPower(itemName, building);
@@ -189,13 +192,17 @@ export function useProduction(ticksPerSecond: number) {
 
     const updateUI = useCallback(() => {
         const now = new Date().getTime();
+
+        while (updateTimestamps[0] < now - 1000) {
+            updateTimestamps.shift();
+        }
+        setFps(updateTimestamps.length);
+        forceUpdate();
         const before =
             stateRef.current.lastUIUpdateTimestamp === 0
                 ? now - 1
                 : stateRef.current.lastUIUpdateTimestamp;
         const timeDiff = Math.min(1, (now - before) / 1000);
-        let fps = stateRef.current.ticksSinceLastUIUpdate / timeDiff;
-        if (!isNaN(fps)) setFps(fps);
         stateRef.current.lastUIUpdateTimestamp = now;
         stateRef.current.ticksSinceLastUIUpdate = 0;
         stateRef.current.timeSpentPlaying += timeDiff;
@@ -246,6 +253,7 @@ export function useProduction(ticksPerSecond: number) {
             doProduction(timeDiff);
             stateRef.current.lastTickTimestamp = now;
             stateRef.current.ticksSinceLastUIUpdate++;
+            updateTimestamps.push(now);
         }, 1000 / ticksPerSecond);
         return () => {
             clearInterval(i);

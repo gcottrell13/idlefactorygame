@@ -23,7 +23,7 @@
 }
 
 .building-state-display {
-    grid-column: 3;
+    grid-column: 4;
     justify-self: start;
 }
 
@@ -57,7 +57,7 @@ button.add-assembler {
 button.make-by-hand {
     margin-left: 20px;
     float: right;
-    white-space: nowrap;  
+    white-space: nowrap;
     width: 100%;
     height: 100%;
 }
@@ -119,12 +119,15 @@ button.make-by-hand {
 .building-progress.slow .progress-bar {
     transition: width 0.25s linear;
 }
+
 .building-progress.fast .progress-bar {
     transition: width 0.1s linear;
 }
+
 .building-progress.instant .progress-bar {
     transition: width 0s linear;
 }
+
 .building-progress.secondary .progress-bar {
     background-color: gray;
 }
@@ -158,30 +161,38 @@ button.btn {
     padding: 10px;
     min-height: 50px;
     display: grid;
-    grid-template-columns: 75px 150px 250px 1fr 1fr;
+    grid-template-columns: 75px 150px 250px 1fr 1fr 20px;
     grid-column-gap: 10px;
 }
 
 .item-row .new-badge {
     grid-column: 1;
 }
+
 .item-row .item-name-container {
     grid-column: 2;
     position: relative;
 }
+
 .item-row .rate-container {
     grid-column: 3;
 }
+
 .item-row .assembler-display-container {
     grid-column: 4;
     display: grid;
-    grid-template-columns: 50px;
+    grid-template-columns: 50px 1fr 20px 1fr;
     grid-column-gap: 5px;
 }
+
 .item-row .add-button-container {
     grid-column: 5;
     justify-self: start;
     white-space: nowrap;
+}
+
+.item-row .hide-add-button-container {
+    grid-column: 6;
 }
 
 .item-popup-detail {
@@ -198,8 +209,17 @@ button.btn {
     margin-bottom: 0 !important;
 }
 
-.assembler-count-name {
+.remove-building-container {
+    grid-column: 3;
+    align-self: center;
 }
+
+.remove-building-container .assembler-remove-button {
+    border-radius: 10px;
+    line-height: 15px;
+    width: 20px;
+}
+
 .rate-per {
     color: gray !important;
     padding-left: 5px;
@@ -224,9 +244,33 @@ button.btn {
 .ingredient-list tbody tr {
     border-bottom: rgb(240, 240, 240) solid 1px;
 }
+
 .ingredient-list td {
     padding: 5px;
 }
+
 .ingredient-list table {
     border: rgb(230, 230, 230) 1px solid;
+}
+
+.shake {
+    position: relative;
+    animation-name: shake;
+    animation-duration: 0.2s;
+    animation-iteration-count: infinite;
+}
+
+
+@keyframes shake {
+    0% {
+        left: -5px;
+    }
+
+    50% {
+        left: 5px;
+    }
+
+    100% {
+        left: -5px;
+    }
 }

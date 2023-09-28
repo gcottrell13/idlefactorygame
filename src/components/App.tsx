@@ -104,6 +104,7 @@ export function App({ ticksPerSecond }: Props) {
 
             GAME.itemsCanBeStoreIn[itemName].forEach((container) => {
                 if (!state.visible[container]) return;
+                if (state.hideAddButtons[container]) return;
                 const num = calculateMaxAdd(container);
                 const disabled = bigLt(amountThatWeHave[container] ?? 0n, 1);
                 boxButtons.push(
@@ -130,6 +131,7 @@ export function App({ ticksPerSecond }: Props) {
             buildingsToMakeThis.forEach((assemblerName) => {
                 if (assemblerName === 'by-hand') return;
                 if (!state.visible[assemblerName]) return;
+                if (state.hideAddButtons[assemblerName]) return;
                 const a = assemblerName as (typeof haveAssemblers)[0];
                 const haveAny = haveAssemblers.includes(assemblerName as any);
                 const num = calculateMaxAdd(a);
