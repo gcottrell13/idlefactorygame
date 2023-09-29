@@ -190,7 +190,7 @@ export function useGameState() {
                     timeUnlockedAt,
                 } = stateRef.current;
                 visible[action.itemName] = true;
-                acknowledged[action.itemName] ??= false;
+                acknowledged[action.itemName] ??= !GAME.displayNewBadge[action.itemName];
                 timeUnlockedAt[action.itemName] ??= timeSpentPlaying;
                 break;
             }

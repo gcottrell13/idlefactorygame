@@ -177,6 +177,8 @@ export function useProduction(ticksPerSecond: number) {
 
 
     const canMakeItemByHand = useCallback((itemName: Items) => {
+        if (!stateRef.current.visible[itemName]) 
+            return false;
         if (GAME.requiredBuildings(itemName).includes("by-hand") === false)
             return null;
         if (

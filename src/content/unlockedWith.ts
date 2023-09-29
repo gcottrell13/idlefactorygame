@@ -122,6 +122,11 @@ const unlockedWith: partialItems<Items[]> = {
     "rock-crusher": ["research-uranium"],
 };
 
+const displayNewBadge: partialItems<boolean> = {
+    desk: false,
+};
+
 export default {
     unlockedWith,
+    displayNewBadge,
 };

@@ -103,6 +103,8 @@ const ex = {
         const scale = ex.recipeScaleFactor[item];
         return bigpow(scale, amount);
     },
+
+    displayNewBadge: fillWithDefault(unlockedWith.displayNewBadge, () => true),
 };
 
 keys(recipeValues.recipes).forEach((item) => {
@@ -128,7 +130,7 @@ keys(recipeValues.recipes).forEach((item) => {
 
     const recipe = recipeValues.recipes[item];
     mapPairs(recipe, (count, ingredient) => {
-        (recipesConsumingThis[ingredient] ??= []).push(item);
+        (ex.recipesConsumingThis[ingredient] ??= []).push(item);
     });
 });
 

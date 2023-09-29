@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import _ from "lodash";
 import { howManyRecipesCanBeMade } from "../assembly";
 import GAME from "../values";
@@ -423,30 +423,47 @@ interface ByHandButtonProps {
     count: bigint;
 }
 
+
+let MAKE_BY_HAND_INTERVAL: any = 0;
+
 function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
-    const [intervalId, setIntervalId] = useState<any>(0);
+    const [isPressed, setIsPressed] = useState<boolean>(false);
+
+    useEffect(
+        () => {
+            if (!makeByHand && isPressed) {
+                setIsPressed(false);
+                clearInterval(MAKE_BY_HAND_INTERVAL);
+            }
+            return () => {
+                clearInterval(MAKE_BY_HAND_INTERVAL);
+            };
+        },
+        [makeByHand, isPressed],
+    );
 
     return makeByHand === null ? undefined : (
         <Button
-            className={`make-by-hand ${intervalId ? "shake" : ""}`}
+            className={`make-by-hand ${isPressed ? "shake" : ""}`}
             onMouseDown={() => {
                 if (makeByHand) {
                     makeByHand();
-                    setIntervalId(
-                        setInterval(() => {
-                            makeByHand();
-                        }, 200),
-                    );
+                    setIsPressed(true);
+                    clearInterval(MAKE_BY_HAND_INTERVAL);
+                    MAKE_BY_HAND_INTERVAL = setInterval(() => {
+                        console.log(`making ${itemName}`);
+                        makeByHand();
+                    }, 200);
                 }
             }}
             onMouseUp={() => {
-                clearInterval(intervalId);
+                clearInterval(MAKE_BY_HAND_INTERVAL);
+                setIsPressed(false);
                 if (makeByHand) makeByHand();
-                setIntervalId(0);
             }}
             onMouseLeave={() => {
-                clearInterval(intervalId);
-                setIntervalId(0);
+                setIsPressed(false);
+                clearInterval(MAKE_BY_HAND_INTERVAL);
             }}
             disabled={makeByHand === false}
         >
