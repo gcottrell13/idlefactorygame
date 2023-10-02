@@ -180,7 +180,7 @@ export function App({ ticksPerSecond }: Props) {
                                 }
                     }
                     disableRecipe={
-                        () => disabledRecipes[itemName] ? doAction({
+                        () => !disabledRecipes[itemName] ? doAction({
                             action: 'disable-recipe',
                             recipe: itemName
                         }) : doAction({
