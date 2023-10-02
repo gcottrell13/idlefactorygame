@@ -2,8 +2,10 @@ import { useCallback, useMemo } from "react";
 import { State } from "../typeDefs/State";
 import { VERSION } from "../version";
 import { keys } from "../smap";
+import { NumberFormat } from "../numberFormatter";
+import _ from "lodash";
 
-const defaultState = {
+const defaultState: State = {
     version: VERSION(),
     displayAmount: {},
     amountThatWeHave: {},
@@ -23,7 +25,8 @@ const defaultState = {
     powerConsumptionState: {},
     productionState: {},
     hideAddButtons: {},
-} satisfies State;
+    numberFormatMode: NumberFormat.SUFFIX,
+};
 
 function makeName(name: string) {
     return `idlefactory.${name}`;
@@ -56,13 +59,11 @@ function getStorage(): State {
         };
         return existingStorage;
     } else {
-        const state: State = {} as State;
+        const state: State = {...defaultState};
         keys(defaultState).forEach((k) => {
             const storage = localStorage.getItem(makeName(k));
             if (storage) {
-                state[k] = JSON.parse(storage, deserializer);
-            } else {
-                state[k] = defaultState[k] as any;
+                _.set(state, k, JSON.parse(storage, deserializer));
             }
         });
         return state;

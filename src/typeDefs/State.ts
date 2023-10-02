@@ -1,4 +1,5 @@
 import { partialItems } from "../content/itemNames";
+import { NumberFormat } from "../numberFormatter";
 import { VERSION } from "../version";
 
 export const PRODUCTION_RUNNING = Symbol("RUNNING");
@@ -70,4 +71,6 @@ export interface State {
 
     // if true, hide the button to add this item to something
     hideAddButtons: partialItems<boolean>;
+
+    numberFormatMode: NumberFormat;
 }

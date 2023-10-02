@@ -21,6 +21,7 @@ import {
 import { NumToBig, bigFloor, bigGtE, bigLt, scaleBigInt } from "../bigmath";
 import { ACTIONS } from "../content/actions";
 import { useGameState } from "./useGameState";
+import { NumberFormat, setMode } from "../numberFormatter";
 
 export const PRODUCTION_SCALE = 10000;
 export const PRODUCTION_SCALE_N = BigInt(PRODUCTION_SCALE);
@@ -285,6 +286,8 @@ export function useProduction(ticksPerSecond: number) {
     }
 
     checkVisible(stateRef.current, doAction);
+
+    setMode(stateRef.current.numberFormatMode ?? NumberFormat.SUFFIX);
 
     return {
         ...stateRef.current,

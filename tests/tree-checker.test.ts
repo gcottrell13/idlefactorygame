@@ -1,5 +1,6 @@
 import { checkVisible } from "../src/assembly";
 import { Items } from "../src/content/itemNames";
+import { NumberFormat } from "../src/numberFormatter";
 import { Queue } from "../src/queue";
 import { State } from "../src/typeDefs/State";
 import GAME from "../src/values";
@@ -29,6 +30,7 @@ describe("tree-check", () => {
             powerConsumptionState: {},
             productionState: {},
             hideAddButtons: {},
+            numberFormatMode: NumberFormat.SUFFIX,
         };
 
         const discoveryLog: string[] = [];

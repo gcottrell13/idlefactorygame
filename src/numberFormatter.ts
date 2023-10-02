@@ -4,6 +4,17 @@ import { NumToBig, SCALE, SCALE_N, bigToNum, REALLY_BIG, bigpow, scaleBigInt } f
 
 const scale_exp = SCALE_N.toString().length;
 
+export enum NumberFormat {
+    SUFFIX = 'suffix',
+    EXPONENT = 'exponent',
+}
+
+let mode: NumberFormat = NumberFormat.SUFFIX;
+
+export function setMode(s: NumberFormat) {
+    mode = s;
+}
+
 export function formatNumber(n: number | bigint | null | undefined) {
     if (!n) {
         return '0';
@@ -25,7 +36,12 @@ export function formatNumber(n: number | bigint | null | undefined) {
         const minorExp = exp % 3;
 
         const r = (parseInt(rep.substring(0, minorExp + 3)) / 100).toFixed(2);
-        return r + ' ' + (bigExponents[majorExp] ?? `e${exp}`);
+        if (mode === NumberFormat.SUFFIX) {
+            return r + ' ' + (bigExponents[majorExp] ?? `e${exp}`);
+        }
+        else if (mode === NumberFormat.EXPONENT) {
+            return r + ' ' + `e${exp}`;
+        }
     }
 
     if (typeof n === 'bigint') {
