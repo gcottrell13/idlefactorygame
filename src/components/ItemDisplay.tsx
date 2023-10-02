@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import _ from "lodash";
 import { howManyRecipesCanBeMade } from "../assembly";
 import GAME from "../values";
@@ -424,45 +424,45 @@ interface ByHandButtonProps {
 }
 
 
-let MAKE_BY_HAND_INTERVAL: any = 0;
-
 function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
-    const [isPressed, setIsPressed] = useState<boolean>(false);
+    const isPressed = useRef<boolean>(false);
+    const [MAKE_BY_HAND_INTERVAL, setIntervalId] = useState<any>(0);
 
     useEffect(
         () => {
-            if (!makeByHand && isPressed) {
-                setIsPressed(false);
+            if (!makeByHand && isPressed.current) {
+                isPressed.current = false;
                 clearInterval(MAKE_BY_HAND_INTERVAL);
             }
-            return () => {
-                clearInterval(MAKE_BY_HAND_INTERVAL);
-            };
         },
-        [makeByHand, isPressed],
+        [makeByHand],
     );
 
     return makeByHand === null ? undefined : (
         <Button
-            className={`make-by-hand ${isPressed ? "shake" : ""}`}
+            className={`make-by-hand ${isPressed.current ? "shake" : ""}`}
             onMouseDown={() => {
                 if (makeByHand) {
                     makeByHand();
-                    setIsPressed(true);
-                    clearInterval(MAKE_BY_HAND_INTERVAL);
-                    MAKE_BY_HAND_INTERVAL = setInterval(() => {
+                    const interval = setInterval(() => {
+                        if (!isPressed.current) {
+                            clearInterval(interval);
+                            return;
+                        }
                         console.log(`making ${itemName}`);
                         makeByHand();
                     }, 200);
+                    isPressed.current = true;
+                    setIntervalId(interval);
                 }
             }}
             onMouseUp={() => {
                 clearInterval(MAKE_BY_HAND_INTERVAL);
-                setIsPressed(false);
+                isPressed.current = false;
                 if (makeByHand) makeByHand();
             }}
             onMouseLeave={() => {
-                setIsPressed(false);
+                isPressed.current = false;
                 clearInterval(MAKE_BY_HAND_INTERVAL);
             }}
             disabled={makeByHand === false}
