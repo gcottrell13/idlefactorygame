@@ -24,6 +24,7 @@ const byHandVerbs: partialItems<string> = {
 
 const displayNames: partialItems<string> = {
     youwin: "Win",
+    "the-spark": "The Spark",
     "research-the-end": "The Beginning of The End",
 
     lumberjack: "Lumberjack",
@@ -118,7 +119,6 @@ const displayNames: partialItems<string> = {
     explorer: "Explorer",
     steel: "Steel Ingot",
     pipe: "Steel Pipe",
-    "evaporate-water": "Recipe: Evaporate Water",
     plastic: "Plastic Rod",
     studonite: "Studo-nite",
     bauxite: "Bauxite",
@@ -176,6 +176,7 @@ const displayNames: partialItems<string> = {
     "boost-wizard": "Boost: Pointer Hats",
     "boost-bank": "Boost: Faster Bean Counters",
     "boost-desktop-computer": "Boost: Faster Internet",
+    "boost-spark": "Boost: The Spark",
 
     "anti-grav-thruster": "Anti-Grav Thruster",
     "arcane-wizard": "Arcane Wizard",
@@ -200,7 +201,6 @@ const displayNames: partialItems<string> = {
     "simple-syrup": "Simple Syrup",
     "spark-plug": "Spark Plug",
     "steering-wheel": "Steering Wheel",
-    "water-evaporator": "Water Evaporator",
     "wizard-degree": "Wizard Degree",
     "wizard-essence": "Wizard Essence",
     "wizard-orb": "Orb",
@@ -208,6 +208,8 @@ const displayNames: partialItems<string> = {
     "wizard-pop": "Pop",
     "wizard-power": "Power",
     bank: "Bank",
+
+    "smooth-oil": "Lubricant",
 };
 
 const flavorText: partialItems<React.ReactNode> = {

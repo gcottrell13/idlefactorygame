@@ -1,4 +1,4 @@
-import { NumToBig, SCALE_N, bigMax, bigSum, scaleBigInt } from "../bigmath";
+import { NumToBig, SCALE_N, bigFloor, bigMax, bigSum, scaleBigInt } from "../bigmath";
 import { fromPairs, mapPairs } from "../smap";
 import { State } from "../typeDefs/State";
 import { GAMEVALUES } from "../values";
@@ -29,7 +29,7 @@ const maxCraftAtATime: partialItems<number | maxCraftFunc> = {
     begin: 1,
     "wizard-degree": 100,
     money: (game, state) => bigMax(ABSOLUTE_MAX_CRAFT, maxCraftByAssemblerSpeed(game, state, "money")),
-    bank: (game, state) => 10n * (state.assemblers["money"]?.["bank"] ?? 0n) / 100n,
+    bank: (game, state) => bigFloor(bigMax(ABSOLUTE_MAX_CRAFT, 10n * (state.assemblers["money"]?.["bank"] ?? 0n) / SCALE_N)),
 };
 
 const m = fromPairs(mapPairs(maxCraftAtATime, (amount, item) => {

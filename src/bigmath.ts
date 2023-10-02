@@ -12,6 +12,7 @@ export function bigpow(base: bigint | number, power: bigint): bigint {
     if (base == 1) return NumToBig(base);
     power /= SCALE_N;
     if (power === 1n) return NumToBig(base);
+    if (power === 0n) return NumToBig(1);
     if (typeof base === 'number') {
         base = NumToBig(base);
     }

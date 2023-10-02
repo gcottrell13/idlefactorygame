@@ -9,7 +9,6 @@ const byproducts: partialItems<partialItems<number>[]> = {
     begin: [{ begin: 1 }, { prospector: 1 }, { food: 1 }],
     "research-woodcutting": [{ "research-woodcutting": 1 }, { lumberjack: 1 }],
     u235: [{ u235: 0.1, u234: 0.9 }, { slag: 1 }],
-    "evaporate-water": [{ "wet-land": 1 }],
 
     "consume-arcane-wizard": [{ "wizard-degree": 1 }, { "consume-arcane-wizard": 1 }],
     "consume-fire-wizard": [{ "wizard-degree": 1 }, { "consume-fire-wizard": 1 }],

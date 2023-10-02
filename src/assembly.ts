@@ -3,7 +3,7 @@ import { Items } from "./content/itemNames";
 import _ from "lodash";
 import { SMap, keys, mapPairs } from "./smap";
 import { State } from "./typeDefs/State";
-import { REALLY_BIG, SCALE_N, bigDiv, bigMax, bigMin, bigMul, bigToNum, bigpow, scaleBigInt } from "./bigmath";
+import { REALLY_BIG, SCALE_N, bigDiv, bigFloor, bigMax, bigMin, bigMul, bigToNum, bigpow, scaleBigInt } from "./bigmath";
 import { dispatch } from "./content/actions";
 
 
@@ -43,7 +43,7 @@ export function howManyRecipesCanBeMade(
         }
     });
 
-    return numberOfRecipesToMake * SCALE_N;
+    return bigFloor(numberOfRecipesToMake);
 }
 
 export function consumeMaterials(

@@ -19,7 +19,6 @@ const assemblerSpeeds = {
     "adamantium-drill": 1,
     "rock-crusher": 1,
     centrifuge: 1,
-    "water-evaporator": 1,
     "lumberjack-school": 1,
     "wind-turbine": 5,
     "coal-power": 100,
@@ -31,6 +30,7 @@ const assemblerSpeeds = {
     "wizard-orb": 2.0,
     "bank": 1.0,
     "desktop-computer": 1,
+    "the-spark": 1,
 } satisfies partialItems<number>;
 
 export type Buildings = keyof typeof assemblerSpeeds;
@@ -44,8 +44,7 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     "oil-pump": { electricity: 10 },
     "rock-crusher": { electricity: 20 },
     "smelter-mk1": { wood: 0.1 },
-    "smelter-mk2": { wood: 0.1 },
-    "water-evaporator": { electricity: 5 },
+    "smelter-mk2": { electricity: 3 },
     "water-filter": { electricity: 5 },
     "water-pump-mk1": { electricity: 5 },
     assembler: { electricity: 6 },
@@ -64,8 +63,9 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     "fire-wizard": { "powerful-mana": 1 },
     "necro-wizard": { "powerful-mana": 1 },
     "wizard-orb": { "powerful-mana": 1, },
-    "bank": { "gold": 0.25 },
+    "bank": { "money": 2 },
     "desktop-computer": { electricity: 1 },
+    "the-spark": { "wizard-paragon": 0.1, "car": 1, "margarita": 10 },
 } satisfies {
         [p in Buildings]: partialItems<number>;
     };
@@ -76,6 +76,7 @@ const buildingPowerDisplayWord: partialItems<string> = {
     "smelter-mk1": "Fuel",
     "smelter-mk2": "Fuel",
     "bank": "Gold",
+    "the-spark": "Inputs",
 } satisfies { [p in Buildings]?: string };
 
 /**
@@ -105,6 +106,7 @@ const buildingBoosts: { [p in Buildings]?: Items } = {
     "wizard-orb": "boost-wizard",
     "bank": "boost-bank",
     "desktop-computer": "boost-desktop-computer",
+    "the-spark": "boost-spark",
 };
 
 // keys are the items that do the boosting, not the building.
@@ -118,7 +120,8 @@ const defaultBuildingBoostTiers: number[] = Array(20).map((v, i) => 2 ** i);
 const requiredBuildings: {
     [p in Items]: (Buildings | "by-hand")[];
 } = {
-    youwin: ["manufacturer"],
+    youwin: ["the-spark"],
+    "the-spark": ["by-hand"],
     "research-the-end": ["by-hand"],
     begin: ["by-hand"],
     prospector: ["by-hand"],
@@ -190,6 +193,7 @@ const requiredBuildings: {
     "boost-constructor": ["by-hand"],
     "boost-bank": ["by-hand"],
     "boost-desktop-computer": ["by-hand"],
+    "boost-spark": ["by-hand"],
 
     "research-science-1": ["by-hand"],
     "research-science-2": ["by-hand"],
@@ -203,8 +207,6 @@ const requiredBuildings: {
     "research-box4": ["by-hand"],
     "research-box5": ["by-hand"],
 
-    "water-evaporator": ["assembler", "manufacturer"],
-    "evaporate-water": ["water-evaporator"],
     "gold-filament": ["assembler", "manufacturer"],
     aluminum: ["smelter-mk2"],
     computer: ["manufacturer"],
@@ -242,6 +244,7 @@ const requiredBuildings: {
     "uranium-ore": ["adamantium-drill"],
     water: ["water-pump-mk1"],
     oil: ["oil-pump"],
+    "smooth-oil": ["chemical-plant"],
     coal: ["miner-mk1"],
     stone: ["miner-mk1", "by-hand"],
     studonite: ["miner-mk1"],
@@ -277,7 +280,7 @@ const requiredBuildings: {
     "smelter-mk1": ["by-hand", "constructer"],
     "smelter-mk2": ["constructer", "assembler", "manufacturer"],
     greenhouse: ["assembler", "manufacturer"],
-    hydroponics: ["manufacturer"],
+    hydroponics: ["assembler", "manufacturer"],
     "water-filter": ["by-hand", "constructer", "assembler", "manufacturer"],
 
     explorer: ["assembler", "manufacturer"],

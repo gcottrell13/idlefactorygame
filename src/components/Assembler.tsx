@@ -129,6 +129,7 @@ export function Assembler({
         else if (updateSpeed > 8) speedClass = "fast";
         stateDisplay = (
             <ProgressBar
+                animated={progressDisplayNumber === 1}
                 className={"building-progress " + speedClass}
                 now={progressDisplayNumber * 100}
             />

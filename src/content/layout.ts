@@ -14,7 +14,7 @@ const sections: Sections = [
         SubSections: [
             {
                 Name: "Start",
-                Items: ["begin", "youwin", "research-the-end"],
+                Items: ["begin", "youwin", "research-the-end", "the-spark"],
             },
             {
                 Name: "Land",
@@ -83,6 +83,7 @@ const sections: Sections = [
             {
                 Name: "Upgrades",
                 Items: [
+                    "boost-spark",
                     "boost-lumberjack",
                     "boost-constructor",
                     "boost-miner-mk1",
@@ -176,7 +177,6 @@ const sections: Sections = [
                     "glass",
                     "clean-water",
                     "plastic",
-                    "evaporate-water",
                     "pipe",
                 ],
             },
@@ -188,7 +188,6 @@ const sections: Sections = [
                 Name: "Buildings",
                 Items: [
                     "assembler",
-                    "water-evaporator",
                     "water-filter",
                     "water-pump-mk1",
                     "greenhouse",
@@ -226,6 +225,7 @@ const sections: Sections = [
                     "gold",
                     "gold-filament",
                     "advanced-circuit",
+                    "smooth-oil",
                 ],
             },
             {

@@ -1,7 +1,7 @@
 import { Items, itemsMap, partialItems } from "./itemNames";
 
 export type Recipe = {
-    [p in Items]?: number;
+    [p in Items]?: number | bigint;
 };
 
 export type Recipes = {
@@ -35,6 +35,8 @@ type allowedRecipeTimes =
 const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     youwin: 31536000,
     "": 1,
+    "boost-spark": 1,
+    "the-spark": 1,
 
     begin: 1,
 
@@ -205,13 +207,11 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
 
     // buildings
     "oil-pump": 15,
+    "smooth-oil": 15,
     assembler: 15,
     "gas-extractor": 30,
     greenhouse: 10,
     "water-filter": 10,
-    "water-evaporator": 10,
-
-    "evaporate-water": 1,
 
     // containers
     tank: 10,
@@ -371,7 +371,10 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
 };
 
 const recipes: Recipes = {
-    youwin: { "margarita": 100, "car": 100, "wizard-paragon": 100 },
+    youwin: {},
+    "the-spark": { "spark-plug": 1 },
+    "boost-spark": { "the-spark": 10 },
+
     "research-the-end": { "wizard-power": 100000 },
     "": {},
     begin: {},
@@ -458,7 +461,7 @@ const recipes: Recipes = {
     // buildings
     constructer: { gear: 10, "iron-frame": 2 },
     assembler: { constructer: 1, "copper-wire": 15, "iron-frame": 4 },
-    manufacturer: { assembler: 1, steel: 10, "basic-circuit": 10 },
+    manufacturer: { assembler: 1, steel: 10, "basic-circuit": 10, "smooth-oil": 3, },
     "gas-extractor": { gear: 20, steel: 5, "iron-frame": 15 },
     "chemical-plant": {
         gear: 20,
@@ -470,12 +473,11 @@ const recipes: Recipes = {
     "smelter-mk1": { stone: 10 },
     "smelter-mk2": { "iron-frame": 10, "copper-wire": 10, "smelter-mk1": 1 },
     "oil-pump": { steel: 10, pipe: 10, "iron-frame": 10 },
+    "smooth-oil": { oil: 5 },
     "water-pump-mk1": { "iron-bar": 15, pipe: 5 },
     greenhouse: { steel: 10, glass: 20, seed: 1 },
     hydroponics: { steel: 50, "basic-circuit": 20, "iron-frame": 2 },
     "water-filter": { steel: 5, pipe: 5 },
-    "water-evaporator": { steel: 5, pipe: 5 },
-    "evaporate-water": { water: 50, "clean-water": 50 },
     "coal-power": { steel: 100 },
     "nuclear-reactor": { computer: 100, adamantium: 500 },
 
@@ -484,7 +486,7 @@ const recipes: Recipes = {
     "research-car": { "science5": 100 },
     "desk": { "wood": 10 },
     "desktop-computer": { "desk": 1, "computer": 4, "plastic": 10, "copper-wire": 10 },
-    "engine-block": { steel: 10 },
+    "engine-block": { steel: 10, "smooth-oil": 1 },
     "car-engine": { "engine-block": 1, "engine-electronics": 5, "crank-shaft": 1, "spark-plug": 7, "piston": 7 },
     "car": { "car-chassis": 1, "car-engine": 1, "chair": 2, "steering-wheel": 1, "anti-grav-thruster": 1 },
     "engine-electronics": { "basic-circuit": 10 },
@@ -571,10 +573,25 @@ const recipes: Recipes = {
 
     "research-science-1": { "copper-wire": 10, gear: 10 },
     "research-science-2": { science1: 200, steel: 50 },
-    "research-science-3": { science2: 300, plastic: 50, "basic-circuit": 50 },
-    "research-science-4": { science3: 400, "advanced-circuit": 100 },
-    "research-science-5": { science4: 500, aluminum: 500, computer: 50 },
-    "research-science-6": { science5: 700, u234: 1500, computer: 50 },
+    "research-science-3": {
+        science2: 3_000,
+        plastic: 5_000,
+        "basic-circuit": 5_000,
+    },
+    "research-science-4": {
+        science3: 40_000,
+        "advanced-circuit": 5_000,
+    },
+    "research-science-5": { 
+        science4: 5_000_000, 
+        aluminum: 5_000, 
+        computer: 5_000,
+    },
+    "research-science-6": {
+        science5: 70_000_000,
+        u234: 1_000, 
+        computer: 5_000,
+    },
 
     "boost-lumberjack": { money: 100 },
     "boost-miner-mk1": { money: 100 },
@@ -599,9 +616,9 @@ const recipes: Recipes = {
 
     "research-box": { science1: 1 },
     "research-box2": { science1: 1, box: 10 },
-    "research-box3": { science1: 10, box: 100 },
-    "research-box4": { science1: 100, box: 1000 },
-    "research-box5": { science1: 1000, bauxite: 1000 },
+    "research-box3": { science2: 10, box: 10000 },
+    "research-box4": { science3: 100, box: 10n ** 15n },
+    "research-box5": { science4: 1000, bauxite: 1000 },
 };
 
 const recipeScaleFactor: partialItems<number> = {

@@ -338,7 +338,8 @@ export function ItemDisplay({
     const isNew = state.acknowledged[itemName] !== true;
     const hasStorage = maxValue !== REALLY_BIG;
 
-    const hideButton = GAME.allAssemblers.includes(itemName as any) ? (
+    const hasButton = GAME.allAssemblers.includes(itemName as any) || GAME.storageSizes[itemName] !== 0n;
+    const hideButton = hasButton ? (
         <OverlayTrigger placement={"left"} overlay={<Popover><Popover.Body>Hide Add Buttons</Popover.Body></Popover>}>
             <Button
                 onClick={() => dispatchAction({
@@ -426,13 +427,20 @@ interface ByHandButtonProps {
 
 function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
     const isPressed = useRef<boolean>(false);
+    const intervalIdRef = useRef<any>(0);
     const [MAKE_BY_HAND_INTERVAL, setIntervalId] = useState<any>(0);
+
+    useEffect(() => {
+        return () => {
+            clearInterval(intervalIdRef.current);
+        };
+    }, []);
 
     useEffect(
         () => {
             if (!makeByHand && isPressed.current) {
                 isPressed.current = false;
-                clearInterval(MAKE_BY_HAND_INTERVAL);
+                clearInterval(intervalIdRef.current);
             }
         },
         [makeByHand],
@@ -446,24 +454,25 @@ function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
                     makeByHand();
                     const interval = setInterval(() => {
                         if (!isPressed.current) {
-                            clearInterval(interval);
+                            clearInterval(intervalIdRef.current);
                             return;
                         }
                         console.log(`making ${itemName}`);
                         makeByHand();
                     }, 200);
                     isPressed.current = true;
+                    intervalIdRef.current = interval;
                     setIntervalId(interval);
                 }
             }}
             onMouseUp={() => {
-                clearInterval(MAKE_BY_HAND_INTERVAL);
+                clearInterval(intervalIdRef.current);
                 isPressed.current = false;
                 if (makeByHand) makeByHand();
             }}
             onMouseLeave={() => {
                 isPressed.current = false;
-                clearInterval(MAKE_BY_HAND_INTERVAL);
+                clearInterval(intervalIdRef.current);
             }}
             disabled={makeByHand === false}
         >

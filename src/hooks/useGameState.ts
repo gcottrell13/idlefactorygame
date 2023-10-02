@@ -12,7 +12,7 @@ import {
 import {
     consumeMaterialsFromRecipe,
 } from "../assembly";
-import { NumToBig, REALLY_BIG, bigGtE, bigMax, bigMin, bigSum, scaleBigInt } from "../bigmath";
+import { NumToBig, REALLY_BIG, bigGtE, bigMax, bigMin, bigMul, bigSum, scaleBigInt } from "../bigmath";
 import { parseFormat } from "../numberFormatter";
 import { ACTIONS } from "../content/actions";
 
@@ -59,7 +59,7 @@ export function useGameState() {
             bigMax(
                 bigSum(
                     keys(assemblers).map(
-                        (key) => scaleBigInt(assemblers[key] ?? 0n, GAME.storageSizes[key])
+                        (key) => bigMul(assemblers[key] ?? 0n, GAME.storageSizes[key])
                     ),
                 ),
                 0n,
@@ -68,9 +68,9 @@ export function useGameState() {
                 bigSum(
                     keys(storage).map(
                         (key) =>
-                            scaleBigInt(storage[key] ?? 0n, canBeStoredIn.includes(key)
-                                ? GAME.storageSizes[key] ?? 0
-                                : 0),
+                            bigMul(storage[key] ?? 0n, canBeStoredIn.includes(key)
+                                ? GAME.storageSizes[key] ?? 0n
+                                : 0n),
                     )
                 ),
                 0n,
@@ -250,7 +250,7 @@ export function useGameState() {
             const haveAssemblers =
                 stateRef.current.amountThatWeHave[level] ?? 0n;
             amount = bigMin(amount, haveAssemblers);
-            k[level] = appliedAssemblers + amount;
+            k[level] = bigMax(0n, appliedAssemblers + amount);
             stateRef.current.assemblers[itemName] = k;
             stateRef.current.amountThatWeHave[level] = haveAssemblers - amount;
         },

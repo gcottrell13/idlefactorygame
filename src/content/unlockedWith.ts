@@ -6,6 +6,8 @@ const unlockedWith: partialItems<Items[]> = {
 
     prospector: ["begin"],
     youwin: ["research-the-end"],
+    "the-spark": ["research-the-end"],
+    "boost-spark": ["research-the-end"],
 
     "small-battery": ["research-small-battery"],
     electricity: ["research-small-battery"],
