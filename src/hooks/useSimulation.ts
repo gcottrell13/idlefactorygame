@@ -29,7 +29,7 @@ export const PRODUCTION_SCALE_N = BigInt(PRODUCTION_SCALE);
 const updateTimestamps: number[] = [];
 
 export function useProduction(ticksPerSecond: number) {
-    const { 
+    const {
         stateRef,
         addToTotal,
         dispatchAction,
@@ -95,11 +95,9 @@ export function useProduction(ticksPerSecond: number) {
                             GAME.timePerRecipe[itemName]
                         );
 
-                        const booster = GAME.buildingBoosts[assemblerName];
-                        if (booster) {
-                            const amt = amountThatWeHave[booster] ?? 0n;
-                            amountAddPerTick = scaleBigInt(amountAddPerTick, GAME.calculateBoost(booster, amt));
-                        }
+                        amountAddPerTick = scaleBigInt(amountAddPerTick,
+                            GAME.calculateBoost(assemblerName, stateRef.current)
+                        );
 
                         let [time, state] = getProductionProgress(
                             itemName,
@@ -178,7 +176,7 @@ export function useProduction(ticksPerSecond: number) {
 
 
     const canMakeItemByHand = useCallback((itemName: Items) => {
-        if (!stateRef.current.visible[itemName]) 
+        if (!stateRef.current.visible[itemName])
             return false;
         if (GAME.requiredBuildings(itemName).includes("by-hand") === false)
             return null;

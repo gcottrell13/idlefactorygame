@@ -12,8 +12,7 @@ function maxCraftByAssemblerSpeed(game: GAMEVALUES, state: State, item: Items) {
     const pairs = mapPairs(state.assemblers[item], (numAssemblers, assemblerName) => {
         const boostingItem = game.buildingBoosts[assemblerName];
         if (!boostingItem) return numAssemblers;
-        return scaleBigInt(numAssemblers, 
-            game.calculateBoost(boostingItem, state.amountThatWeHave[boostingItem]));
+        return scaleBigInt(numAssemblers, game.calculateBoost(assemblerName, state));
     });
     return bigSum(pairs);
 }

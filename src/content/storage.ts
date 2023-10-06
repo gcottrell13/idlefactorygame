@@ -9,9 +9,9 @@ const MIN_STORAGE = 10n * SCALE_N;
 const storageSizes = {
     box: 10n ** 2n,
     "box-box": 10n ** 5n,
-    box3: 10n ** 15n,
-    box4: 10n ** 45n,
-    box5: 10n ** 100n,
+    box3: 10n ** 8n,
+    box4: 10n ** 11n,
+    box5: 10n ** 15n,
     tank: 1500n,
     "adamantium-drill": 10n,
     "chemical-plant": 100n,

@@ -54,11 +54,8 @@ export function Assembler({
     const thisPowerState = state.powerConsumptionState[itemName] ?? {};
 
     const no = assemblersMakingThis[assemblerName] ?? 0n;
-    const boost = GAME.buildingBoosts[assemblerName];
     let speedPer = GAME.assemblerSpeeds[assemblerName] / baseCraftTime;
-    if (boost) {
-        speedPer *= GAME.calculateBoost(boost, state.amountThatWeHave[boost]);
-    }
+    speedPer *= GAME.calculateBoost(assemblerName, state);
     const totalSpeed = scaleBigInt(no, speedPer);
 
     let label = (

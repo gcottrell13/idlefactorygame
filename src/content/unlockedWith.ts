@@ -64,8 +64,6 @@ const unlockedWith: partialItems<Items[]> = {
     "boost-constructor": ["constructer", "money"],
     "boost-desktop-computer": ["desktop-computer"],
 
-    "desk": ["research-science-5"],
-
     "iron-node": ["research-metal"],
     "copper-node": ["research-metal"],
     "stony-land": ["research-metal"],

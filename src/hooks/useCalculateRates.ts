@@ -41,7 +41,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
     const assemblerBoosts: partialItems<number> = fromPairs(
         GAME.allAssemblers.map((assemblerName) => [
             assemblerName,
-            GAME.calculateBoost(GAME.buildingBoosts[assemblerName], state.amountThatWeHave[GAME.buildingBoosts[assemblerName] ?? '']),
+            GAME.calculateBoost(assemblerName, state)
         ]),
     );
 

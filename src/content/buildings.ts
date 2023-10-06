@@ -1,15 +1,15 @@
 import { Items, partialItems } from "./itemNames";
 
 const assemblerSpeeds = {
-    constructer: 0.5,
-    assembler: 0.75,
-    manufacturer: 1.0,
+    constructer: 0.75,
+    assembler: 1.5,
+    manufacturer: 2.0,
     "chemical-plant": 1.0,
     "gas-extractor": 1.0,
-    "smelter-mk1": 0.5,
-    "smelter-mk2": 1,
+    "smelter-mk1": 1.0,
+    "smelter-mk2": 1.0,
     "oil-pump": 1.0,
-    "miner-mk1": 0.75,
+    "miner-mk1": 1.0,
     "water-pump-mk1": 1,
     "water-filter": 1,
     greenhouse: 0.5,
@@ -47,7 +47,7 @@ const buildingPowerRequirementsPerSecond: partialItems<partialItems<number>> = {
     "smelter-mk2": { electricity: 3 },
     "water-filter": { electricity: 5 },
     "water-pump-mk1": { electricity: 5 },
-    assembler: { electricity: 6 },
+    assembler: { electricity: 2 },
     centrifuge: { electricity: 10 },
     constructer: { electricity: 1 },
     explorer: { electricity: 10 },
@@ -173,6 +173,7 @@ const requiredBuildings: {
     "research-basic-circuit": ["by-hand"],
     "research-woodcutting": ["by-hand"],
     "research-money": ["by-hand"],
+    "research-satisfy-button": ["by-hand"],
 
     "boost-lumberjack": ["by-hand"],
     "boost-miner-mk1": ["by-hand"],

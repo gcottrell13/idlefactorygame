@@ -92,10 +92,13 @@ const ex = {
     buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
     buildingBoostTiers: fillWithDefault(buildings.buildingBoostTiers, () => buildings.defaultBuildingBoostTiers),
     buildingPowerDisplayWord: buildings.buildingPowerDisplayWord,
-    calculateBoost: (boostingItem: Items | undefined, amount: bigint | undefined): number => {
-        if (!amount || !boostingItem) return 1;
-        const boost = ex.buildingBoostTiers[boostingItem][Number(amount) / SCALE];
-        if (!boost) return 2 ** bigToNum(amount);
+    calculateBoost: (recipe: Items, state: State): number => {
+        const boostingItem = ex.buildingBoosts[recipe];
+        if (!boostingItem) return 1;
+        const amount = bigToNum(state.amountThatWeHave[boostingItem]);
+        if (!amount) return 1;
+        const boost = ex.buildingBoostTiers[boostingItem][amount];
+        if (!boost) return 2 ** amount;
         return boost;
     },
     calculateRecipeScale: (item: Items | undefined, amount: bigint | undefined): bigint => {

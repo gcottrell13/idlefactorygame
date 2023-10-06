@@ -10,6 +10,7 @@ import {
     OverlayTrigger,
     Badge,
     Table,
+    ProgressBar,
 } from "react-bootstrap";
 import Popover from "react-bootstrap/Popover";
 import { keys, values, mapPairs } from "../smap";
@@ -28,7 +29,7 @@ import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
-import { REALLY_BIG, bigFloor, bigGt, bigMin, bigMul, bigSum } from "../bigmath";
+import { REALLY_BIG, bigDiv, bigFloor, bigGt, bigMin, bigMul, bigSum, bigToNum } from "../bigmath";
 import { useGameState } from "../hooks/useGameState";
 
 type func = () => void;
@@ -156,9 +157,13 @@ export function ItemDisplay({
             ? "visible"
             : "";
     const netRate = producingRate - othersConsumingRate;
+    const satisfactionPercent = othersConsumingRate > 0n
+        ? bigToNum(bigDiv(producingRate * 100n, othersConsumingRate))
+        : 100;
 
     const othersConsumingThis = GAME.recipesConsumingThis[itemName]
         .filter((recipeName) => keys(state.assemblers[recipeName]).length > 0)
+        .sort((a, b) => (othersConsuming[a] ?? 0n) > (othersConsuming[b] ?? 0n) ? 1 : -1)
         .map((recipeName) => {
             const states = keys(state.assemblers[recipeName]).map((an) =>
                 assemblerIsStuckOrDisabled(recipeName, an),
@@ -217,12 +222,21 @@ export function ItemDisplay({
         const overlay = (
             <Popover className={"popover-no-max-width"}>
                 <Popover.Body>
-                    producing: {d(producingRate)}/s
+                    producing: {d(producingRate)}/s - {satisfactionPercent}%
                     <br />
                     consumed: {d(othersConsumingRate)}/s
                     <span className={'rate-per'}>
                         (max {d(maxConsumptionRates[itemName])}/s)
                     </span>
+                    <br />
+                    <ProgressBar
+                        now={satisfactionPercent}
+                        variant={
+                            satisfactionPercent < 20 ? 'danger' :
+                            satisfactionPercent < 50 ? 'warning' :
+                            'success'
+                        }
+                    />
                     <Table>
                         <tbody>{othersConsumingThis}</tbody>
                     </Table>

@@ -283,6 +283,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "research-adamantium-drill": 1,
     "research-computer": 1,
     "research-science-5": 1,
+    "research-satisfy-button": 1,
 
     // science
     science4: 4,
@@ -484,7 +485,7 @@ const recipes: Recipes = {
     explorer: { steel: 10, "basic-circuit": 8 },
 
     "research-car": { "science5": 100 },
-    "desk": { "wood": 10 },
+    "desk": { "wood": 10, "science5": 1 },
     "desktop-computer": { "desk": 1, "computer": 4, "plastic": 10, "copper-wire": 10 },
     "engine-block": { steel: 10, "smooth-oil": 1 },
     "car-engine": { "engine-block": 1, "engine-electronics": 5, "crank-shaft": 1, "spark-plug": 7, "piston": 7 },
@@ -569,6 +570,7 @@ const recipes: Recipes = {
     "research-miner-mk1": { science1: 30 },
     "research-advanced-circuitry": { science3: 500 },
     "research-mass-click": { science1: 100 },
+    "research-satisfy-button": { science4: 500_000 },
     "research-money": { science2: 10 },
 
     "research-science-1": { "copper-wire": 10, gear: 10 },
@@ -584,13 +586,13 @@ const recipes: Recipes = {
     },
     "research-science-5": { 
         science4: 5_000_000, 
-        aluminum: 5_000, 
-        computer: 5_000,
+        aluminum: 500_000, 
+        computer: 500_000,
     },
     "research-science-6": {
         science5: 70_000_000,
-        u234: 1_000, 
-        computer: 5_000,
+        u234: 100_000, 
+        computer: 500_000,
     },
 
     "boost-lumberjack": { money: 100 },
@@ -615,9 +617,9 @@ const recipes: Recipes = {
     "boost-desktop-computer": { "copper-wire": 42, "money": 10 },
 
     "research-box": { science1: 1 },
-    "research-box2": { science1: 1, box: 10 },
-    "research-box3": { science2: 10, box: 10000 },
-    "research-box4": { science3: 100, box: 10n ** 15n },
+    "research-box2": { science1: 1, box: 10n ** 4n },
+    "research-box3": { science2: 10, box: 10n ** 7n },
+    "research-box4": { science3: 100, box: 10n ** 10n },
     "research-box5": { science4: 1000, bauxite: 1000 },
 };
 

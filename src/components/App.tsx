@@ -5,7 +5,7 @@ import GAME from "../values";
 import { Items } from "../content/itemNames";
 import { Button, Badge, Tabs, Tab, ButtonToolbar } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
-import { SMap, mapPairs } from "../smap";
+import { SMap, mapPairs, values } from "../smap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { VERSION } from "../version";
 import { ItemDisplay } from "./ItemDisplay";
@@ -13,7 +13,7 @@ import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
 import { ReleaseNotes } from "./ReleaseNotes";
-import { NumToBig, bigMin, bigLt, bigEq } from "../bigmath";
+import { NumToBig, bigMin, bigLt, bigEq, bigSum, bigDiv, bigCeil } from "../bigmath";
 
 type Props = {
     ticksPerSecond: number;
@@ -23,8 +23,13 @@ const MAX_BIG = BigInt(Number.MAX_VALUE);
 const MULTI_CLICK_OPTIONS = {
     "1": NumToBig(1),
     "10": NumToBig(10),
+    "100": NumToBig(100),
     "MAX": MAX_BIG,
 }
+
+const SATISFY_CLICK_OPTIONS = {
+    "SATISFY": 0n,
+};
 
 export function App({ ticksPerSecond }: Props) {
     const {
@@ -39,18 +44,43 @@ export function App({ ticksPerSecond }: Props) {
         fps,
     } = useProduction(ticksPerSecond);
 
+    let [currentTab, setCurrentTab] = useState<string | null>(null);
+    const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(MULTI_CLICK_OPTIONS["1"]);
+
+    const sections: SMap<JSX.Element[]> = {};
+    const sectionData = GAME.sections.find((x) => x.Name == currentTab);
+
+    const rates = useCalculateRates(
+        state,
+        sectionData?.SubSections.flatMap((x) => x.Items) ?? [],
+    );
+
     function calculateMaxMake(itemName: Items, n: bigint) {
         return bigMin(
-            currentClickAmount,
+            bigLt(currentClickAmount, 1) ? NumToBig(1) : currentClickAmount,
             howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
             state.calculateStorage(itemName) - n,
             GAME.maxCraftAtATime(itemName, state),
         );
     }
 
-    function calculateMaxAdd(itemName: Items) {
+    function calculateBuildingsToSatisfy(building: Items, recipe: Items) {
+        const consumption = bigSum(values(rates.effectiveConsumptionRates[recipe] ?? {})) + 
+            bigSum(values(rates.powerConsumptionRates[recipe] ?? {}).map(x => x[2]));
+        const production = bigSum(values(rates.effectiveProductionRates[recipe] ?? {}));
+        const speed = NumToBig(
+            GAME.assemblerSpeeds[building] * GAME.calculateBoost(building, state) / GAME.timePerRecipe[recipe]
+        );
+        if (speed === 0n) return NumToBig(1);
+        return bigCeil(bigDiv(consumption - production, speed));
+    }
+
+    function calculateMaxAdd(itemName: Items, target?: Items) {
+        const amt = currentClickAmount === 0n && target
+            ? calculateBuildingsToSatisfy(itemName, target)
+            : currentClickAmount;
         return bigMin(
-            currentClickAmount,
+            bigLt(amt, 1) ? NumToBig(1) : amt,
             state.amountThatWeHave[itemName] ?? 0n,
         );
     }
@@ -58,9 +88,6 @@ export function App({ ticksPerSecond }: Props) {
     const haveAssemblers = GAME.allAssemblers.filter(
         (key) => (amountThatWeHave[key] ?? 0) > 0,
     );
-
-    let [currentTab, setCurrentTab] = useState<string | null>(null);
-    const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(MULTI_CLICK_OPTIONS["1"]);
 
     if (currentTab === null) {
         setCurrentTab(
@@ -72,14 +99,6 @@ export function App({ ticksPerSecond }: Props) {
         );
         return null;
     }
-
-    const sections: SMap<JSX.Element[]> = {};
-    const sectionData = GAME.sections.find((x) => x.Name == currentTab);
-
-    const rates = useCalculateRates(
-        state,
-        sectionData?.SubSections.flatMap((x) => x.Items) ?? [],
-    );
 
     sectionData?.SubSections.forEach((subSection) => {
         sections[currentTab!] ??= [];
@@ -114,7 +133,7 @@ export function App({ ticksPerSecond }: Props) {
                         onClick={() => {
                             doAction({
                                 action: 'add-box',
-                                amount: currentClickAmount,
+                                amount: num,
                                 box: container,
                                 recipe: itemName,
                             });
@@ -134,7 +153,7 @@ export function App({ ticksPerSecond }: Props) {
                 if (state.hideAddButtons[assemblerName]) return;
                 const a = assemblerName as (typeof haveAssemblers)[0];
                 const haveAny = haveAssemblers.includes(assemblerName as any);
-                const num = calculateMaxAdd(a);
+                const num = calculateMaxAdd(a, itemName);
                 assemblerButtons.push(
                     <Button
                         className={"add-assembler"}
@@ -142,7 +161,7 @@ export function App({ ticksPerSecond }: Props) {
                         onClick={() => {
                             doAction({
                                 action: 'add-building',
-                                amount: currentClickAmount,
+                                amount: num,
                                 building: a,
                                 recipe: itemName,
                             })
@@ -216,10 +235,26 @@ export function App({ ticksPerSecond }: Props) {
         }
     });
 
+    let multiClickOptions = {};
+
+    if (bigEq(amountThatWeHave["research-mass-click"], 1)) {
+        multiClickOptions = {
+            ...multiClickOptions,
+            ...MULTI_CLICK_OPTIONS,
+        };
+    }
+
+    if (bigEq(amountThatWeHave["research-satisfy-button"], 1)) {
+        multiClickOptions = {
+            ...multiClickOptions,
+            ...SATISFY_CLICK_OPTIONS,
+        };
+    }
+
     return (
         <Container fluid className={"game-container"}>
             <div className={"sticky"}>
-                <Button onClick={() => doAction({action: 'reset-game'})} variant={"secondary"}>
+                <Button onClick={() => doAction({ action: 'reset-game' })} variant={"secondary"}>
                     Reset
                 </Button>{" "}
                 <ReleaseNotes version={VERSION().join(".")} />{" "}
@@ -268,11 +303,11 @@ export function App({ ticksPerSecond }: Props) {
                     );
                 })}
             </Tabs>
-            {bigEq(amountThatWeHave["research-mass-click"] ?? 0n, 1) ? (
+            {Object.keys(multiClickOptions).length > 0 ? (
                 <ButtonToolbar className={"per-click-amount-buttons"}>
                     Per Click:
                     {
-                        mapPairs(MULTI_CLICK_OPTIONS, (value, display) => {
+                        mapPairs(multiClickOptions, (value, display) => {
                             return (
                                 <Button
                                     onClick={() => setCurrentClickAmount(value)}

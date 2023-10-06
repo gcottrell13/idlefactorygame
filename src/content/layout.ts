@@ -270,6 +270,7 @@ const sections: Sections = [
                     "research-adamantium-drill",
                     "research-aluminum",
                     "research-science-5",
+                    "research-satisfy-button",
                 ],
             },
             {

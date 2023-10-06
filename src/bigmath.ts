@@ -49,7 +49,7 @@ export function bigMin(...nums: bigint[]): bigint {
 
 export function NumToBig(n: number | bigint) {
     if (typeof n === 'bigint') return n;
-    return BigInt(n * SCALE);
+    return BigInt(Math.floor(n * SCALE));
 }
 
 export function bigToNum(n: bigint): number;
@@ -84,9 +84,14 @@ export function bigLt(a: bigint, b: number | bigint): boolean {
 export function bigLtE(a: bigint, b: number | bigint): boolean {
     return a <= NumToBig(b);
 }
-export function bigEq(a: bigint, b: number | bigint): boolean {
+export function bigEq(a: bigint | null | undefined, b: number | bigint): boolean {
+    if (a === null) return false;
+    if (a === undefined) a = 0n;
     return a === NumToBig(b);
 }
 export function bigFloor(a: bigint): bigint {
     return a - (a % SCALE_N);
+}
+export function bigCeil(a: bigint) : bigint {
+    return ((a / SCALE_N) + 1n) * SCALE_N;
 }

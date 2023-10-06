@@ -77,6 +77,7 @@ export type Items =
     | "research-explorer"
     | "research-manufacturer"
     | "research-mass-click"
+    | "research-satisfy-button"
     | "research-miner-mk1"
     | "research-natural-gas"
     | "research-nitrogen"

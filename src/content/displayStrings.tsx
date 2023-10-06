@@ -94,6 +94,7 @@ const displayNames: partialItems<string> = {
     "research-metal": "Tech: Metals",
     "research-marg": "Tech: Marg",
     "research-car": "Car Parts Assembly Manual",
+    "research-satisfy-button": "Tech: Satisfy",
 
     "rock-crusher": "Rock Crusher",
     adamantium: "Adamantium",
@@ -220,7 +221,10 @@ const flavorText: partialItems<React.ReactNode> = {
     electricity: <i>Power is Knowledge</i>,
     "lumberjack-school": <i>They learn all night, and they sleep all day.</i>,
     youwin: "Craft this to WIN!",
-    money: "Cash Money",
+    money: <div>
+        <span>Cash Money</span>
+        <div>Hand Crafting scales with the number of assigned banks / 10</div>
+    </div>,
     bank: "Do you really need all this money?",
 
     science0: "Science 0",
