@@ -30,7 +30,7 @@ const displayNames: partialItems<string> = {
     "mystic-coin": "Mystic Coin",
     "redeem-mc--science5": "Get: Science 5",
     "redeem-mc--assembler": "Get: Assembler",
-    "research-minigames": "Tech: Minigames!",
+    "research-minigames": "Tech: Mystic Coin",
 
     lumberjack: "Lumberjack",
     "lumberjack-school": "Lumberjack School",
