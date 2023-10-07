@@ -28,6 +28,10 @@ const unlockedWith: partialItems<Items[]> = {
     "necro-wizard": ["research-wizard-tower"],
     "wizard-essence": ["research-wizard-tower"],
 
+    "mystic-coin": ["research-minigames"],
+    "redeem-mc--science5": ["research-minigames", "research-science-5"],
+    "redeem-mc--assembler": ["research-minigames", "research-constructor"],
+
     "gas-extractor": ["research-nitrogen"],
     "coal-node": ["research-steel"],
     "smelter-mk2": ["research-steel"],
@@ -126,7 +130,12 @@ const displayNewBadge: partialItems<boolean> = {
     desk: false,
 };
 
+const hideUnlocks: partialItems<boolean> = {
+    "research-minigames": true,
+}
+
 export default {
     unlockedWith,
     displayNewBadge,
+    hideUnlocks,
 };

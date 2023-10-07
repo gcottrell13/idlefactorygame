@@ -57,9 +57,11 @@ const ex = {
         buildings.requiredBuildings[item] ?? ["by-hand"],
     timePerRecipe: recipeValues.timePerRecipe,
     sideProducts: fillWithDefault(byproducts.byproducts, () => []),
+    hideByproducts: fillWithDefault(byproducts.hideByproducts, () => false),
     storageSizes: fillWithDefault(storage.storageSizes, () => 0n),
     unlockedWith: fillWithDefault(unlockedWith.unlockedWith, () => []),
     unlocks: fillWithDefault(unlocks, () => []),
+    hideUnlocks: fillWithDefault(unlockedWith.hideUnlocks, () => false),
 
     allItemNames: allItemNames,
     allAssemblers: keys(buildings.assemblerSpeeds),

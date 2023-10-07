@@ -134,6 +134,11 @@ const requiredBuildings: {
     "wind-turbine": ["by-hand", "constructer", "assembler", "manufacturer"],
     food: ["by-hand", "prospector", "hydroponics"],
 
+    "mystic-coin": [],
+    "research-minigames": ["by-hand"],
+    "redeem-mc--science5": ["by-hand"],
+    "redeem-mc--assembler": ["by-hand"],
+
     "coal-power": ["by-hand", "manufacturer"],
     "nuclear-reactor": ["manufacturer"],
 

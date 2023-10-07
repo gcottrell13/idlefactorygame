@@ -12,10 +12,11 @@ import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
 import { ReleaseNotes } from "./ReleaseNotes";
-import { NumToBig, bigMin, bigLt, bigEq, bigSum, bigDiv, bigCeil } from "../bigmath";
+import { NumToBig, bigMin, bigLt, bigEq, bigSum, bigDiv, bigCeil, bigGt } from "../bigmath";
 import { ClickAmountButtons } from "./ClickAmountButtons";
 import "./App.scss";
 import { useMinigames } from "../hooks/useMinigames";
+import { Sprite } from "./Sprite";
 
 type Props = {
     ticksPerSecond: number;
@@ -50,6 +51,7 @@ export function App({ ticksPerSecond }: Props) {
     const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(MULTI_CLICK_OPTIONS["1"]);
 
     const [isPlayingMinigame, setIsPlayingMinigame] = useState<boolean>(false);
+    const [miniGamePrize, setMiniGamePrize] = useState<[item: Items, amount: bigint | string] | null>(null);
     const { getMiniGame, resetMinigame } = useMinigames();
 
     const MiniGameClass = isPlayingMinigame ? getMiniGame() : null;
@@ -188,6 +190,19 @@ export function App({ ticksPerSecond }: Props) {
                 );
             });
 
+            if (itemName === 'mystic-coin' && bigGt(amountThatWeHave['research-minigames'] ?? 0n, 0)) {
+                assemblerButtons.push(
+                    <Button
+                        onClick={() => {
+                            setIsPlayingMinigame(true);
+                            setMiniGamePrize(['mystic-coin', '2']);
+                        }}
+                    >
+                        Play a Mini Game
+                    </Button>
+                );
+            }
+
             thisSectionItems.push(
                 <ItemDisplay
                     key={itemName}
@@ -275,11 +290,6 @@ export function App({ ticksPerSecond }: Props) {
                     Play Time: {formatSeconds(state.timeSpentPlaying)}
                 </span>
                 <span className={"fps"}>{formatNumber(fps)} UPS</span>
-                <Button
-                    onClick={() => setIsPlayingMinigame(true)}
-                >
-                    Play a minigame
-                </Button>
             </div>
             <Tabs
                 activeKey={currentTab}
@@ -327,10 +337,21 @@ export function App({ ticksPerSecond }: Props) {
                 multiClickOptions={multiClickOptions}
                 onClick={setCurrentClickAmount}
             />
-            {MiniGameClass && (
-                <MiniGameClass 
-                    giftRepr={null}
-                    onSolve={() => {}}
+            {MiniGameClass && miniGamePrize && (
+                <MiniGameClass
+                    giftRepr={<span>
+                        <Sprite name={miniGamePrize[0]} amount={miniGamePrize[1]} />
+                        {GAME.displayNames(miniGamePrize[0])}
+                    </span>}
+                    onSolve={() => {
+                        doAction({
+                            action: 'add-amount',
+                            amount: miniGamePrize[1],
+                            item: miniGamePrize[0],
+                        });
+                        setIsPlayingMinigame(false);
+                        setMiniGamePrize(null);
+                    }}
                     size={10}
                     onCancel={stopMinigame}
                 />

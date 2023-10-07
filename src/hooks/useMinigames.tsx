@@ -1,7 +1,7 @@
 import { random } from "lodash";
 import { keys } from "../smap";
 import { Picross } from "../components/Picross";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 
 const MinigamesRegistry = {

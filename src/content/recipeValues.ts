@@ -38,6 +38,11 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "boost-spark": 1,
     "the-spark": 1,
 
+    "mystic-coin": 1,
+    "redeem-mc--science5": 1,
+    "redeem-mc--assembler": 1,
+    "research-minigames": 1,
+
     begin: 1,
 
     money: 1,
@@ -376,6 +381,11 @@ const recipes: Recipes = {
     "the-spark": { "spark-plug": 1 },
     "boost-spark": { "the-spark": 10 },
 
+    "mystic-coin": {},
+    "redeem-mc--science5": { "mystic-coin": 4 },
+    "redeem-mc--assembler": { "mystic-coin": 2 },
+    "research-minigames": { "science0": 100 },
+
     "research-the-end": { "wizard-power": 100000 },
     "": {},
     begin: {},
@@ -584,14 +594,14 @@ const recipes: Recipes = {
         science3: 40_000,
         "advanced-circuit": 5_000,
     },
-    "research-science-5": { 
-        science4: 5_000_000, 
-        aluminum: 500_000, 
+    "research-science-5": {
+        science4: 5_000_000,
+        aluminum: 500_000,
         computer: 500_000,
     },
     "research-science-6": {
         science5: 70_000_000,
-        u234: 100_000, 
+        u234: 100_000,
         computer: 500_000,
     },
 

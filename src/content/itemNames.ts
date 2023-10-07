@@ -211,6 +211,11 @@ export type Items =
     | "consume-necro-wizard"
     | "consume-wizard-pop"
     | "boost-wizard"
+
+    | "research-minigames"
+    | "mystic-coin"
+    | "redeem-mc--science5"
+    | "redeem-mc--assembler"
     | "";
 
 export type itemsMap<T> = { [p in Items]: T };

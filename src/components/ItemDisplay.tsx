@@ -150,7 +150,7 @@ export function ItemDisplay({
 
     const assemblerSpeed = GAME.assemblerSpeeds[itemName];
     const unlocks = GAME.unlocks[itemName].map(GAME.displayNames);
-    const madeIn = GAME.requiredBuildings(itemName).map(GAME.displayNames);
+    const madeIn = GAME.requiredBuildings(itemName);
 
     const historyVisible =
         assemblers.length > 0 ||
@@ -274,8 +274,8 @@ export function ItemDisplay({
 
     const parts = [
         GAME.flavorText[itemName] && <div>{GAME.flavorText[itemName]}</div>,
-        madeIn.length > 0 && (
-            <div className={"made-in"}>Made with: {madeIn.join(", ")}</div>
+        madeIn.length > 0 && !_.isEqual(madeIn, ['by-hand']) && (
+            <div className={"made-in"}>Made with: {madeIn.map(GAME.displayNames).join(", ")}</div>
         ),
         costScale !== 1 && (
             <div>Cost scales {costScale}x per item owned</div>
@@ -308,7 +308,7 @@ export function ItemDisplay({
                 Crafting Speed: {assemblerSpeed}x
             </div>
         ),
-        byproducts.length > 0 && (
+        byproducts.length > 0 && GAME.hideByproducts[itemName] === false && (
             <div className={"byproduct-list"}>
                 Byproducts: {byproductString}
             </div>
@@ -321,7 +321,7 @@ export function ItemDisplay({
         boostedBy && (
             <div>Boosted by: <Sprite name={boostedBy} /> {GAME.displayNames(boostedBy)}</div>
         ),
-        unlocks.length > 0 && (
+        unlocks.length > 0 && GAME.hideUnlocks[itemName] === false && (
             <div className={"unlock-list"}>
                 <b>Unlocks:</b> {unlocks.join(", ")}
             </div>

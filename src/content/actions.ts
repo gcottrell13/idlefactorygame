@@ -55,6 +55,11 @@ type ACTION_SET_AMOUNT = ACTION<'set-amount'> & {
     amount: number | bigint | string;
 }
 
+type ACTION_ADD_AMOUNT = ACTION<'add-amount'> & {
+    item: Items;
+    amount: number | bigint | string;
+}
+
 type ACTION_HIDE_BUILDING_ADD_BUTTON = ACTION<'hide-building-add-button'> & {
     building: Items;
 }
@@ -75,6 +80,7 @@ export type ACTIONS =
     | ACTION_UNHIDE_ITEM
     | ACTION_RESET_GAME
     | ACTION_SET_AMOUNT
+    | ACTION_ADD_AMOUNT
     | ACTION_HIDE_BUILDING_ADD_BUTTON
     | ACTION_UNHIDE_BUILDING_ADD_BUTTON
     ;

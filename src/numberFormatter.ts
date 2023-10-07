@@ -141,8 +141,17 @@ const bigLookup = _.fromPairs(bigExponents.map((exp, i) => {
 ((document as any).game ??= {}).REALLY_BIG_FORMATTED = formatNumber(REALLY_BIG);
 ((document as any).game ??= {}).bigExponents = bigExponents;
 
-export function parseFormat(str: string): bigint {
-    let [mantissaStr, exp] = str.split(' ');
+export function parseFormat(amount: number | bigint | string): bigint {
+    if (typeof amount === 'string') {
+        try {
+            return NumToBig(parseInt(amount));
+        }
+        catch {}
+    }
+    if (typeof amount === 'number') return NumToBig(amount);
+    if (typeof amount === 'bigint') return amount;
+
+    let [mantissaStr, exp] = amount.split(' ');
     const mantissa = parseFloat(mantissaStr);
 
     function scale(exponent: string | number) {
@@ -154,7 +163,7 @@ export function parseFormat(str: string): bigint {
     const power = bigLookup[exp] ?? -1;
 
     if (power == -1)
-        throw new Error(`unable to parse ${str}`);
+        throw new Error(`unable to parse ${amount}`);
 
     return scale(power * 3);
 }

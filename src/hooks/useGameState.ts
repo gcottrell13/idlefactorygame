@@ -12,7 +12,7 @@ import {
 import {
     consumeMaterialsFromRecipe,
 } from "../assembly";
-import { NumToBig, REALLY_BIG, bigGtE, bigMax, bigMin, bigMul, bigSum, scaleBigInt } from "../bigmath";
+import { REALLY_BIG, bigGtE, bigMax, bigMin, bigMul, bigSum } from "../bigmath";
 import { parseFormat } from "../numberFormatter";
 import { ACTIONS } from "../content/actions";
 
@@ -215,7 +215,11 @@ export function useGameState() {
                 break;
             }
             case 'set-amount': {
-                setAmount(action.amount, action.item);
+                setAmount(parseFormat(action.amount), action.item);
+                break;
+            }
+            case 'add-amount': {
+                addAmount(action.item, parseFormat(action.amount));
                 break;
             }
             case 'hide-building-add-button': {
@@ -234,11 +238,7 @@ export function useGameState() {
         }
     }
     
-    const setAmount = (amount: string | number | bigint = 1, itemName: Items = "") => {
-        if (typeof amount === 'string') {
-            amount = parseFormat(amount);
-        }
-        if (typeof amount === 'number') amount = NumToBig(amount);
+    const setAmount = (amount: bigint = 1n, itemName: Items = "") => {
         stateRef.current.amountThatWeHave[itemName] = amount;
         stateRef.current.visible[itemName] ??= true;
     };

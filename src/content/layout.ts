@@ -116,6 +116,14 @@ const sections: Sections = [
                 Name: "Money",
                 Items: ["money", "bank", "research-money"],
             },
+            {
+                Name: "Minigames",
+                Items: [
+                    "mystic-coin",
+                    "redeem-mc--science5",
+                    "redeem-mc--assembler",
+                ],
+            },
         ],
     },
     {
@@ -159,6 +167,7 @@ const sections: Sections = [
                     "research-science-2",
                     "research-constructor",
                     "research-steel",
+                    "research-minigames",
                 ],
             },
         ],

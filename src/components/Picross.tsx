@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ReactEventHandler, SyntheticEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Modal, Table } from "react-bootstrap";
 import "./Picross.scss";
 
@@ -78,13 +78,16 @@ export function Picross({
 
     const onMouseUp = useCallback(
         (x: number, y: number) => {
-            setSelected([-1, -1]);
-            setClickState(0);
+            if (clickState === ClickState.noGuess) return;
 
             const newState = _.cloneDeep(state);
-            for (let i of new Set(selectedRows)) {
-                for (let j of new Set(selectedColumns)) {
-                    if (newState[i][j] !== ClickState.noGuess) {
+            const rows = [...new Set(selectedRows)];
+            const cols = [...new Set(selectedColumns)];
+            const shouldFlip = product(rows, cols).every(([x, y]) => newState[x][y] === clickState);
+
+            for (let i of rows) {
+                for (let j of cols) {
+                    if (newState[i][j] === clickState && shouldFlip) {
                         newState[i][j] = ClickState.noGuess;
                     }
                     else {
@@ -92,6 +95,9 @@ export function Picross({
                     }
                 }
             }
+
+            setSelected([-1, -1]);
+            setClickState(ClickState.noGuess);
             setState(newState);
         },
         [state, selectedRows, selectedColumns],
@@ -107,7 +113,13 @@ export function Picross({
     return (
         <Modal onHide={onCancel} show>
             <Modal.Header closeButton>
-                <Modal.Title>Picross</Modal.Title>
+                <Modal.Title>
+                    <h2>Picross</h2>
+                    <br />
+                    {giftRepr && (
+                        <span>Play to win: {giftRepr}</span>
+                    )}
+                </Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Table className={'picross noselect'} bordered hover>
@@ -115,20 +127,26 @@ export function Picross({
                         <tr className={'vertical-hints'}>
                             <td></td>
                             {
-                                hintsX.map((h, i) => (
-                                    <td className={selectedColumns.includes(i) ? 'cross-select' : ''}>
-                                        <pre>{h.map((x, j) => (
-                                            <span className={x === stateXHints[i][j] ? 'hint complete' : 'hint'}>
-                                                {x}&#10;
-                                            </span>
-                                        ))}</pre>
-                                    </td>
-                                ))
+                                hintsX.map((h, i) => {
+                                    const isColSolved = _.isEqual(h, stateXHints[i]) ? 'solved-header' : '';
+                                    const crossSelect = selectedColumns.includes(i) ? 'cross-select' : '';
+
+                                    return (
+                                        <td key={i} className={`${isColSolved} ${crossSelect}`}>
+                                            <pre>{h.map((x, j) => (
+                                                <span className={x === stateXHints[i][j] ? 'hint complete' : 'hint'}>
+                                                    {x}&#10;
+                                                </span>
+                                            ))}</pre>
+                                        </td>
+                                    );
+                                })
                             }
                         </tr>
                         {
                             hintsY.map((h, i) => (
                                 <BoardRow
+                                    key={i}
                                     y={i}
                                     hints={h}
                                     state={state[i]}
@@ -139,6 +157,7 @@ export function Picross({
                                     onMouseUp={onMouseUp}
                                     onMouseOver={onMouseOver}
                                     isSolved={hasBeenSolved}
+                                    clickState={clickState}
                                 />
                             ))
                         }
@@ -170,10 +189,11 @@ interface BoardRowProps {
     state: number[];
     isRowSelected: boolean;
     selectedColumns: number[];
-    onClick: (x: number, y: number, which: ClickState) => void;
+    onClick: null | ((x: number, y: number, which: ClickState) => void);
     onMouseUp: (x: number, y: number) => void;
     onMouseOver: (x: number, y: number) => void;
     isSolved: boolean;
+    clickState: ClickState;
 }
 
 function BoardRow({
@@ -187,22 +207,28 @@ function BoardRow({
     onMouseUp,
     onMouseOver,
     isSolved,
+    clickState,
 }: BoardRowProps) {
-    const handleClick = (e: any, x: number) => {
-        if (e.type === 'mousedown') {
-            onClick(x, y, ClickState.markGuess);
-        } else if (e.type === 'contextmenu') {
-            onClick(x, y, ClickState.markEmpty);
+    const handleClick = (e: React.MouseEvent, x: number) => {
+        if (onClick) {
+            if (e.type === 'mousedown') {
+                onClick(x, y, e.button === 0 ? ClickState.markGuess : ClickState.markEmpty);
+            } else if (e.type === 'contextmenu') {
+                onMouseUp(x, y);
+            }
         }
-        e.stopPropogation();
+        e.stopPropagation();
         e.preventDefault();
     };
 
+    const isRowSolved = _.isEqual(hints, stateHints) ? 'solved-header' : '';
+    const crossSelect = isRowSelected ? 'cross-select' : '';
+
     return (
         <tr>
-            <td className={isRowSelected ? 'cross-select' : ''}>
+            <td className={`${isRowSolved} ${crossSelect}`}>
                 <pre>{hints.map((x, j) => (
-                    <span className={x === stateHints[j] ? 'hint complete' : 'hint'}>
+                    <span key={j} className={x === stateHints[j] ? 'hint complete' : 'hint'}>
                         {x}&nbsp;
                     </span>
                 ))}</pre>
@@ -210,18 +236,29 @@ function BoardRow({
             {
                 state.map((v, i) => {
                     const color =
-                        isSolved ? 'solved-square' :
-                            v === 1 ? 'mark-guess' :
-                                v === 2 || hints.length === 0 ? 'mark-empty' :
-                                    'no-mark';
-                    const selected = selectedColumns.includes(i) || isRowSelected ? 'cross-select' : '';
+                        v === 1 ? (isSolved ? 'solved-square' : 'mark-guess') :
+                            v === 2 || hints.length === 0 ? 'mark-empty' :
+                                'no-mark';
+                    const selected = selectedColumns.includes(i) && isRowSelected ? (
+                        clickState === ClickState.markGuess ? 'will-select'
+                            : clickState === ClickState.markEmpty ? 'will-empty'
+                                : ''
+                    ) : '';
+                    const highlight = !selected && (selectedColumns.includes(i) || isRowSelected) ? 'cross-select' : '';
+
+
+                    const mouseProps = {
+                        onMouseDown: (e: React.MouseEvent) => handleClick(e, i),
+                        onContextMenu: (e: React.MouseEvent) => handleClick(e, i),
+                        onMouseUp: (e: React.MouseEvent) => onMouseUp(i, y),
+                        onMouseOver: (e: React.MouseEvent) => onMouseOver(i, y),
+                    };
+
                     return (
                         <td
-                            className={`${color} ${selected} picross-square`}
-                            onMouseDown={e => handleClick(e, i)}
-                            onContextMenu={e => handleClick(e, i)}
-                            onMouseUp={e => onMouseUp(i, y)}
-                            onMouseOver={e => onMouseOver(i, y)}
+                            key={i}
+                            className={`${color} ${selected} ${highlight} picross-square`}
+                            {...(isSolved ? {} : mouseProps)}
                         >
                             &nbsp;
                         </td>
@@ -270,7 +307,7 @@ function getHints(board: number[][]): number[][] {
         hints.push(a);
 
         for (const item of row) {
-            if (item > 0) {
+            if (item === ClickState.markGuess) {
                 streak += 1;
             }
             else if (streak > 0) {
@@ -285,4 +322,14 @@ function getHints(board: number[][]): number[][] {
     }
 
     return hints;
+}
+
+function product<T1, T2>(a1: T1[], a2: T2[]): (readonly [T1, T2])[] {
+    const results = [];
+    for (const x of a1) {
+        for (const y of a2) {
+            results.push([x, y] as const);
+        }
+    }
+    return results;
 }

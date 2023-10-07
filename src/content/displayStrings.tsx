@@ -27,6 +27,11 @@ const displayNames: partialItems<string> = {
     "the-spark": "The Spark",
     "research-the-end": "The Beginning of The End",
 
+    "mystic-coin": "Mystic Coin",
+    "redeem-mc--science5": "Get: Science 5",
+    "redeem-mc--assembler": "Get: Assembler",
+    "research-minigames": "Tech: Minigames!",
+
     lumberjack: "Lumberjack",
     "lumberjack-school": "Lumberjack School",
     food: "Basic Food",
