@@ -77,6 +77,8 @@ const buildingPowerDisplayWord: partialItems<string> = {
     "smelter-mk2": "Fuel",
     "bank": "Gold",
     "the-spark": "Inputs",
+    "nuclear-reactor": "Fuel",
+    "coal-power": "Fuel",
 } satisfies { [p in Buildings]?: string };
 
 /**

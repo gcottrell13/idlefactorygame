@@ -600,9 +600,9 @@ const recipes: Recipes = {
         computer: 500_000,
     },
     "research-science-6": {
-        science5: 70_000_000,
+        science5: 500_000_000n * 3600n,
         u234: 100_000,
-        computer: 500_000,
+        computer: 500_000_000,
     },
 
     "boost-lumberjack": { money: 100 },

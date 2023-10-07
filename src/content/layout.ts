@@ -110,7 +110,7 @@ const sections: Sections = [
         ],
     },
     {
-        Name: "Money",
+        Name: "Currency",
         SubSections: [
             {
                 Name: "Money",

@@ -17,6 +17,9 @@ export function Sprite({ name: spriteName, amount }: Props) {
     } else if (spriteName.startsWith("boost-")) {
         name = "boost";
     }
+    else if (spriteName.startsWith('redeem-mc--')) {
+        name = spriteName.replace('redeem-mc--', '');
+    }
 
     const spriteContents = useImages()[name];
 

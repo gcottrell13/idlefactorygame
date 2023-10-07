@@ -134,7 +134,10 @@ export function Picross({
                                     return (
                                         <td key={i} className={`${isColSolved} ${crossSelect}`}>
                                             <pre>{h.map((x, j) => (
-                                                <span className={x === stateXHints[i][j] ? 'hint complete' : 'hint'}>
+                                                <span
+                                                    key={j}
+                                                    className={x === stateXHints[i][j] ? 'hint complete' : 'hint'}
+                                                >
                                                     {x}&#10;
                                                 </span>
                                             ))}</pre>

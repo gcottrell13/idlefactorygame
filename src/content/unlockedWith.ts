@@ -132,6 +132,8 @@ const displayNewBadge: partialItems<boolean> = {
 
 const hideUnlocks: partialItems<boolean> = {
     "research-minigames": true,
+    "research-science-6": true,
+    "money": true,
 }
 
 export default {

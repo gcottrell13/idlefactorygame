@@ -61,7 +61,7 @@ button {
     padding: 10px;
     min-height: 50px;
     display: grid;
-    grid-template-columns: 75px 150px 250px 1fr 1fr 20px;
+    grid-template-columns: 75px 150px 300px 1fr 1fr 20px;
     grid-column-gap: 10px;
 
     .new-badge {
@@ -75,6 +75,7 @@ button {
 
     .rate-container {
         grid-column: 3;
+        height: 30px;
 
         .item-max {
             color: gray;

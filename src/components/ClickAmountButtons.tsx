@@ -24,6 +24,7 @@ export function ClickAmountButtons({
                     mapPairs(multiClickOptions, (value, display) => {
                         return (
                             <Button
+                                key={display}
                                 onClick={() => onClick(value)}
                                 active={current === value}
                             >

@@ -227,7 +227,7 @@ const flavorText: partialItems<React.ReactNode> = {
     "lumberjack-school": <i>They learn all night, and they sleep all day.</i>,
     youwin: "Craft this to WIN!",
     money: <div>
-        <span>Cash Money</span>
+        <b>Cash Money 🎉💸💰</b>
         <div>Hand Crafting scales with the number of assigned banks / 10</div>
     </div>,
     bank: "Do you really need all this money?",

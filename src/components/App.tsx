@@ -193,6 +193,7 @@ export function App({ ticksPerSecond }: Props) {
             if (itemName === 'mystic-coin' && bigGt(amountThatWeHave['research-minigames'] ?? 0n, 0)) {
                 assemblerButtons.push(
                     <Button
+                        key={'playminigame'}
                         onClick={() => {
                             setIsPlayingMinigame(true);
                             setMiniGamePrize(['mystic-coin', '2']);
