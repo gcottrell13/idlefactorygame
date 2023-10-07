@@ -11,15 +11,3 @@ const root = createRoot(document.getElementById("view")!);
 root.render(<App ticksPerSecond={TICKS_PER_SECOND} />);
 
 document.title = "idlefactorygame v" + VERSION().join(".");
-document.addEventListener(
-    "mousedown",
-    function (event) {
-        if (event.detail > 1) {
-            event.preventDefault();
-            // of course, you still do not know what you prevent here...
-            // You could also check event.ctrlKey/event.shiftKey/event.altKey
-            // to not prevent something useful.
-        }
-    },
-    false,
-);

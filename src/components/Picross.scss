@@ -1,0 +1,33 @@
+
+
+.picross {
+    .hint-vertical {
+        writing-mode: vertical-lr;
+        
+    }
+
+    .picross-square {
+        width: 20px;
+        height: 20px;
+
+        padding: 5px;
+
+        &.mark-guess {
+            background-color: lightblue;
+        }
+
+        &.mark-empty {
+            background-color: gray;
+        }
+    }
+
+    .cross-select {
+        background-color: rgba(255, 0, 0, 0.247);
+    }
+
+    .hint {
+        &.complete {
+            text-decoration: line-through;
+        }
+    }
+}

@@ -15,6 +15,7 @@ import { ReleaseNotes } from "./ReleaseNotes";
 import { NumToBig, bigMin, bigLt, bigEq, bigSum, bigDiv, bigCeil } from "../bigmath";
 import { ClickAmountButtons } from "./ClickAmountButtons";
 import "./App.scss";
+import { useMinigames } from "../hooks/useMinigames";
 
 type Props = {
     ticksPerSecond: number;
@@ -47,6 +48,16 @@ export function App({ ticksPerSecond }: Props) {
 
     let [currentTab, setCurrentTab] = useState<string | null>(null);
     const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(MULTI_CLICK_OPTIONS["1"]);
+
+    const [isPlayingMinigame, setIsPlayingMinigame] = useState<boolean>(false);
+    const { getMiniGame, resetMinigame } = useMinigames();
+
+    const MiniGameClass = isPlayingMinigame ? getMiniGame() : null;
+
+    function stopMinigame() {
+        resetMinigame();
+        setIsPlayingMinigame(false);
+    }
 
     const sections: SMap<JSX.Element[]> = {};
     const sectionData = GAME.sections.find((x) => x.Name == currentTab);
@@ -197,7 +208,7 @@ export function App({ ticksPerSecond }: Props) {
                                         action: 'craft-byhand',
                                         amount: calculateMaxMake(itemName, amt),
                                         recipe: itemName,
-                                    })
+                                    });
                                 }
                     }
                     disableRecipe={
@@ -254,7 +265,7 @@ export function App({ ticksPerSecond }: Props) {
     }
 
     return (
-        <Container fluid className={"game-container"}>
+        <Container fluid className={"game-container noselect"}>
             <div className={"sticky"}>
                 <Button onClick={() => doAction({ action: 'reset-game' })} variant={"secondary"}>
                     Reset
@@ -264,6 +275,11 @@ export function App({ ticksPerSecond }: Props) {
                     Play Time: {formatSeconds(state.timeSpentPlaying)}
                 </span>
                 <span className={"fps"}>{formatNumber(fps)} UPS</span>
+                <Button
+                    onClick={() => setIsPlayingMinigame(true)}
+                >
+                    Play a minigame
+                </Button>
             </div>
             <Tabs
                 activeKey={currentTab}
@@ -311,6 +327,14 @@ export function App({ ticksPerSecond }: Props) {
                 multiClickOptions={multiClickOptions}
                 onClick={setCurrentClickAmount}
             />
+            {MiniGameClass && (
+                <MiniGameClass 
+                    giftRepr={null}
+                    onSolve={() => {}}
+                    size={10}
+                    onCancel={stopMinigame}
+                />
+            )}
         </Container>
     );
 }
