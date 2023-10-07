@@ -1,3 +1,20 @@
+## 2.1.0
+
+- added a minigame to earn Mystic Coins.
+    - can be used to trade for some high-value items
+
+## 2.0.1
+
+- bugfixes:
+    - uncraftable money
+    - fixed the building disable button
+    - fixed holding the make-by-hand button
+
+## 2.0.0
+
+- implemented BigInt support
+- added some WIP production chains
+
 ## 1.10.2
 
 -   click and hold blue "Craft" buttons to constantly craft them.
