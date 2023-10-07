@@ -3,10 +3,9 @@ import _ from "lodash";
 import { howManyRecipesCanBeMade } from "../assembly";
 import GAME from "../values";
 import { Items } from "../content/itemNames";
-import { Button, Badge, Tabs, Tab, ButtonToolbar } from "react-bootstrap";
+import { Button, Badge, Tabs, Tab } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
-import { SMap, mapPairs, values } from "../smap";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { SMap, values } from "../smap";
 import { VERSION } from "../version";
 import { ItemDisplay } from "./ItemDisplay";
 import { useProduction } from "../hooks/useSimulation";
@@ -14,6 +13,8 @@ import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
 import { ReleaseNotes } from "./ReleaseNotes";
 import { NumToBig, bigMin, bigLt, bigEq, bigSum, bigDiv, bigCeil } from "../bigmath";
+import { ClickAmountButtons } from "./ClickAmountButtons";
+import "./App.scss";
 
 type Props = {
     ticksPerSecond: number;
@@ -65,7 +66,7 @@ export function App({ ticksPerSecond }: Props) {
     }
 
     function calculateBuildingsToSatisfy(building: Items, recipe: Items) {
-        const consumption = bigSum(values(rates.effectiveConsumptionRates[recipe] ?? {})) + 
+        const consumption = bigSum(values(rates.effectiveConsumptionRates[recipe] ?? {})) +
             bigSum(values(rates.powerConsumptionRates[recipe] ?? {}).map(x => x[2]));
         const production = bigSum(values(rates.effectiveProductionRates[recipe] ?? {}));
         const speed = NumToBig(
@@ -100,16 +101,17 @@ export function App({ ticksPerSecond }: Props) {
         return null;
     }
 
-    sectionData?.SubSections.forEach((subSection) => {
+    for (const subSection of sectionData?.SubSections ?? []) {
         sections[currentTab!] ??= [];
         const elements = sections[currentTab!];
         const thisSectionItems: JSX.Element[] = [];
-        subSection.Items.forEach((itemName) => {
-            if (!visible[itemName]) return;
+        for (const itemName of subSection.Items) {
+
+            if (!visible[itemName]) continue;
 
             const amt = amountThatWeHave[itemName] ?? 0n;
             const recipe = GAME.recipes[itemName];
-            if (recipe === undefined) return;
+            if (recipe === undefined) continue;
 
             const buildingsToMakeThis = GAME.requiredBuildings(itemName);
             const makeByHand = canMakeItemByHand(itemName);
@@ -220,7 +222,7 @@ export function App({ ticksPerSecond }: Props) {
                     {...rates}
                 />,
             );
-        });
+        }
 
         if (thisSectionItems.length > 0) {
             elements.push(
@@ -233,7 +235,7 @@ export function App({ ticksPerSecond }: Props) {
             );
             elements.push(...thisSectionItems);
         }
-    });
+    }
 
     let multiClickOptions = {};
 
@@ -286,7 +288,7 @@ export function App({ ticksPerSecond }: Props) {
                         title = (
                             <span className={"layout-tab"}>
                                 {title}{" "}
-                                <Badge className={"new-item-badge"}>New</Badge>
+                                <Badge className={"new-item-tab-badge"}>New</Badge>
                             </span>
                         );
 
@@ -303,23 +305,12 @@ export function App({ ticksPerSecond }: Props) {
                     );
                 })}
             </Tabs>
-            {Object.keys(multiClickOptions).length > 0 ? (
-                <ButtonToolbar className={"per-click-amount-buttons"}>
-                    Per Click:
-                    {
-                        mapPairs(multiClickOptions, (value, display) => {
-                            return (
-                                <Button
-                                    onClick={() => setCurrentClickAmount(value)}
-                                    active={currentClickAmount === value}
-                                >
-                                    {display}
-                                </Button>
-                            );
-                        })
-                    }
-                </ButtonToolbar>
-            ) : null}
+
+            <ClickAmountButtons
+                current={currentClickAmount}
+                multiClickOptions={multiClickOptions}
+                onClick={setCurrentClickAmount}
+            />
         </Container>
     );
 }

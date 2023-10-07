@@ -1,6 +1,7 @@
 import React from "react";
 import { useImages } from "../useImages";
 import { Items } from "../content/itemNames";
+import "./Sprite.scss";
 
 interface Props {
     name: Items;

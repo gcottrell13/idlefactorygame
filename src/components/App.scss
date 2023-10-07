@@ -1,0 +1,42 @@
+button.add-container {
+    margin-left: 5px;
+}
+
+button.add-assembler {
+    margin-left: 5px;
+}
+
+.subsection-header {
+    line-height: 40px;
+    border-bottom: 1px lightgray solid;
+    border-top: 3px black solid;
+    grid-column: 0 10;
+}
+
+.game-container .item-row:nth-of-type(even) {
+    background-color: rgb(236, 236, 236);
+}
+
+.play-timer,
+.fps {
+    font-style: italic;
+    margin-left: 20px;
+    border: lightblue 1px dashed;
+    padding: 2px;
+}
+
+.nav-tabs.section-tabs {
+    background-color: white;
+    z-index: 999;
+}
+
+.main-grid {
+    display: grid;
+    display: -moz-grid;
+}
+
+.badge.new-item-tab-badge {
+    background-color: orangered !important;
+    margin-left: 5px;
+    vertical-align: middle;
+}

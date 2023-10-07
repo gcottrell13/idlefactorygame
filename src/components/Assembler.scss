@@ -1,0 +1,52 @@
+
+.assembler-display-container {
+
+    .assembler-count {
+        display: inline-block;
+        white-space: nowrap;
+    }
+    
+    .building-label {
+        grid-column: 2;
+    }
+    .building-state-display {
+        grid-column: 4;
+        justify-self: start;
+    }
+
+    .remove-building-container {
+        grid-column: 3;
+        align-self: center;
+
+        .assembler-remove-button {
+            border-radius: 10px;
+            line-height: 15px;
+            width: 20px;
+        }
+    }
+}
+
+
+.building-progress {
+    width: 100px;
+    height: 30px;
+    margin-top: auto;
+    margin-left: 5px;
+    border: black 1px solid;
+
+    &.slow .progress-bar {
+        transition: width 0.25s linear;
+    }
+
+    &.fast .progress-bar {
+        transition: width 0.1s linear;
+    }
+
+    &.instant .progress-bar {
+        transition: width 0s linear;
+    }
+
+    &.secondary .progress-bar {
+        background-color: gray;
+    }
+}

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import GAME from "../values";
-import { OverlayTrigger, Badge, Table, Button } from "react-bootstrap";
+import { OverlayTrigger, Table, Button } from "react-bootstrap";
 import {
     PRODUCTION_NO_INPUT,
     PRODUCTION_NO_POWER,
@@ -10,15 +10,16 @@ import {
 } from "../typeDefs/State";
 import Popover from "react-bootstrap/Popover";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBolt, faMinusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBolt } from "@fortawesome/free-solid-svg-icons";
 import { keys } from "../smap";
 import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
-import { NumToBig, bigGt, bigToNum, scaleBigInt, bigMul } from "../bigmath";
+import { bigGt, bigToNum, scaleBigInt, bigMul } from "../bigmath";
 import { PRODUCTION_SCALE, PRODUCTION_SCALE_N } from "../hooks/useSimulation";
 import { useGameState } from "../hooks/useGameState";
+import "./Assembler.scss";
 
 type Props = {
     itemName: Items;
@@ -33,9 +34,7 @@ export function Assembler({
     assemblersMakingThis,
     state,
 }: Props) {
-    const [lastUpdateTimestamp, setLastUpdateTimestamp] = useState<
-        number | null
-    >(null);
+    const [lastUpdateTimestamp, setLastUpdateTimestamp] = useState<number | null>(null);
     const [instantAnim, setInstantAnim] = useState(false);
     const { dispatchAction } = useGameState();
 

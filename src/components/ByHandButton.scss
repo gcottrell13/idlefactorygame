@@ -1,0 +1,22 @@
+
+.make-by-hand.shake {
+    position: relative;
+    animation-name: shake;
+    animation-duration: 0.2s;
+    animation-iteration-count: infinite;
+}
+
+
+@keyframes shake {
+    0% {
+        left: -5px;
+    }
+
+    50% {
+        left: 5px;
+    }
+
+    100% {
+        left: -5px;
+    }
+}

@@ -1,0 +1,128 @@
+button {
+    &.assembler-disable-button {
+        float: left;
+        grid-row-start: 1;
+        grid-row-end: 10;
+    }
+
+    &.make-by-hand {
+        margin-left: 20px;
+        float: right;
+        white-space: nowrap;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+
+
+.item-popup-detail {
+    border-bottom: 1px lightgray solid;
+    margin: 1px;
+    padding: 5px;
+
+    .power-requirement-display {
+        margin-bottom: 0 !important;
+    }
+
+    .ingredient-list {
+        tbody tr {
+            border-bottom: rgb(240, 240, 240) solid 1px;
+        }
+
+        td {
+            padding: 5px;
+        }
+
+        table {
+            border: rgb(230, 230, 230) 1px solid;
+        }
+
+        .popover-ingredient-count {
+            padding-right: 5px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .popover-ingredient-has {
+            color: gray;
+            margin-left: 5px;
+            white-space: nowrap;
+        }
+    }
+}
+
+
+.item-row {
+    &:hover {
+        background-color: rgb(212, 208, 208);
+    }
+
+    padding: 10px;
+    min-height: 50px;
+    display: grid;
+    grid-template-columns: 75px 150px 250px 1fr 1fr 20px;
+    grid-column-gap: 10px;
+
+    .new-badge {
+        grid-column: 1;
+    }
+
+    .item-name-container {
+        grid-column: 2;
+        position: relative;
+    }
+
+    .rate-container {
+        grid-column: 3;
+
+        .item-max {
+            color: gray;
+            margin-left: 5px;
+        }
+    }
+
+    .assembler-display-container {
+        grid-column: 4;
+        display: grid;
+        grid-template-columns: 50px 1fr 20px 1fr;
+        grid-column-gap: 5px;
+    }
+
+    .hide-add-button-container {
+        grid-column: 6;
+    }
+
+    .add-button-container {
+        grid-column: 5;
+        justify-self: start;
+        white-space: nowrap;
+    }
+}
+
+.item-name-container {
+
+    .badge.new-item-badge {
+        position: absolute;
+        top: 4px;
+        right: 0;
+        background-color: orangered !important;
+        margin-left: 5px;
+        vertical-align: middle;
+    }
+
+    .item-name {
+        margin-right: 10px;
+        border-bottom: 1px lightgray dashed;
+    }
+}
+
+.history-display {
+    visibility: hidden;
+
+    &.visible {
+        visibility: visible;
+        border-bottom: 1px lightgray dashed;
+        padding: 2px;
+    }
+}

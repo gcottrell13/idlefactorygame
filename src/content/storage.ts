@@ -126,11 +126,12 @@ const itemsCanBeStoreIn: partialItems<CONTAINERS[]> = {
     gold: ["box"],
     "iron-frame": ["box"],
 
-    box: ["box-box"],
+    box: ["box"],
     "box-box": ["box3"],
     box3: ["box4"],
     box4: ["box5"],
     box5: ["box5"],
+
     tank: ["box3"],
 };
 
@@ -138,11 +139,16 @@ const itemsCanBeStoreIn: partialItems<CONTAINERS[]> = {
 
 const BOXES: CONTAINERS[] = ['box', 'box-box', 'box3', 'box4', 'box5'];
 for (let val of values(itemsCanBeStoreIn)) {
-    if (_.intersection(val, BOXES).length > 0) {
-        for (let box of BOXES) {
-            if (val.includes(box) === false)
-                val.push(box);
-        }
+    const startIndex = Math.min(...val.map(x => {
+        let b = BOXES.indexOf(x);
+        if (b === -1) return BOXES.length;
+        return b;
+    }));
+    if (startIndex === BOXES.length) continue;
+    for (let i = startIndex; i < BOXES.length; i++) {
+        const box = BOXES[i];
+        if (val.includes(box) === false)
+            val.push(box);
     }
 }
 

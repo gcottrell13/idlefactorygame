@@ -2,7 +2,8 @@ import { App } from "./components/App";
 import { VERSION } from "./version";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import "./css.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./css.scss";
 
 const TICKS_PER_SECOND = 20;
 

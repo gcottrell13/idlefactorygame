@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import _ from "lodash";
 import { howManyRecipesCanBeMade } from "../assembly";
 import GAME from "../values";
@@ -31,6 +31,8 @@ import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
 import { REALLY_BIG, bigDiv, bigFloor, bigGt, bigMin, bigMul, bigSum, bigToNum } from "../bigmath";
 import { useGameState } from "../hooks/useGameState";
+import { ByHandButton } from "./ByHandButton";
+import "./ItemDisplay.scss";
 
 type func = () => void;
 
@@ -429,68 +431,5 @@ export function ItemDisplay({
                 {hideButton}
             </div>
         </div>
-    );
-}
-
-interface ByHandButtonProps {
-    makeByHand: false | null | (() => void);
-    itemName: Items;
-    count: bigint;
-}
-
-
-function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps) {
-    const isPressed = useRef<boolean>(false);
-    const intervalIdRef = useRef<any>(0);
-    const [MAKE_BY_HAND_INTERVAL, setIntervalId] = useState<any>(0);
-
-    useEffect(() => {
-        return () => {
-            clearInterval(intervalIdRef.current);
-        };
-    }, []);
-
-    useEffect(
-        () => {
-            if (!makeByHand && isPressed.current) {
-                isPressed.current = false;
-                clearInterval(intervalIdRef.current);
-            }
-        },
-        [makeByHand],
-    );
-
-    return makeByHand === null ? undefined : (
-        <Button
-            className={`make-by-hand ${isPressed.current ? "shake" : ""}`}
-            onMouseDown={() => {
-                if (makeByHand) {
-                    makeByHand();
-                    const interval = setInterval(() => {
-                        if (!isPressed.current) {
-                            clearInterval(intervalIdRef.current);
-                            return;
-                        }
-                        console.log(`making ${itemName}`);
-                        makeByHand();
-                    }, 200);
-                    isPressed.current = true;
-                    intervalIdRef.current = interval;
-                    setIntervalId(interval);
-                }
-            }}
-            onMouseUp={() => {
-                clearInterval(intervalIdRef.current);
-                isPressed.current = false;
-                if (makeByHand) makeByHand();
-            }}
-            onMouseLeave={() => {
-                isPressed.current = false;
-                clearInterval(intervalIdRef.current);
-            }}
-            disabled={makeByHand === false}
-        >
-            {GAME.byHandVerbs[itemName]} {bigGt(count, 1) ? d(count) : ""}
-        </Button>
     );
 }

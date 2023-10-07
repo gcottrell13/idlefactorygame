@@ -1,0 +1,15 @@
+
+
+.per-click-amount-buttons {
+    position: fixed;
+    top: 0;
+    right: 100px;
+    z-index: 1000;
+}
+
+.per-click-amount-buttons {
+    button {
+        margin-left: 5px;
+        min-width: 50px;
+    }
+}
