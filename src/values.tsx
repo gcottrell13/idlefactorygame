@@ -10,7 +10,7 @@ import storage from "./content/storage";
 import layout from "./content/layout";
 import unlockedWith from "./content/unlockedWith";
 import maxCraft from "./content/maxCraft";
-import { NumToBig, SCALE, SCALE_N, bigToNum, bigpow } from "./bigmath";
+import { NumToBig, SCALE, SCALE_N, bigCeil, bigToNum, bigpow } from "./bigmath";
 import { State } from "./typeDefs/State";
 
 const byproductRatesPerSecond: partialItems<partialItems<number>> = {};
@@ -106,7 +106,7 @@ const ex = {
     calculateRecipeScale: (item: Items | undefined, amount: bigint | undefined): bigint => {
         if (!item || !amount) return SCALE_N;
         const scale = ex.recipeScaleFactor[item];
-        return bigpow(scale, amount);
+        return bigCeil(bigpow(scale, amount));
     },
 
     displayNewBadge: fillWithDefault(unlockedWith.displayNewBadge, () => true),

@@ -44,6 +44,16 @@ export function Picross({
         [state],
     );
 
+    useEffect(
+        () => {
+            if (hasBeenSolved) {
+                setClickState(0);
+                setMouse([-1, -1]);
+                setSelected([-1, -1]);
+            }
+        },
+    );
+
     const [selectedRows, selectedColumns] = useMemo(
         () => {
             const selectedRows: number[] = [mouseY];
@@ -111,18 +121,15 @@ export function Picross({
     );
 
     return (
-        <Modal onHide={onCancel} show>
+        <Modal onHide={onCancel} show size={'lg'}>
             <Modal.Header closeButton>
-                <Modal.Title>
-                    <h2>Picross</h2>
-                    <br />
-                    {giftRepr && (
-                        <span>Play to win: {giftRepr}</span>
-                    )}
-                </Modal.Title>
+                <Modal.Title>Picross</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Table className={'picross noselect'} bordered hover>
+                {giftRepr && (
+                    <span>Play to win: {giftRepr}</span>
+                )}
+                <Table className={'picross noselect'} bordered>
                     <tbody>
                         <tr className={'vertical-hints'}>
                             <td></td>
@@ -189,7 +196,7 @@ interface BoardRowProps {
     y: number;
     hints: number[];
     stateHints: number[];
-    state: number[];
+    state: ClickState[];
     isRowSelected: boolean;
     selectedColumns: number[];
     onClick: null | ((x: number, y: number, which: ClickState) => void);
@@ -232,23 +239,33 @@ function BoardRow({
             <td className={`${isRowSolved} ${crossSelect}`}>
                 <pre>{hints.map((x, j) => (
                     <span key={j} className={x === stateHints[j] ? 'hint complete' : 'hint'}>
-                        {x}&nbsp;
+                        {x}
                     </span>
                 ))}</pre>
             </td>
             {
                 state.map((v, i) => {
-                    const color =
-                        v === 1 ? (isSolved ? 'solved-square' : 'mark-guess') :
-                            v === 2 || hints.length === 0 ? 'mark-empty' :
-                                'no-mark';
-                    const selected = selectedColumns.includes(i) && isRowSelected ? (
-                        clickState === ClickState.markGuess ? 'will-select'
-                            : clickState === ClickState.markEmpty ? 'will-empty'
-                                : ''
-                    ) : '';
-                    const highlight = !selected && (selectedColumns.includes(i) || isRowSelected) ? 'cross-select' : '';
+                    let color = 'no-mark';
+                    let selected = '';
+                    let highlight = '';
 
+                    switch (v) {
+                        case ClickState.markGuess: {
+                            color = isSolved ? 'solved-square' : 'mark-guess'; 
+                            break;
+                        }
+                        case ClickState.markEmpty: { color = 'mark-empty'; break; }
+                    }
+
+                    if (selectedColumns.includes(i) && isRowSelected) {
+                        switch (clickState) {
+                            case ClickState.markGuess: { selected = 'will-select'; break; }
+                            case ClickState.markEmpty: { selected = 'will-empty'; break; }
+                        }
+                    }
+
+                    if (!selected && (selectedColumns.includes(i) || isRowSelected)) 
+                        highlight = 'cross-select';
 
                     const mouseProps = {
                         onMouseDown: (e: React.MouseEvent) => handleClick(e, i),

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { NumToBig, SCALE, SCALE_N, bigToNum, REALLY_BIG, bigpow, scaleBigInt } from "./bigmath";
+import { NumToBig, SCALE_N, bigToNum, REALLY_BIG, scaleBigInt } from "./bigmath";
 
 
 const scale_exp = SCALE_N.toString().length;
@@ -142,16 +142,15 @@ const bigLookup = _.fromPairs(bigExponents.map((exp, i) => {
 ((document as any).game ??= {}).bigExponents = bigExponents;
 
 export function parseFormat(amount: number | bigint | string): bigint {
-    if (typeof amount === 'string') {
-        try {
-            return NumToBig(parseInt(amount));
-        }
-        catch {}
-    }
     if (typeof amount === 'number') return NumToBig(amount);
     if (typeof amount === 'bigint') return amount;
 
     let [mantissaStr, exp] = amount.split(' ');
+
+    if (_.isEmpty(exp)) {
+        return NumToBig(parseFloat(mantissaStr));
+    }
+
     const mantissa = parseFloat(mantissaStr);
 
     function scale(exponent: string | number) {

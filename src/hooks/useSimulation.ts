@@ -273,7 +273,13 @@ export function useProduction(ticksPerSecond: number) {
 
     useEffect(() => {
         (document as any).game ??= {};
-        (document as any).game.setAmount = setAmount;
+        (document as any).game.setAmount = (amount: string | number | bigint, item: Items) => {
+            doAction({
+                action: 'set-amount',
+                amount,
+                item,
+            });
+        };
         (document as any).game.clearVisibles = clearVisibles;
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);

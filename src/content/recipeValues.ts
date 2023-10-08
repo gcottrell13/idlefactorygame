@@ -623,7 +623,7 @@ const recipes: Recipes = {
     "boost-manufacturer": { money: 100 },
     "boost-constructor": { money: 100 },
     "boost-wizard": { "wizard-essence": 100 },
-    "boost-bank": { money: 100, bank: 1 },
+    "boost-bank": { "mystic-coin": 1 },
     "boost-desktop-computer": { "copper-wire": 42, "money": 10 },
 
     "research-box": { science1: 1 },
@@ -653,7 +653,7 @@ const recipeScaleFactor: partialItems<number> = {
     "boost-greenhouse": 50,
     "boost-manufacturer": 50,
     "boost-constructor": 50,
-    "boost-bank": 100,
+    "boost-bank": 1.3,
     "boost-desktop-computer": 2,
     "boost-wizard": 5,
 

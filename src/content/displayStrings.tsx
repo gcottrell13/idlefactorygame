@@ -228,7 +228,7 @@ const flavorText: partialItems<React.ReactNode> = {
     youwin: "Craft this to WIN!",
     money: <div>
         <b>Cash Money 🎉💸💰</b>
-        <div>Hand Crafting scales with the number of assigned banks / 10</div>
+        {/* <div>Hand Crafting scales with the number of assigned banks / 10</div> */}
     </div>,
     bank: "Do you really need all this money?",
 

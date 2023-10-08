@@ -52,10 +52,9 @@ export function consumeMaterials(
     recipe: SMap<bigint>,
     recipeCount: bigint
 ) {
-    const scale = itemName ? bigMul(recipeCount, bigpow(
-        GAME.recipeScaleFactor[itemName],
-        amountWeHave[itemName] ?? 0n,
-    )) : recipeCount;
+    const scale = itemName
+        ? GAME.calculateRecipeScale(itemName, amountWeHave[itemName])
+        : recipeCount;
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
@@ -89,7 +88,7 @@ export function checkVisible(state: State, dispatch: dispatch) {
     let discoveredSomething = true;
     const itemsDiscovered: Items[] = [];
     function _visible(itemName: Items) {
-        dispatch({action: 'unhide-item', itemName: itemName});
+        dispatch({ action: 'unhide-item', itemName: itemName });
         itemsDiscovered.push(itemName);
         discoveredSomething = true;
     }
