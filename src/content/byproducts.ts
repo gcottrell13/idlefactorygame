@@ -14,9 +14,6 @@ const byproducts: partialItems<partialItems<number>[]> = {
     "consume-fire-wizard": [{ "wizard-degree": 1 }, { "consume-fire-wizard": 1 }],
     "consume-necro-wizard": [{ "wizard-degree": 1 }, { "consume-necro-wizard": 1 }],
     "consume-wizard-pop": [{ "wizard-power": 1 }],
-    "fire-wizard": [{ "fire-wizard": 1 }, { "wizard-essence": 1 }],
-    "arcane-wizard": [{ "arcane-wizard": 1 }, { "wizard-essence": 1 }],
-    "necro-wizard": [{ "necro-wizard": 1 }, { "wizard-essence": 1 }],
 
     "redeem-mc--science5": [{ "science5": 1 }],
     "redeem-mc--assembler": [{ "assembler": 1 }],

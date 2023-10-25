@@ -93,5 +93,6 @@ export function bigFloor(a: bigint): bigint {
     return a - (a % SCALE_N);
 }
 export function bigCeil(a: bigint) : bigint {
+    if (a % SCALE_N === 0n) return a;
     return ((a / SCALE_N) + 1n) * SCALE_N;
 }

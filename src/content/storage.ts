@@ -39,11 +39,12 @@ const storageSizes = {
     "nuclear-reactor": 10n,
     "arcane-wizard": 0n,
     "fire-wizard": 0n,
-    "necro-wizard": 0n,
-    "wizard-orb": 0n,
+    "wizard-paragon": 0n,
+    "wizard-orb": 1000n,
     "bank": 0n,
     "desktop-computer": 0n,
     "the-spark": 0n,
+    "wizard-hut": 100n,
 } satisfies partialItems<bigint> & { [p in Buildings]: bigint };
 
 type CONTAINERS = keyof typeof storageSizes;
@@ -133,6 +134,15 @@ const itemsCanBeStoreIn: partialItems<CONTAINERS[]> = {
     box5: ["box5"],
 
     tank: ["box3"],
+
+    "arcane-wizard": ["wizard-hut"],
+    "fire-wizard": ["wizard-hut"],
+    "necro-wizard": ["wizard-hut"],
+    "wizard-orb": ["box"],
+    "wizard-essence": ["wizard-orb"],
+    "raw-mana": ["wizard-orb"],
+    "refined-mana": ["wizard-orb"],
+    "powerful-mana": ["wizard-orb"],
 };
 
 

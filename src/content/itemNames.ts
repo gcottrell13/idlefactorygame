@@ -199,6 +199,9 @@ export type Items =
     | "powerful-mana"
     | "wizard-orb"
     | "research-wizard-tower"
+    | "research-wizards"
+    | "research-paragon"
+    | "research-wizard-power"
     | "wizard-paragon"
     | "arcane-wizard"
     | "fire-wizard"
@@ -211,6 +214,7 @@ export type Items =
     | "consume-necro-wizard"
     | "consume-wizard-pop"
     | "boost-wizard"
+    | "wizard-hut"
 
     | "research-minigames"
     | "mystic-coin"

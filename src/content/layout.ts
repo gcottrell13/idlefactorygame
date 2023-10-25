@@ -363,12 +363,21 @@ const sections: Sections = [
         Name: "The Wizard Tower",
         SubSections: [
             {
+                Name: "Research",
+                Items: [
+                    "research-paragon",
+                    "research-wizards",
+                    "research-wizard-power",
+                ],
+            },
+            {
                 Name: "Wizards",
                 Items: [
                     "fire-wizard",
                     "arcane-wizard",
                     "necro-wizard",
                     "wizard-paragon",
+                    "wizard-hut",
                 ],
             },
             {

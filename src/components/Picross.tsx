@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { ReactEventHandler, SyntheticEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Modal, Table } from "react-bootstrap";
 import "./Picross.scss";
 

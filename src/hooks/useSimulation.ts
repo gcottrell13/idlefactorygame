@@ -36,7 +36,6 @@ export function useProduction(ticksPerSecond: number) {
         getPower,
         getProductionProgress,
         hasStorageCapacity,
-        setAmount,
         saveGame,
         calculateStorage,
     } = useGameState();
@@ -220,6 +219,7 @@ export function useProduction(ticksPerSecond: number) {
                 r,
                 amount,
             );
+            checkPowerConsumption(itemName, building);
         }
     }
 

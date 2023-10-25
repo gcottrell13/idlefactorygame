@@ -104,8 +104,9 @@ const ex = {
         return boost;
     },
     calculateRecipeScale: (item: Items | undefined, amount: bigint | undefined): bigint => {
-        if (!item || !amount) return SCALE_N;
+        if (!item || !amount) return NumToBig(1);
         const scale = ex.recipeScaleFactor[item];
+        if (scale == 1) return NumToBig(1);
         return bigCeil(bigpow(scale, amount));
     },
 

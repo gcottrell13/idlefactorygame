@@ -213,7 +213,11 @@ const displayNames: partialItems<string> = {
     "wizard-paragon": "Paragon",
     "wizard-pop": "Pop",
     "wizard-power": "Power",
+    "research-wizards": "Study: Wizardry",
+    "research-paragon": "Ascension: Paragon of Magic",
+    "research-wizard-power": "Enlightenment: Wizardry Power",
     bank: "Bank",
+    "wizard-hut": "Wizard Tower",
 
     "smooth-oil": "Lubricant",
 };
@@ -258,7 +262,9 @@ const flavorText: partialItems<React.ReactNode> = {
     "boost-explorer": "Increase Explorer speed by 2x",
     "boost-greenhouse": "Increase Greenhouse speed by 2x",
     "boost-manufacturer": "Increase Manufacturer speed by 2x",
-    "boost-wizard": "Increase Wizard speed by 2x",
+    "boost-wizard": "Increase Wizard and Orb speed by 2x",
+
+    "wizard-hut": "A place for wizards to live",
 
     margarita: "A wizard's favorite drink.",
     car: "Transportation fit for a wizard.",

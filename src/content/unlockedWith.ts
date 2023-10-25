@@ -23,10 +23,19 @@ const unlockedWith: partialItems<Items[]> = {
 
     "raw-mana": ["research-wizard-tower"],
     "wizard-orb": ["research-wizard-tower"],
-    "arcane-wizard": ["research-wizard-tower"],
-    "fire-wizard": ["research-wizard-tower"],
-    "necro-wizard": ["research-wizard-tower"],
+    "arcane-wizard": ["research-wizards"],
+    "fire-wizard": ["research-wizards"],
+    "necro-wizard": ["research-wizards"],
+    "wizard-hut": ["research-wizards"],
     "wizard-essence": ["research-wizard-tower"],
+    "wizard-paragon": ["research-paragon"],
+    "wizard-power": ["research-wizard-power"],
+    "consume-wizard-pop": ["research-wizard-power"],
+    "wizard-degree": ["research-paragon"],
+    
+    "consume-arcane-wizard": ["research-paragon"],
+    "consume-fire-wizard": ["research-paragon"],
+    "consume-necro-wizard": ["research-paragon"],
 
     "mystic-coin": ["research-minigames"],
     "redeem-mc--science5": ["research-minigames", "research-science-5"],
@@ -134,6 +143,7 @@ const hideUnlocks: partialItems<boolean> = {
     "research-minigames": true,
     "research-science-6": true,
     "money": true,
+    "research-the-end": true,
 }
 
 export default {

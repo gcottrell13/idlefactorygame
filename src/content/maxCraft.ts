@@ -27,6 +27,7 @@ const maxCraftAtATime: partialItems<number | maxCraftFunc> = {
     stone: 2,
     begin: 1,
     "wizard-degree": 100,
+    "wizard-essence": 10,
     // money: (game, state) => bigMax(ABSOLUTE_MAX_CRAFT, maxCraftByAssemblerSpeed(game, state, "money")),
     bank: (game, state) => bigFloor(bigMax(ABSOLUTE_MAX_CRAFT, 10n * (state.assemblers["money"]?.["bank"] ?? 0n) / SCALE_N)),
 };

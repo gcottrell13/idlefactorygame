@@ -361,6 +361,10 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     "wizard-paragon": 100,
     "wizard-pop": 1,
     "wizard-power": 1,
+    "research-paragon": 1,
+    "research-wizards": 1,
+    "research-wizard-power": 1,
+    "wizard-hut": 100,
     bank: 1,
     car: 30,
     chair: 10,
@@ -386,7 +390,7 @@ const recipes: Recipes = {
     "redeem-mc--assembler": { "mystic-coin": 2 },
     "research-minigames": { "science0": 100 },
 
-    "research-the-end": { "wizard-power": 100000 },
+    "research-the-end": { "wizard-power": 100_000_000 },
     "": {},
     begin: {},
     prospector: { food: 2 },
@@ -511,6 +515,9 @@ const recipes: Recipes = {
 
     "telescope": { glass: 1, aluminum: 1, "science6": 10 },
     "research-wizard-tower": { telescope: 19 },
+    "research-paragon": { "wizard-power": 100000 },
+    "research-wizards": { "wizard-essence": 10000 },
+    "research-wizard-power": { "wizard-pop": 10000 },
     "fire-wizard": { money: 100 },
     "arcane-wizard": { money: 90 },
     "necro-wizard": { money: 95 },
@@ -527,6 +534,7 @@ const recipes: Recipes = {
     "wizard-essence": {},
     "wizard-orb": { glass: 100 },
     "wizard-paragon": { "wizard-degree": 100 },
+    "wizard-hut": { stone: 1000, "refined-mana": 1000 },
 
     bank: { money: 100 },
 
@@ -600,9 +608,9 @@ const recipes: Recipes = {
         computer: 500_000,
     },
     "research-science-6": {
-        science5: 500_000_000n * 3600n,
-        u234: 100_000,
-        computer: 500_000_000,
+        science5: 2_000_000_000n * 100n,
+        u234: 1_000_000,
+        computer: 5_000_000,
     },
 
     "boost-lumberjack": { money: 100 },
@@ -654,7 +662,7 @@ const recipeScaleFactor: partialItems<number> = {
     "boost-manufacturer": 50,
     "boost-constructor": 50,
     "boost-bank": 1.3,
-    "boost-desktop-computer": 2,
+    "boost-desktop-computer": 50,
     "boost-wizard": 5,
 
     "wizard-degree": 1.01,

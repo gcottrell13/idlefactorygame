@@ -113,6 +113,8 @@ export function ItemDisplay({
     );
     const othersConsumingRate =
         bigSum(values(othersConsuming)) + othersConsumingAsPowerRate;
+    
+    const recipeScale = GAME.calculateRecipeScale(itemName, amt);
 
     const recipe = GAME.recipes[itemName];
     const formatIngredients = keys(recipe)
@@ -121,7 +123,7 @@ export function ItemDisplay({
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
-                    {d(bigMul(count, GAME.calculateRecipeScale(itemName, amt)))}
+                    {d(bigMul(count, recipeScale))}
                 </td>
                 <td>
                     <Sprite name={name} />
