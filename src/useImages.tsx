@@ -8,7 +8,7 @@ function importAll(r: __WebpackModuleApi.RequireContext) {
     return images;
 }
 
-const SPRITES = importAll(
+export const SPRITES = importAll(
     require.context("./sprites", false, /\.(png|jpe?g|svg)$/),
 );
 

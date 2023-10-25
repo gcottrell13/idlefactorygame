@@ -17,6 +17,8 @@ import { ClickAmountButtons } from "./ClickAmountButtons";
 import "./App.scss";
 import { useMinigames } from "../hooks/useMinigames";
 import { Sprite } from "./Sprite";
+import { Difficulty } from "../typeDefs/minigame";
+import { MinigameConfig } from "../content/minigamePrizes";
 
 type Props = {
     ticksPerSecond: number;
@@ -51,10 +53,11 @@ export function App({ ticksPerSecond }: Props) {
     const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(MULTI_CLICK_OPTIONS["1"]);
 
     const [isPlayingMinigame, setIsPlayingMinigame] = useState<boolean>(false);
-    const [miniGamePrize, setMiniGamePrize] = useState<[item: Items, amount: bigint | string] | null>(null);
-    const { getMiniGame, resetMinigame } = useMinigames();
+    const [miniGameConfig, setMiniGameConfig] = useState<MinigameConfig | null>(null);
+    const [miniGamePrize, setMiniGamePrize] = useState<Items | null>(null);
+    const { getMiniGame, resetMinigame, pickMinigameByItem } = useMinigames();
 
-    const MiniGameClass = isPlayingMinigame ? getMiniGame() : null;
+    const MiniGameClass = isPlayingMinigame ? getMiniGame(miniGameConfig?.minigame) : null;
 
     function stopMinigame() {
         resetMinigame();
@@ -190,13 +193,14 @@ export function App({ ticksPerSecond }: Props) {
                 );
             });
 
-            if (itemName === 'mystic-coin' && bigGt(amountThatWeHave['research-minigames'] ?? 0n, 0)) {
+            if (pickMinigameByItem(itemName) && bigGt(amountThatWeHave['research-minigames'] ?? 0n, 0)) {
                 assemblerButtons.push(
                     <Button
                         key={'playminigame'}
                         onClick={() => {
                             setIsPlayingMinigame(true);
-                            setMiniGamePrize(['mystic-coin', '2']);
+                            setMiniGameConfig(pickMinigameByItem(itemName));
+                            setMiniGamePrize(itemName);
                         }}
                     >
                         Play a Mini Game
@@ -341,19 +345,19 @@ export function App({ ticksPerSecond }: Props) {
             {MiniGameClass && miniGamePrize && (
                 <MiniGameClass
                     giftRepr={<span>
-                        <Sprite name={miniGamePrize[0]} amount={miniGamePrize[1]} />
-                        {GAME.displayNames(miniGamePrize[0])}
+                        <Sprite name={miniGamePrize} amount={miniGameConfig?.count} />
+                        {GAME.displayNames(miniGamePrize)}
                     </span>}
                     onSolve={() => {
                         doAction({
                             action: 'add-amount',
-                            amount: miniGamePrize[1],
-                            item: miniGamePrize[0],
+                            amount: miniGameConfig!.count,
+                            item: miniGamePrize,
                         });
                         setIsPlayingMinigame(false);
                         setMiniGamePrize(null);
                     }}
-                    size={10}
+                    difficulty={miniGameConfig!.difficulty}
                     onCancel={stopMinigame}
                 />
             )}

@@ -2,15 +2,8 @@ import _ from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Modal, Table } from "react-bootstrap";
 import "./Picross.scss";
+import { Difficulty, GameProps } from "../typeDefs/minigame";
 
-
-
-interface Props {
-    size: number;
-    onSolve: () => void;
-    giftRepr: React.ReactNode;
-    onCancel: () => void;
-}
 
 
 enum ClickState {
@@ -21,11 +14,20 @@ enum ClickState {
 
 
 export function Picross({
-    size,
+    difficulty,
     onSolve,
     giftRepr,
     onCancel,
-}: Props) {
+}: GameProps) {
+
+    const size = useMemo(() => {
+        switch (difficulty) {
+            case Difficulty.Easy: return 10;
+            case Difficulty.Medium: return 15;
+            case Difficulty.Hard: return 20;
+        }
+    }, [difficulty]);
+
     const [hintsX, hintsY] = useMemo(() => generateBoard(size, size), []);
     const [mouse, setMouse] = useState<[number, number]>([-1, -1]);
     const [mouseX, mouseY] = mouse;

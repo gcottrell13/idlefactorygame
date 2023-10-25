@@ -22,8 +22,9 @@ export function Sprite({ name: spriteName, amount }: Props) {
     }
 
     const spriteContents = useImages()[name];
+    const alt = spriteContents ? name : undefined;
 
-    const image = <img className={"sprite"} src={spriteContents} />;
+    const image = <img alt={alt} className={"sprite"} src={spriteContents} />;
 
     if (amount !== undefined) {
         amount = parseFormat(amount);
