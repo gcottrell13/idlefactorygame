@@ -24,6 +24,18 @@ const minigamePrizes: partialItems<MinigameConfig[]> = {
             count: '2',
         },
     ],
+    "the-spark": [
+        {
+            minigame: 'Memory',
+            difficulty: Difficulty.Hard,
+            count: '10',
+        },
+        {
+            minigame: 'Picross',
+            difficulty: Difficulty.Easy,
+            count: '2',
+        },
+    ],
 };
 
 export default {

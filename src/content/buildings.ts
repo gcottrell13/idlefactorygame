@@ -108,7 +108,7 @@ const buildingBoosts: { [p in Buildings]?: Items } = {
     "wizard-orb": "boost-wizard",
     "bank": "boost-bank",
     "desktop-computer": "boost-desktop-computer",
-    "the-spark": "boost-spark",
+    "the-spark": "the-spark",
 };
 
 // keys are the items that do the boosting, not the building.
@@ -123,7 +123,7 @@ const requiredBuildings: {
     [p in Items]: (Buildings | "by-hand")[];
 } = {
     youwin: ["the-spark"],
-    "the-spark": ["by-hand"],
+    "the-spark": [],
     "research-the-end": ["by-hand"],
     begin: ["by-hand"],
     prospector: ["by-hand"],
@@ -201,7 +201,6 @@ const requiredBuildings: {
     "boost-constructor": ["by-hand"],
     "boost-bank": ["by-hand"],
     "boost-desktop-computer": ["by-hand"],
-    "boost-spark": ["by-hand"],
 
     "research-science-1": ["by-hand"],
     "research-science-2": ["by-hand"],

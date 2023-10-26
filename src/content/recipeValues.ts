@@ -382,8 +382,7 @@ const timePerRecipe: itemsMap<allowedRecipeTimes> = {
 
 const recipes: Recipes = {
     youwin: {},
-    "the-spark": { "spark-plug": 1 },
-    "boost-spark": { "the-spark": 10 },
+    "the-spark": {},
 
     "mystic-coin": {},
     "redeem-mc--science5": { "mystic-coin": 4 },

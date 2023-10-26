@@ -151,7 +151,6 @@ export type Items =
     | "boost-constructor"
     | "boost-bank"
     | "boost-desktop-computer"
-    | "boost-spark"
 
     // convert gold to money
     | "bank"

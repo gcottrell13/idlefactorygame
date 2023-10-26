@@ -182,7 +182,6 @@ const displayNames: partialItems<string> = {
     "boost-wizard": "Boost: Pointer Hats",
     "boost-bank": "Boost: Faster Bean Counters",
     "boost-desktop-computer": "Boost: Faster Internet",
-    "boost-spark": "Boost: The Spark",
 
     "anti-grav-thruster": "Anti-Grav Thruster",
     "arcane-wizard": "Arcane Wizard",

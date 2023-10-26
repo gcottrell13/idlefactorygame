@@ -1,4 +1,4 @@
-import { Button, Modal, Table } from "react-bootstrap";
+import { Button, Col, Modal, Row, Table } from "react-bootstrap";
 import GAME from '../values';
 import { Sprite } from "./Sprite";
 import { Items } from "../content/itemNames";
@@ -7,6 +7,9 @@ import { Difficulty, GameProps } from "../typeDefs/minigame";
 import _ from "lodash";
 import './MemoryGame.scss';
 import { SPRITES } from "../useImages";
+import oinkMp3 from '../sounds/oink.mp3';
+
+const OINK = new Audio(oinkMp3);
 
 
 export function Memory({
@@ -70,14 +73,22 @@ function MemoryGame({
     const [score, setScore] = useState(0);
     const [misses, setMisses] = useState(0);
 
+    const [oinkedTimes, setOinkedTimes] = useState(0);
+
     const canClickRef = useRef<boolean>(true);
 
     const onSelect = useCallback(
         (id: number) => {
-            if (canClickRef.current && !allFlipped.includes(id))
+            if (canClickRef.current && !allFlipped.includes(id)) {
                 setSelected(_.uniq(_.concat(selected, [id])));
+
+                if (misses >= missCount && oinkedTimes < 10) {
+                    OINK.play();
+                    setOinkedTimes(oinkedTimes + 1);
+                }
+            }
         },
-        [selected.length],
+        [selected.length, misses],
     );
 
     useEffect(
@@ -141,9 +152,16 @@ function MemoryGame({
 
     return (
         <div>
-            <h3>Match {dupes}!</h3>
-            <h4>Score: {score} / {pairCount}</h4>
-            <h4>Misses: {misses} / {missCount}</h4>
+            <hr />
+            <Row>
+                <Col>
+                    <h3>Match {dupes}!</h3>
+                </Col>
+                <Col>
+                    <h4>Score: {score} / {pairCount}</h4>
+                    <h4>Misses: {misses} / {missCount}</h4>
+                </Col>
+            </Row>
             <Table className={'memorygame noselect'} bordered>
                 <tbody>
                     {rows.map((row, i) => {
@@ -249,8 +267,8 @@ function diffToPairCount(d: Difficulty) {
 
 function diffToMissCount(d: Difficulty) {
     switch (d) {
-        case Difficulty.Easy: return 8;
-        case Difficulty.Medium: return 10;
+        case Difficulty.Easy: return 10;
+        case Difficulty.Medium: return 12;
         case Difficulty.Hard: return 15;
     }
 }
