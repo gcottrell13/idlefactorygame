@@ -134,6 +134,18 @@ const itemsCanBeStoreIn: partialItems<CONTAINERS[]> = {
     box5: ["box5"],
 
     tank: ["box3"],
+    
+    "anti-grav-thruster": ["box"],
+    "car-chassis": ["box"],
+    "car-engine": ["box"],
+    "crank-shaft": ["box"],
+    "engine-block": ["box"],
+    "engine-electronics": ["box"],
+    "spark-plug": ["box"],
+    "steering-wheel": ["box"],
+    car: ["box"],
+    chair: ["box"],
+    piston: ["box"],
 
     "arcane-wizard": ["wizard-hut"],
     "fire-wizard": ["wizard-hut"],

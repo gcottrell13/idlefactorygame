@@ -2,8 +2,10 @@ import { Items } from "./itemNames";
 
 type Sections = {
     Name: string;
+    Icon?: Items;
     SubSections: {
         Name: string;
+        Icon?: Items;
         Items: Items[];
     }[];
 }[];
@@ -54,6 +56,7 @@ const sections: Sections = [
     },
     {
         Name: "Power",
+        Icon: 'electricity',
         SubSections: [
             {
                 Name: "",
@@ -79,11 +82,11 @@ const sections: Sections = [
     },
     {
         Name: "Upgrades",
+        Icon: 'boost-lumberjack',
         SubSections: [
             {
                 Name: "Upgrades",
                 Items: [
-                    "boost-spark",
                     "boost-lumberjack",
                     "boost-constructor",
                     "boost-miner-mk1",
@@ -111,6 +114,7 @@ const sections: Sections = [
     },
     {
         Name: "Currency",
+        Icon: 'money',
         SubSections: [
             {
                 Name: "Money",
@@ -128,6 +132,7 @@ const sections: Sections = [
     },
     {
         Name: "Iron and Copper",
+        Icon: 'iron-bar',
         SubSections: [
             {
                 Name: "Raw Materials",
@@ -174,6 +179,7 @@ const sections: Sections = [
     },
     {
         Name: "Basic Circuits",
+        Icon: 'basic-circuit',
         SubSections: [
             {
                 Name: "Raw Materials",
@@ -224,6 +230,7 @@ const sections: Sections = [
     },
     {
         Name: "Advanced Circuitry",
+        Icon: 'advanced-circuit',
         SubSections: [
             {
                 Name: "Materials",
@@ -255,6 +262,7 @@ const sections: Sections = [
     },
     {
         Name: "Computing",
+        Icon: 'computer',
         SubSections: [
             {
                 Name: "Materials",
@@ -290,6 +298,7 @@ const sections: Sections = [
     },
     {
         Name: "Uranium",
+        Icon: 'uranium-ore',
         SubSections: [
             {
                 Name: "Uranium",
@@ -313,6 +322,7 @@ const sections: Sections = [
     },
     {
         Name: "Car Shop",
+        Icon: 'assembler',
         SubSections: [
             {
                 Name: "Vehicles",
@@ -322,22 +332,27 @@ const sections: Sections = [
                 ],
             },
             {
-                Name: "Research",
+                Name: "Hey a new catalogue just came in, want to take a look at it?",
                 Items: [
                     "research-car",
                 ],
             },
             {
-                Name: "Parts",
+                Name: "Put The Parts Together",
                 Items: [
+                    "car-chassis",
                     "car-engine",
-                    "engine-block",
+                    "anti-grav-thruster",
                     "engine-electronics",
+                    "piston",
+                ],
+            },
+            {
+                Name: "Order Some Parts Online:",
+                Items: [
+                    "engine-block",
                     "crank-shaft",
                     "spark-plug",
-                    "piston",
-                    "car-chassis",
-                    "anti-grav-thruster",
                     "chair",
                     "steering-wheel",
                 ],
@@ -361,6 +376,7 @@ const sections: Sections = [
     },
     {
         Name: "The Wizard Tower",
+        Icon: 'wizard-paragon',
         SubSections: [
             {
                 Name: "Research",
@@ -400,6 +416,7 @@ const sections: Sections = [
     },
     {
         Name: "Containers",
+        Icon: 'box',
         SubSections: [
             {
                 Name: "Solids",

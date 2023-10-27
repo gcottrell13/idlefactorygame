@@ -261,6 +261,9 @@ export function App({ ticksPerSecond }: Props) {
                     className="subsection-header"
                     key={"ss-" + subSection.Name}
                 >
+                    {subSection.Icon && (
+                        <Sprite name={subSection.Icon} />
+                    )}
                     {subSection.Name}
                 </div>,
             );
@@ -302,7 +305,15 @@ export function App({ ticksPerSecond }: Props) {
                 className={"section-tabs sticky"}
             >
                 {GAME.sections.map((section) => {
-                    let title: React.ReactNode = section.Name;
+                    let title = (
+                        <span>
+
+                            {section.Icon && (
+                                <Sprite name={section.Icon} />
+                            )}
+                            {section.Name}
+                        </span>
+                    );
 
                     if (
                         section.SubSections.every((ss) =>

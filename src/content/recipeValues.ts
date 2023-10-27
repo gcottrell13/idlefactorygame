@@ -35,7 +35,6 @@ type allowedRecipeTimes =
 const timePerRecipe: itemsMap<allowedRecipeTimes> = {
     youwin: 31536000,
     "": 1,
-    "boost-spark": 1,
     "the-spark": 1,
 
     "mystic-coin": 1,
@@ -500,15 +499,15 @@ const recipes: Recipes = {
     "research-car": { "science5": 100 },
     "desk": { "wood": 10, "science5": 1 },
     "desktop-computer": { "desk": 1, "computer": 4, "plastic": 10, "copper-wire": 10 },
-    "engine-block": { steel: 10, "smooth-oil": 1 },
+    "engine-block": { "money": 10000000 },
     "car-engine": { "engine-block": 1, "engine-electronics": 5, "crank-shaft": 1, "spark-plug": 7, "piston": 7 },
     "car": { "car-chassis": 1, "car-engine": 1, "chair": 2, "steering-wheel": 1, "anti-grav-thruster": 1 },
     "engine-electronics": { "basic-circuit": 10 },
-    "crank-shaft": { "steel": 1 },
+    "crank-shaft": { "money": 10000000 },
     "piston": { "steel": 1 },
-    "spark-plug": { "iron-bar": 1 },
-    "chair": { "steel": 1 },
-    "steering-wheel": { "steel": 1 },
+    "spark-plug": { "money": 100000 },
+    "chair": { "money": 100000000 },
+    "steering-wheel": { "money": 100000 },
     "car-chassis": { "adamantium-frame": 5 },
     "anti-grav-thruster": { "powerful-mana": 100, steel: 10, "advanced-circuit": 10 },
 
