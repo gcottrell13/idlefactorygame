@@ -1,98 +1,239 @@
 
 
+const MANTISSA_PRECISION = 6;
 
-export const SCALE = 100;
-export const SCALE_N = BigInt(SCALE);
+export default class Big {
+    mantissa: number;
+    exponent: number;
+    infinite: boolean;
 
+    static Zero = new Big(0);
+    static One = new Big(1);
+    static Infinity = new Big(0, 0, true);
 
-
-export function bigpow(base: number, power: bigint): bigint;
-export function bigpow(base: bigint, power: bigint): bigint;
-export function bigpow(base: bigint | number, power: bigint): bigint {
-    if (base == 1) return NumToBig(base);
-    power /= SCALE_N;
-    if (power === 1n) return NumToBig(base);
-    if (power === 0n) return NumToBig(1);
-    if (typeof base === 'number') {
-        base = NumToBig(base);
+    constructor(mantissa: number, exponent: number = 1, infinite: boolean = false) {
+        this.mantissa = mantissa;
+        this.exponent = exponent;
+        this.infinite = infinite;
     }
 
-    return (base ** power) / (SCALE_N ** (power - 1n));
-}
+    static fromNumberOrBigInt(n: number | bigint) {
+        if (typeof n === 'bigint') return Big.fromBigInt(n);
+        return new Big(n);
+    }
 
-export function bigMax(...nums: bigint[]): bigint {
-    let max = nums[0];
-    nums.forEach(n => {
-        if (n > max) max = n;
-    })
-    return BigInt(max);
-}
+    static fromBigInt(n: bigint) {
+        const exponent = n.toString().length - 1;
+        if (exponent <= MANTISSA_PRECISION) {
+            return new Big(Number(n)).normalize();
+        }
+        const factor = 10n ** BigInt(exponent - MANTISSA_PRECISION);
+        n /= factor;
+        return new Big(Number(n), exponent - MANTISSA_PRECISION).normalize();
+    }
 
-export function bigMul(...nums: bigint[]): bigint {
-    let product = 1n;
-    nums.forEach(n => product *= n);
-    return product / (SCALE_N ** BigInt(nums.length - 1));
-}
+    toNumber() : number {
+        return this.mantissa * Math.pow(10, this.exponent);
+    }
 
-export function bigDiv(a: bigint, b: bigint): bigint {
-    if (b === 0n) debugger;
-    return a * SCALE_N / b;
-}
+    normalize() {
+        if (this.mantissa === 0) {
+            this.exponent = 0;
+            return this;
+        }
+        const isNegative = this.mantissa < 0;
+        this.mantissa = isNegative ? -this.mantissa : this.mantissa;
+        while (this.mantissa < 1) {
+            this.mantissa *= 10;
+            this.exponent -= 1;
+        }
+        while (this.mantissa > 10) {
+            this.mantissa *= 0.1;
+            this.exponent += 1;
+        }
+        return this;
+    }
 
-export function bigMin(...nums: bigint[]): bigint {
-    let min = nums[0];
-    nums.forEach(n => {
-        if (n < min) min = n;
-    })
-    return BigInt(min);
-}
+    clone() {
+        return new Big(this.mantissa, this.exponent);
+    }
 
-export function NumToBig(n: number | bigint) {
-    if (typeof n === 'bigint') return n;
-    return BigInt(Math.floor(n * SCALE));
-}
+    powEq(power: number) {
+        power = Math.floor(power);
 
-export function bigToNum(n: bigint): number;
-export function bigToNum(n: bigint | undefined | null): number | null;
-export function bigToNum(n: bigint | undefined | null): number | null {
-    if (n === undefined || n === null) return null;
-    return Number(BigInt.asIntN(64, n)) / SCALE;
-}
+        if (power === 0) {
+            this.mantissa = 1;
+            this.exponent = 0;
+            return this;
+        }
+        if (power === 1) 
+            return this;
+        
+        this.mantissa = Math.pow(this.mantissa, power);
+        this.exponent *= power;
+        return this.normalize();
+    }
 
-export function scaleBigInt(n: bigint, scale: number) {
-    const s = Math.floor(scale * 10000);
-    return (n * BigInt(s)) / 10000n;
-}
+    pow(power: number) {
+        return this.clone().powEq(power);
+    }
 
-export function bigSum(nums: bigint[]) : bigint {
-    let sum = 0n;
-    nums.forEach(n => sum += n);
-    return sum;
-}
+    mulEq(b: Big) {
+        this.mantissa *= b.mantissa;
+        this.exponent += b.exponent;
+        return this.normalize();
+    }
 
-export const REALLY_BIG = 10n ** 1000n;
+    mul(b: Big) {
+        return this.clone().mulEq(b);
+    }
 
-export function bigGt(a: bigint, b: number | bigint): boolean {
-    return a > NumToBig(b);
-}
-export function bigGtE(a: bigint, b: number | bigint): boolean {
-    return a >= NumToBig(b);
-}
-export function bigLt(a: bigint, b: number | bigint): boolean {
-    return a < NumToBig(b);
-}
-export function bigLtE(a: bigint, b: number | bigint): boolean {
-    return a <= NumToBig(b);
-}
-export function bigEq(a: bigint | null | undefined, b: number | bigint): boolean {
-    if (a === null) return false;
-    if (a === undefined) a = 0n;
-    return a === NumToBig(b);
-}
-export function bigFloor(a: bigint): bigint {
-    return a - (a % SCALE_N);
-}
-export function bigCeil(a: bigint) : bigint {
-    if (a % SCALE_N === 0n) return a;
-    return ((a / SCALE_N) + 1n) * SCALE_N;
+    addEq(b: Big) {
+        if (b.exponent - this.exponent <= -MANTISSA_PRECISION)
+            // b is too small to matter, ignore
+            return this;
+        if (this.exponent - b.exponent <= -MANTISSA_PRECISION)
+            // we are too small to matter
+            return b;
+
+        b = b.clone();
+        while (b.exponent > this.exponent) {
+            b.exponent --;
+            b.mantissa *= 10;
+        }
+        while (b.exponent < this.exponent) {
+            b.exponent ++;
+            b.mantissa *= 0.1;
+        }
+        this.mantissa += b.mantissa;
+        return this.normalize();
+    }
+
+    add(b: Big) {
+        return this.clone().addEq(b);
+    }
+
+    divEq(b: Big) {
+        return this.mulEq(new Big(b.mantissa, -b.exponent));
+    }
+
+    div(b: Big) {
+        return this.clone().divEq(b);
+    }
+
+    subEq(b: Big) {
+        return this.addEq(new Big(-b.mantissa, b.exponent));
+    }
+
+    sub(b: Big){
+        return this.clone().subEq(b);
+    }
+
+    lt(b: Big) {
+        if (b.infinite || !this.infinite) return true;
+        return (b.exponent > this.exponent) || (b.exponent === this.exponent && b.mantissa > this.mantissa);
+    }
+
+    gt(b: Big) {
+        if (!b.infinite || this.infinite) return true;
+        return (b.exponent < this.exponent) || (b.exponent === this.exponent && b.mantissa < this.mantissa);
+    }
+
+    lte(b: Big) {
+        if (b.infinite || !this.infinite) return true;
+        return (b.exponent > this.exponent) || (b.exponent === this.exponent && b.mantissa >= this.mantissa);
+    }
+
+    gte(b: Big) {
+        if (!b.infinite || this.infinite) return true;
+        return (b.exponent < this.exponent) || (b.exponent === this.exponent && b.mantissa <= this.mantissa);
+    }
+
+    /**
+     * Rounds towards zero
+     */
+    floorEq() {
+        if (this.exponent < 0) {
+            this.mantissa = 0;
+            this.exponent = 0;
+            return this;
+        }
+        if (this.exponent > MANTISSA_PRECISION) {
+            // too small, ignore
+            return this;
+        }
+        while (this.exponent > 0) {
+            this.mantissa *= 10;
+            this.exponent --;
+        }
+        this.mantissa = Math.floor(this.mantissa);
+        return this.normalize();
+    }
+
+    /**
+     * Rounds towards zero
+     */
+    floored() {
+        return this.clone().floorEq();
+    }
+
+    /**
+     * Rounds away from zero
+     */
+    ceilEq() {
+        if (this.exponent < 0) {
+            this.mantissa = 0;
+            this.exponent = 0;
+            return this;
+        }
+        if (this.exponent > MANTISSA_PRECISION) {
+            // too small, ignore
+            return this;
+        }
+        while (this.exponent > 0) {
+            this.mantissa *= 10;
+            this.exponent --;
+        }
+        this.mantissa = Math.ceil(this.mantissa);
+        return this.normalize();
+    }
+    
+    /**
+     * Rounds away from zero
+     */
+    ceiled() {
+        return this.clone().ceilEq();
+    }
+
+    eq(b: Big) {
+        return b.mantissa === this.mantissa && b.exponent === this.exponent && b.infinite === this.infinite;
+    }
+
+    neq(b: Big) {
+        return b.mantissa !== this.mantissa || b.exponent !== this.exponent || b.infinite !== this.infinite;
+    }
+
+    static max(...nums: Big[]): Big {
+        let first = nums[0];
+        for (const c of nums) {
+            if (c.gt(first)) first = c;
+        }
+        return first;
+    }
+
+    static min(...nums: Big[]): Big {
+        let first = nums[0];
+        for (const c of nums) {
+            if (c.lt(first)) first = c;
+        }
+        return first;
+    }
+
+    static sum(...nums: Big[]): Big {
+        let first = nums[0].clone();
+        for (const c of nums) {
+            first.addEq(c);
+        }
+        return first;
+    }
 }

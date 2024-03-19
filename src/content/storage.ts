@@ -1,10 +1,10 @@
 import _ from "lodash";
-import { SCALE_N } from "../bigmath";
+import Big from "../bigmath";
 import { values, mapValues } from "../smap";
 import { Buildings } from "./buildings";
 import { Items, partialItems } from "./itemNames";
 
-const MIN_STORAGE = 10n * SCALE_N;
+const MIN_STORAGE = 10;
 
 const storageSizes = {
     box: 10n ** 2n,
@@ -176,6 +176,6 @@ for (let val of values(itemsCanBeStoreIn)) {
 
 export default {
     itemsCanBeStoreIn,
-    storageSizes: mapValues(storageSizes, v => v * SCALE_N),
+    storageSizes: mapValues(storageSizes, Big.fromBigInt),
     MIN_STORAGE,
 };

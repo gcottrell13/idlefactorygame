@@ -12,7 +12,7 @@ import {
 import {
     consumeMaterialsFromRecipe,
 } from "../assembly";
-import { REALLY_BIG, bigGtE, bigMax, bigMin, bigMul, bigSum } from "../bigmath";
+import Big from "../bigmath";
 import { parseFormat } from "../numberFormatter";
 import { ACTIONS } from "../content/actions";
 
@@ -49,44 +49,40 @@ export function useGameState() {
         setState(resetGame());
     }, []);
 
-    function calculateStorage(itemName: Items): bigint {
+    function calculateStorage(itemName: Items): Big {
         const canBeStoredIn = GAME.itemsCanBeStoreIn[itemName];
-        if (canBeStoredIn.length === 0) return REALLY_BIG;
+        if (canBeStoredIn.length === 0) return Big.Infinity();
         const storage = stateRef.current.storage[itemName];
         if (storage === undefined) return GAME.MIN_STORAGE;
         const assemblers = stateRef.current.assemblers[itemName] ?? {};
-        return (
-            bigMax(
-                bigSum(
-                    keys(assemblers).map(
-                        (key) => bigMul(assemblers[key] ?? 0n, GAME.storageSizes[key])
-                    ),
-                ),
-                0n,
-            ) +
-            bigMax(
-                bigSum(
-                    keys(storage).map(
+        const assemblersMap = keys(assemblers).map(
+            (key) => (assemblers[key] ?? Big.Zero).mul(GAME.storageSizes[key])
+        );
+        return Big.sum(
+            Big.max(Big.sum(...assemblersMap), Big.Zero),
+            Big.max(
+                Big.sum(
+                    ...keys(storage).map(
                         (key) =>
-                            bigMul(storage[key] ?? 0n, canBeStoredIn.includes(key)
-                                ? GAME.storageSizes[key] ?? 0n
-                                : 0n),
+                            (storage[key] ?? Big.Zero).mul(canBeStoredIn.includes(key)
+                                ? GAME.storageSizes[key] ?? Big.Zero
+                                : Big.Zero),
                     )
                 ),
-                0n,
-            ) +
+                Big.Zero,
+            ),
             GAME.MIN_STORAGE
         );
     }
 
-    function hasStorageCapacity(item: Items): bigint {
-        const currentAmount = stateRef.current.amountThatWeHave[item] ?? 0n;
-        return calculateStorage(item) - currentAmount;
+    function hasStorageCapacity(item: Items): Big {
+        const currentAmount = stateRef.current.amountThatWeHave[item] ?? Big.Zero;
+        return calculateStorage(item).sub(currentAmount);
     }
 
-    function addToTotal(itemName: Items, recipeCount: bigint): boolean {
+    function addToTotal(itemName: Items, recipeCount: Big): boolean {
         if (GAME.sideProducts[itemName].length > 0) {
-            const itemsChosen: partialItems<bigint> = {};
+            const itemsChosen: partialItems<Big> = {};
 
             GAME.sideProducts[itemName].forEach((sideProduct) => {
                 const total = _.sum(values(sideProduct));
@@ -101,9 +97,9 @@ export function useGameState() {
                 });
             });
 
-            const canProduce = bigMin(recipeCount, ...Object.values(itemsChosen));
+            const canProduce = Big.min(recipeCount, ...Object.values(itemsChosen));
 
-            if (bigGtE(canProduce, 1)) {
+            if (canProduce.gte(Big.One)) {
                 keys(itemsChosen).forEach((x) => addAmount(x, canProduce));
             } else {
                 return false;
@@ -111,8 +107,8 @@ export function useGameState() {
 
             return true;
         } else {
-            const capacity = bigMin(recipeCount, hasStorageCapacity(itemName));
-            if (bigGtE(capacity, 1)) {
+            const capacity = Big.min(recipeCount, hasStorageCapacity(itemName));
+            if (capacity.gte(Big.One)) {
                 addAmount(itemName, capacity);
                 return true;
             }
@@ -131,18 +127,18 @@ export function useGameState() {
     function getProductionProgress(itemName: Items, assemblerName: Items) {
         const time = ((stateRef.current.productionProgress[itemName] ??= {})[
             assemblerName
-        ] ??= 0n);
+        ] ??= Big.Zero);
         const state = ((stateRef.current.productionState[itemName] ??= {})[
             assemblerName
         ] ??= PRODUCTION_NO_INPUT);
         return [time, state] as const;
     }
 
-    const addAmount = useCallback((itemName: Items, amount: bigint) => {
-        const k = stateRef.current.amountThatWeHave[itemName] ?? 0n;
-        stateRef.current.amountThatWeHave[itemName] = bigMax(0n, k + amount);
-        const b = stateRef.current.amountCreated[itemName] ?? 0n;
-        stateRef.current.amountCreated[itemName] = b + amount;
+    const addAmount = useCallback((itemName: Items, amount: Big) => {
+        const k = stateRef.current.amountThatWeHave[itemName] ?? Big.Zero;
+        stateRef.current.amountThatWeHave[itemName] = Big.max(Big.Zero, k.add(amount));
+        const b = stateRef.current.amountCreated[itemName] ?? Big.Zero;
+        stateRef.current.amountCreated[itemName] = b.add(amount);
 
         if (GAME.hideOnBuy(itemName)) {
             markVisibility(itemName, false);

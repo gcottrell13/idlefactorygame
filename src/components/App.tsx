@@ -12,7 +12,7 @@ import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
 import { ReleaseNotes } from "./ReleaseNotes";
-import { NumToBig, bigMin, bigLt, bigEq, bigSum, bigDiv, bigCeil, bigGt } from "../bigmath";
+import Big from "../bigmath";
 import { ClickAmountButtons } from "./ClickAmountButtons";
 import "./App.scss";
 import { useMinigames } from "../hooks/useMinigames";
@@ -26,9 +26,9 @@ type Props = {
 
 const MAX_BIG = BigInt(Number.MAX_VALUE);
 const MULTI_CLICK_OPTIONS = {
-    "1": NumToBig(1),
-    "10": NumToBig(10),
-    "100": NumToBig(100),
+    "1": new Big(1),
+    "10": new Big(10),
+    "100": new Big(100),
     "MAX": MAX_BIG,
 }
 
@@ -50,7 +50,7 @@ export function App({ ticksPerSecond }: Props) {
     } = useProduction(ticksPerSecond);
 
     let [currentTab, setCurrentTab] = useState<string | null>(null);
-    const [currentClickAmount, setCurrentClickAmount] = useState<bigint>(MULTI_CLICK_OPTIONS["1"]);
+    const [currentClickAmount, setCurrentClickAmount] = useState<Big>(MULTI_CLICK_OPTIONS["1"]);
 
     const [isPlayingMinigame, setIsPlayingMinigame] = useState<boolean>(false);
     const [miniGameConfig, setMiniGameConfig] = useState<MinigameConfig | null>(null);

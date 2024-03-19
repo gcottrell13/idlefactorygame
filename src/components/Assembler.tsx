@@ -16,8 +16,7 @@ import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
-import { bigGt, bigToNum, scaleBigInt, bigMul } from "../bigmath";
-import { PRODUCTION_SCALE, PRODUCTION_SCALE_N } from "../hooks/useSimulation";
+import Big from "../bigmath";
 import { useGameState } from "../hooks/useGameState";
 import "./Assembler.scss";
 

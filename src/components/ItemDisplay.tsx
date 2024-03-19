@@ -29,7 +29,7 @@ import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
-import { REALLY_BIG, bigDiv, bigFloor, bigGt, bigMin, bigMul, bigSum, bigToNum } from "../bigmath";
+import Big from "../bigmath";
 import { useGameState } from "../hooks/useGameState";
 import { ByHandButton } from "./ByHandButton";
 import "./ItemDisplay.scss";

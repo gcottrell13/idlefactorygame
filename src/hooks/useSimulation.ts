@@ -18,13 +18,10 @@ import {
     hideTheHideOnBuyItems,
     howManyRecipesCanBeMade,
 } from "../assembly";
-import { NumToBig, bigFloor, bigGtE, bigLt, scaleBigInt } from "../bigmath";
+import Big from "../bigmath";
 import { ACTIONS } from "../content/actions";
 import { useGameState } from "./useGameState";
 import { NumberFormat, setMode } from "../numberFormatter";
-
-export const PRODUCTION_SCALE = 10000;
-export const PRODUCTION_SCALE_N = BigInt(PRODUCTION_SCALE);
 
 const updateTimestamps: number[] = [];
 
@@ -67,7 +64,7 @@ export function useProduction(ticksPerSecond: number) {
         }
     }
 
-    function doProduction(timeStep: number) {
+    function doProduction(timeStep: Big) {
         const {
             assemblers,
             amountThatWeHave,
@@ -88,15 +85,11 @@ export function useProduction(ticksPerSecond: number) {
                             return;
                         }
 
-                        let amountAddPerTick = scaleBigInt(
-                            assemblerCount,
-                            PRODUCTION_SCALE * GAME.assemblerSpeeds[assemblerName] * timeStep /
-                            GAME.timePerRecipe[itemName]
-                        );
-
-                        amountAddPerTick = scaleBigInt(amountAddPerTick,
-                            GAME.calculateBoost(assemblerName, stateRef.current)
-                        );
+                        const amountAddPerTick = assemblerCount
+                            .mul(GAME.assemblerSpeeds[assemblerName])
+                            .mul(timeStep)
+                            .mul(GAME.calculateBoost(assemblerName, stateRef.current))
+                            .div(GAME.timePerRecipe[itemName]);
 
                         let [time, state] = getProductionProgress(
                             itemName,
@@ -108,8 +101,8 @@ export function useProduction(ticksPerSecond: number) {
                         // there's probably a better way to organize this code
 
                         if (state === PRODUCTION_OUTPUT_BLOCKED) {
-                            if (addToTotal(itemName, NumToBig(1))) {
-                                time = 0n;
+                            if (addToTotal(itemName, Big.One)) {
+                                time = Big.Zero;
                                 state = PRODUCTION_NO_INPUT;
                             } else {
                                 return;
@@ -126,11 +119,11 @@ export function useProduction(ticksPerSecond: number) {
                             const result = consumeMaterialsFromRecipe(
                                 itemName,
                                 amountThatWeHave,
-                                NumToBig(1),
+                                Big.One,
                             );
                             if (!result) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
-                                time = scaleBigInt(amountAddPerTick, -fps);
+                                time = amountAddPerTick.mul(new Big(-fps));
                                 state = PRODUCTION_RUNNING;
                             }
                         }
@@ -141,17 +134,17 @@ export function useProduction(ticksPerSecond: number) {
                             }
                             doPowerConsumption(itemName, assemblerName);
 
-                            time += amountAddPerTick;
+                            time.addEq(amountAddPerTick);
+                            const flooredTime = time.floored();
 
-                            const amountToProduce = time / PRODUCTION_SCALE_N;
-                            if (bigGtE(amountToProduce, 1)) {
-                                if (addToTotal(itemName, bigFloor(amountToProduce))) {
-                                    time -= amountToProduce * PRODUCTION_SCALE_N;
+                            if (time.gte(Big.One)) {
+                                if (addToTotal(itemName, flooredTime)) {
+                                    time.subEq(flooredTime);
                                     if (
                                         !consumeMaterialsFromRecipe(
                                             itemName,
                                             amountThatWeHave,
-                                            bigFloor(amountToProduce),
+                                            flooredTime,
                                         )
                                     ) {
                                         state = PRODUCTION_NO_INPUT;
@@ -180,13 +173,13 @@ export function useProduction(ticksPerSecond: number) {
         if (GAME.requiredBuildings(itemName).includes("by-hand") === false)
             return null;
         if (
-            bigLt(howManyRecipesCanBeMade(
+            howManyRecipesCanBeMade(
                 itemName,
                 stateRef.current.amountThatWeHave,
-            ), 1)
+            ).lt(Big.One)
         )
             return false;
-        return bigGtE(hasStorageCapacity(itemName), 1);
+        return hasStorageCapacity(itemName).gte(Big.One);
     }, []);
 
 
@@ -251,7 +244,7 @@ export function useProduction(ticksPerSecond: number) {
                 1,
                 (now - stateRef.current.lastTickTimestamp) / 1000,
             );
-            doProduction(timeDiff);
+            doProduction(new Big(timeDiff));
             stateRef.current.lastTickTimestamp = now;
             stateRef.current.ticksSinceLastUIUpdate++;
             updateTimestamps.push(now);

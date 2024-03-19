@@ -1,7 +1,8 @@
+import Big from "../bigmath";
 import { Items, itemsMap, partialItems } from "./itemNames";
 
 export type Recipe = {
-    [p in Items]?: number | bigint;
+    [p in Items]?: number | Big;
 };
 
 export type Recipes = {
@@ -601,12 +602,12 @@ const recipes: Recipes = {
         "advanced-circuit": 5_000,
     },
     "research-science-5": {
-        science4: 5_000_000,
+        science4: 50_000,
         aluminum: 500_000,
         computer: 500_000,
     },
     "research-science-6": {
-        science5: 2_000_000_000n * 100n,
+        science5: 60_000,
         u234: 1_000_000,
         computer: 5_000_000,
     },
@@ -633,9 +634,9 @@ const recipes: Recipes = {
     "boost-desktop-computer": { "copper-wire": 42, "money": 10 },
 
     "research-box": { science1: 1 },
-    "research-box2": { science1: 1, box: 10n ** 4n },
-    "research-box3": { science2: 10, box: 10n ** 7n },
-    "research-box4": { science3: 100, box: 10n ** 10n },
+    "research-box2": { science1: 1, box: new Big(1, 5) },
+    "research-box3": { science2: 10, box: new Big(1, 8) },
+    "research-box4": { science3: 100, box: new Big(1, 11) },
     "research-box5": { science4: 1000, bauxite: 1000 },
 };
 

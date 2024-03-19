@@ -4,6 +4,7 @@ import { VERSION } from "../version";
 import { keys } from "../smap";
 import { NumberFormat } from "../numberFormatter";
 import _ from "lodash";
+import Big from "../bigmath";
 
 const defaultState: State = {
     version: VERSION(),
@@ -36,16 +37,17 @@ function serializer(this: any, key: string, value: any) {
     if (typeof value === "number") {
         return Math.round(value * 1000) / 1000;
     }
-    if (typeof value === 'bigint') {
-        return `bigint=${value}`;
+    if (value instanceof Big) {
+        return `big=${value.mantissa}x${value.exponent}`;
     }
     return value;
 }
 
 function deserializer(this: any, key: string, value: any) {
-    if (typeof value === 'string' && value.startsWith('bigint=')) {
+    if (typeof value === 'string' && value.startsWith('big=')) {
         const [, val] = value.split('=');
-        return BigInt(val);
+        const [mantissa, exponent] = val.split('x');
+        return new Big(parseFloat(mantissa), parseInt(exponent));
     }
     return value;
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Items } from "../content/itemNames";
 import { Button } from "react-bootstrap";
 import GAME from "../values";
-import { bigGt } from "../bigmath";
+import Big from "../bigmath";
 import { formatNumber as d } from "../numberFormatter";
 import "./ByHandButton.scss";
 

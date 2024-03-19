@@ -1,3 +1,4 @@
+import Big from "../bigmath";
 import { partialItems } from "../content/itemNames";
 import { NumberFormat } from "../numberFormatter";
 import { VERSION } from "../version";
@@ -33,11 +34,11 @@ export interface State {
     /**
      * [what its making][the building]
      */
-    assemblers: partialItems<partialItems<bigint>>;
+    assemblers: partialItems<partialItems<Big>>;
     displayAmount: partialItems<number>;
 
     // actually a multiple of 10 x the actual amount, defined in GAME.AMOUNT_SCALE
-    amountThatWeHave: partialItems<bigint>;
+    amountThatWeHave: partialItems<Big>;
 
     /**
      * all buildings making these recipes should not do so
@@ -47,7 +48,7 @@ export interface State {
     /**
      * [whats being made] [the building making it]
      */
-    productionProgress: partialItems<partialItems<bigint>>;
+    productionProgress: partialItems<partialItems<Big>>;
     productionState: partialItems<partialItems<PRODUCTION_STATE>>;
 
     /**
@@ -58,7 +59,7 @@ export interface State {
 
     // for each item, how many storage containers are there.
     // this storage is a soft limit, the actual values may go over via direct production, but not from byproducts
-    storage: partialItems<partialItems<bigint>>;
+    storage: partialItems<partialItems<Big>>;
 
     // true if visible, false or undefined if not.
     // undefined objects will check each tick if they should be revealed
@@ -67,7 +68,7 @@ export interface State {
     acknowledged: partialItems<boolean>;
 
     // how many of each item has been made
-    amountCreated: partialItems<bigint>;
+    amountCreated: partialItems<Big>;
 
     // if true, hide the button to add this item to something
     hideAddButtons: partialItems<boolean>;

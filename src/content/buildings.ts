@@ -1,3 +1,4 @@
+import Big from "../bigmath";
 import { Items, partialItems } from "./itemNames";
 
 const assemblerSpeeds = {
@@ -116,7 +117,7 @@ const buildingBoostTiers: { [p in Items]?: number[] } = {
 
 };
 
-const defaultBuildingBoostTiers: number[] = Array(20).map((v, i) => 2 ** i);
+const defaultBuildingBoostTiers: Big[] = Array(20).map((v, i) => new Big(2, 0).powEq(i));
 
 
 const requiredBuildings: {

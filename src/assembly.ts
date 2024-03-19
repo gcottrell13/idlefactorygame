@@ -3,13 +3,13 @@ import { Items } from "./content/itemNames";
 import _ from "lodash";
 import { SMap, keys, mapPairs } from "./smap";
 import { State } from "./typeDefs/State";
-import { REALLY_BIG, SCALE_N, bigDiv, bigFloor, bigMax, bigMin, bigMul, bigToNum, bigpow, scaleBigInt } from "./bigmath";
+import Big from "./bigmath";
 import { dispatch } from "./content/actions";
 
 
 export function checkAmounts(
-    amounts: SMap<bigint>,
-    requirements: SMap<bigint>,
+    amounts: SMap<Big>,
+    requirements: SMap<Big>,
 ) {
     return mapPairs(
         requirements,
@@ -19,38 +19,38 @@ export function checkAmounts(
 
 export function howManyRecipesCanBeMade(
     itemName: Items,
-    amounts: SMap<bigint>,
-): bigint {
+    amounts: SMap<Big>,
+): Big {
     const recipe = GAME.recipes[itemName];
-    if (recipe === undefined) return 0n;
+    if (recipe === undefined) return Big.Zero;
 
-    let numberOfRecipesToMake = REALLY_BIG;
+    let numberOfRecipesToMake = Big.Infinity;
 
     const scale = GAME.calculateRecipeScale(itemName, amounts[itemName]);
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
-        const totalRequired = bigMul(requiredCount, scale);
+        const totalRequired = requiredCount.mul(scale);
         // const totalRequired = requiredCount * scale;
-        const weHave = amounts[ingredientName] ?? 0;
-        if (weHave < totalRequired) {
-            numberOfRecipesToMake = 0n;
+        const weHave = amounts[ingredientName] ?? Big.Zero;
+        if (weHave.lt(totalRequired)) {
+            numberOfRecipesToMake = Big.Zero;
         } else {
-            numberOfRecipesToMake = bigMin(
-                bigDiv(weHave, totalRequired),
+            numberOfRecipesToMake = Big.min(
+                weHave.div(totalRequired),
                 numberOfRecipesToMake,
             );
         }
     });
 
-    return bigFloor(numberOfRecipesToMake);
+    return numberOfRecipesToMake.floorEq();
 }
 
 export function consumeMaterials(
     itemName: Items | undefined,
-    amountWeHave: SMap<bigint>,
-    recipe: SMap<bigint>,
-    recipeCount: bigint
+    amountWeHave: SMap<Big>,
+    recipe: SMap<Big>,
+    recipeCount: Big
 ) {
     const scale = itemName
         ? GAME.calculateRecipeScale(itemName, amountWeHave[itemName])
@@ -58,23 +58,23 @@ export function consumeMaterials(
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
-        const toGrab = bigMul(requiredCount, scale);
+        const toGrab = requiredCount.mul(scale);
 
         const weHave = amountWeHave[ingredientName] ?? 0n;
-        amountWeHave[ingredientName] = bigMax(0n, weHave - toGrab);
+        amountWeHave[ingredientName] = Big.max(Big.Zero, weHave.sub(toGrab));
     });
 }
 
 export function consumeMaterialsFromRecipe(
     itemName: Items,
-    amounts: SMap<bigint>,
-    recipeCount: bigint,
+    amounts: SMap<Big>,
+    recipeCount: Big,
 ): boolean {
     const recipe = GAME.recipes[itemName];
     if (recipe === undefined) return false;
     // not producing, so let's try to grab materials
 
-    if (howManyRecipesCanBeMade(itemName, amounts) < recipeCount) return false;
+    if (howManyRecipesCanBeMade(itemName, amounts).lt(recipeCount)) return false;
 
     consumeMaterials(itemName, amounts, recipe, recipeCount);
     return true;
@@ -98,7 +98,7 @@ export function checkVisible(state: State, dispatch: dispatch) {
         GAME.allItemNames.forEach((itemName) => {
             if (visible[itemName] === undefined) {
                 const unlockedWith = GAME.unlockedWith[itemName].every(
-                    (x) => (amountThatWeHave[x] ?? 0) > 0,
+                    (x) => (amountThatWeHave[x] ?? Big.Zero).mantissa > 0,
                 );
                 if (GAME.unlockedWith[itemName].length > 0 && unlockedWith) {
                     _visible(itemName);
@@ -144,7 +144,7 @@ export function hideTheHideOnBuyItems(state: State) {
         amountThatWeHave,
     } = state;
     GAME.allItemNames.forEach((itemName) => {
-        if (GAME.hideOnBuy(itemName) && (amountThatWeHave[itemName] ?? 0n) > 0) {
+        if (GAME.hideOnBuy(itemName) && (amountThatWeHave[itemName] ?? Big.Zero).mantissa > 0) {
             visible[itemName] = false;
         }
     });
