@@ -117,7 +117,7 @@ const buildingBoostTiers: { [p in Items]?: number[] } = {
 
 };
 
-const defaultBuildingBoostTiers: Big[] = Array(20).map((v, i) => new Big(2, 0).powEq(i));
+const defaultBuildingBoostTiers: Big[] = Array(20).map((v, i) => Big.Two.pow(i));
 
 
 const requiredBuildings: {

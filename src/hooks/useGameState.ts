@@ -51,7 +51,7 @@ export function useGameState() {
 
     function calculateStorage(itemName: Items): Big {
         const canBeStoredIn = GAME.itemsCanBeStoreIn[itemName];
-        if (canBeStoredIn.length === 0) return Big.Infinity();
+        if (canBeStoredIn.length === 0) return Big.Infinity;
         const storage = stateRef.current.storage[itemName];
         if (storage === undefined) return GAME.MIN_STORAGE;
         const assemblers = stateRef.current.assemblers[itemName] ?? {};
@@ -146,7 +146,7 @@ export function useGameState() {
         }
     }, []);
 
-    const makeItemByhand = useCallback((itemName: Items, count: bigint) => {
+    const makeItemByhand = useCallback((itemName: Items, count: Big) => {
         const now = new Date().getTime();
         if (makeByHandTimeRef.current > now - 200) return;
         makeByHandTimeRef.current = now;
@@ -191,7 +191,7 @@ export function useGameState() {
                 break;
             }
             case 'remove-building': {
-                addAssemblers(action.building, action.recipe, -action.amount);
+                addAssemblers(action.building, action.recipe, action.amount.negate());
                 break;
             }
             case 'ack': {
@@ -234,37 +234,35 @@ export function useGameState() {
         }
     }
     
-    const setAmount = (amount: bigint = 1n, itemName: Items = "") => {
+    const setAmount = (amount: Big = Big.One, itemName: Items = "") => {
         stateRef.current.amountThatWeHave[itemName] = amount;
         stateRef.current.visible[itemName] ??= true;
     };
     
     const addAssemblers = useCallback(
-        (level: Items, itemName: Items, amount: bigint) => {
+        (level: Items, itemName: Items, amount: Big) => {
             const k = stateRef.current.assemblers[itemName] ?? {};
-            const appliedAssemblers = k[level] ?? 0n;
+            const appliedAssemblers = k[level] ?? Big.Zero;
             const haveAssemblers =
-                stateRef.current.amountThatWeHave[level] ?? 0n;
-            amount = bigMin(amount, haveAssemblers);
-            k[level] = bigMax(0n, appliedAssemblers + amount);
+                stateRef.current.amountThatWeHave[level] ?? Big.Zero;
+            amount = Big.min(amount, haveAssemblers);
+            k[level] = Big.max(Big.Zero, appliedAssemblers.add(amount));
             stateRef.current.assemblers[itemName] = k;
-            stateRef.current.amountThatWeHave[level] = haveAssemblers - amount;
+            stateRef.current.amountThatWeHave[level] = haveAssemblers.sub(amount);
         },
         [],
     );
 
     const addContainer = useCallback(
-        (itemName: Items, container: Items, amount: bigint) => {
+        (itemName: Items, container: Items, amount: Big) => {
             stateRef.current.storage[itemName] ??= {};
             const haveStorage =
-                stateRef.current.storage[itemName]![container] ?? 0n;
+                stateRef.current.storage[itemName]![container] ?? Big.Zero;
             const haveContainers =
-                stateRef.current.amountThatWeHave[container] ?? 0n;
-            amount = bigMin(amount, haveContainers);
-            stateRef.current.storage[itemName]![container] =
-                haveStorage + amount;
-            stateRef.current.amountThatWeHave[container] =
-                haveContainers - amount;
+                stateRef.current.amountThatWeHave[container] ?? Big.Zero;
+            amount = Big.min(amount, haveContainers);
+            stateRef.current.storage[itemName]![container] = haveStorage.add(amount);
+            stateRef.current.amountThatWeHave[container] = haveContainers.sub(amount);
         },
         [],
     );

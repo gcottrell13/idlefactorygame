@@ -47,7 +47,7 @@ function deserializer(this: any, key: string, value: any) {
     if (typeof value === 'string' && value.startsWith('big=')) {
         const [, val] = value.split('=');
         const [mantissa, exponent] = val.split('x');
-        return new Big(parseFloat(mantissa), parseInt(exponent));
+        return new Big(BigInt(mantissa), BigInt(exponent));
     }
     return value;
 }

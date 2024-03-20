@@ -634,9 +634,9 @@ const recipes: Recipes = {
     "boost-desktop-computer": { "copper-wire": 42, "money": 10 },
 
     "research-box": { science1: 1 },
-    "research-box2": { science1: 1, box: new Big(1, 5) },
-    "research-box3": { science2: 10, box: new Big(1, 8) },
-    "research-box4": { science3: 100, box: new Big(1, 11) },
+    "research-box2": { science1: 1, box: new Big(1n, 5n) },
+    "research-box3": { science2: 10, box: new Big(1n, 8n) },
+    "research-box4": { science3: 100, box: new Big(1n, 11n) },
     "research-box5": { science4: 1000, bauxite: 1000 },
 };
 

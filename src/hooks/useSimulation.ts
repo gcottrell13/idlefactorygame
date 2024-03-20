@@ -37,7 +37,7 @@ export function useProduction(ticksPerSecond: number) {
         calculateStorage,
     } = useGameState();
 
-    const [fps, setFps] = useState(0);
+    const [fps, setFps] = useState(Big.Zero);
     const [, forceUpdate] = useReducer(x => x + 1, 0);
 
     function checkPowerConsumption(itemName: Items, building: Items): boolean {
@@ -123,7 +123,7 @@ export function useProduction(ticksPerSecond: number) {
                             );
                             if (!result) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
-                                time = amountAddPerTick.mul(new Big(-fps));
+                                time = amountAddPerTick.mul(fps);
                                 state = PRODUCTION_RUNNING;
                             }
                         }
@@ -189,7 +189,7 @@ export function useProduction(ticksPerSecond: number) {
         while (updateTimestamps[0] < now - 1000) {
             updateTimestamps.shift();
         }
-        setFps(updateTimestamps.length);
+        setFps(Big.fromNumberOrBigInt(updateTimestamps.length));
         forceUpdate();
         const before =
             stateRef.current.lastUIUpdateTimestamp === 0
@@ -244,7 +244,7 @@ export function useProduction(ticksPerSecond: number) {
                 1,
                 (now - stateRef.current.lastTickTimestamp) / 1000,
             );
-            doProduction(new Big(timeDiff));
+            doProduction(Big.fromNumberOrBigInt(timeDiff));
             stateRef.current.lastTickTimestamp = now;
             stateRef.current.ticksSinceLastUIUpdate++;
             updateTimestamps.push(now);
@@ -266,7 +266,7 @@ export function useProduction(ticksPerSecond: number) {
 
     useEffect(() => {
         (document as any).game ??= {};
-        (document as any).game.setAmount = (amount: string | number | bigint, item: Items) => {
+        (document as any).game.setAmount = (amount: string | number | Big, item: Items) => {
             doAction({
                 action: 'set-amount',
                 amount,

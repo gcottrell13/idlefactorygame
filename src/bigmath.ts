@@ -1,75 +1,89 @@
 
-
-const MANTISSA_PRECISION = 6;
-
 export default class Big {
-    mantissa: number;
-    exponent: number;
+    mantissa: bigint;
+    exponent: bigint;
     infinite: boolean;
+    frozen: boolean;
 
-    static Zero = new Big(0);
-    static One = new Big(1);
-    static Infinity = new Big(0, 0, true);
+    static Zero = new Big(0n, 0n, false, true);
+    static One = new Big(1n, 0n, false, true);
+    static Two = new Big(2n, 0n, false, true);
+    static Three = new Big(3n, 0n, false, true);
+    static Four = new Big(4n, 0n, false, true);
+    static Five = new Big(5n, 0n, false, true);
+    static Six = new Big(6n, 0n, false, true);
+    static Seven = new Big(7n, 0n, false, true);
+    static Eight = new Big(8n, 0n, false, true);
+    static Nine = new Big(9n, 0n, false, true);
+    static Ten = new Big(10n, 0n, false, true);
+    static Hundred = new Big(100n, 0n, false, true);
+    static Infinity = new Big(0n, 0n, true, true);
 
-    constructor(mantissa: number, exponent: number = 1, infinite: boolean = false) {
+    constructor(mantissa: bigint, exponent: bigint = 0n, infinite: boolean = false, frozen: boolean = false) {
         this.mantissa = mantissa;
         this.exponent = exponent;
         this.infinite = infinite;
+        this.frozen = frozen;
     }
 
     static fromNumberOrBigInt(n: number | bigint) {
         if (typeof n === 'bigint') return Big.fromBigInt(n);
-        return new Big(n);
+        let exponent = 0n;
+        while (n % 1 !== 0) {
+            n *= 10;
+            exponent -= 1n;
+        }
+        return new Big(BigInt(n), exponent);
     }
 
     static fromBigInt(n: bigint) {
-        const exponent = n.toString().length - 1;
-        if (exponent <= MANTISSA_PRECISION) {
-            return new Big(Number(n)).normalize();
-        }
-        const factor = 10n ** BigInt(exponent - MANTISSA_PRECISION);
-        n /= factor;
-        return new Big(Number(n), exponent - MANTISSA_PRECISION).normalize();
+        return new Big(n).normalize();
     }
 
     toNumber() : number {
-        return this.mantissa * Math.pow(10, this.exponent);
+        if (this.infinite) return this.mantissa > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+        return Number(this.mantissa) * (10 ** Number(this.exponent));
+    }
+
+    toBigint() {
+        if (this.infinite) throw new Error("attempted infinite big int"); 
+        return this.mantissa * (10n ** this.exponent);
     }
 
     normalize() {
-        if (this.mantissa === 0) {
-            this.exponent = 0;
+        if (this.mantissa === 0n) {
+            this.exponent = 0n;
             return this;
         }
-        const isNegative = this.mantissa < 0;
-        this.mantissa = isNegative ? -this.mantissa : this.mantissa;
-        while (this.mantissa < 1) {
-            this.mantissa *= 10;
-            this.exponent -= 1;
+        if (this.exponent > 0n) {
+            this.mantissa *= 10n ** this.exponent;
+            this.exponent = 0n;
+            return this;
         }
-        while (this.mantissa > 10) {
-            this.mantissa *= 0.1;
-            this.exponent += 1;
+        while (this.mantissa % 10n === 0n) {
+            this.exponent ++;
+            this.mantissa /= 10n;
         }
         return this;
     }
 
     clone() {
-        return new Big(this.mantissa, this.exponent);
+        return new Big(this.mantissa, this.exponent, this.infinite);
     }
 
-    powEq(power: number) {
-        power = Math.floor(power);
+    powEq(power: number | bigint) {
+        if (this.frozen) throw new Error("frozen");
+        power = BigInt(power);
 
-        if (power === 0) {
-            this.mantissa = 1;
-            this.exponent = 0;
+        if (power === 0n) {
+            this.mantissa = 1n;
+            this.exponent = 0n;
             return this;
         }
-        if (power === 1) 
+        if (power === 1n) 
             return this;
         
-        this.mantissa = Math.pow(this.mantissa, power);
+        this.mantissa = this.mantissa ** power;
         this.exponent *= power;
         return this.normalize();
     }
@@ -79,9 +93,20 @@ export default class Big {
     }
 
     mulEq(b: Big) {
+        if (this.frozen) throw new Error("frozen");
         this.mantissa *= b.mantissa;
         this.exponent += b.exponent;
         return this.normalize();
+    }
+
+    negateEq() {
+        if (this.frozen) throw new Error("frozen");
+        this.mantissa *= -1n;
+        return this;
+    }
+
+    negate() {
+        return new Big(-this.mantissa, this.exponent, this.infinite);
     }
 
     mul(b: Big) {
@@ -89,23 +114,16 @@ export default class Big {
     }
 
     addEq(b: Big) {
-        if (b.exponent - this.exponent <= -MANTISSA_PRECISION)
-            // b is too small to matter, ignore
-            return this;
-        if (this.exponent - b.exponent <= -MANTISSA_PRECISION)
-            // we are too small to matter
-            return b;
+        if (this.frozen) throw new Error("frozen");
+        let [smaller, bigger] = b.exponent < this.exponent ? [b, this] : [this, b];
+        bigger = bigger.clone();
 
-        b = b.clone();
-        while (b.exponent > this.exponent) {
-            b.exponent --;
-            b.mantissa *= 10;
+        while (bigger.exponent > smaller.exponent) {
+            bigger.exponent --;
+            bigger.mantissa *= 10n;
         }
-        while (b.exponent < this.exponent) {
-            b.exponent ++;
-            b.mantissa *= 0.1;
-        }
-        this.mantissa += b.mantissa;
+        this.mantissa = bigger.mantissa + smaller.mantissa;
+        this.exponent = smaller.exponent;
         return this.normalize();
     }
 
@@ -114,7 +132,13 @@ export default class Big {
     }
 
     divEq(b: Big) {
-        return this.mulEq(new Big(b.mantissa, -b.exponent));
+        if (this.frozen) throw new Error("frozen");
+        if (b.mantissa === 0n) 
+            return Big.Infinity;
+        this.mantissa *= 100n;
+        this.mantissa /= b.mantissa;
+        this.exponent -= b.exponent + 2n;
+        return this;
     }
 
     div(b: Big) {
@@ -122,6 +146,7 @@ export default class Big {
     }
 
     subEq(b: Big) {
+        if (this.frozen) throw new Error("frozen");
         return this.addEq(new Big(-b.mantissa, b.exponent));
     }
 
@@ -129,23 +154,31 @@ export default class Big {
         return this.clone().subEq(b);
     }
 
+    magnitude() {
+        return this.mantissa.toString().length + Number(this.exponent) - 1;
+    }
+
     lt(b: Big) {
-        if (b.infinite || !this.infinite) return true;
+        if (b.infinite && !this.infinite) return true;
+        if (!b.infinite && this.infinite) return false;
         return (b.exponent > this.exponent) || (b.exponent === this.exponent && b.mantissa > this.mantissa);
     }
 
     gt(b: Big) {
-        if (!b.infinite || this.infinite) return true;
+        if (!b.infinite && this.infinite) return true;
+        if (b.infinite && !this.infinite) return false;
         return (b.exponent < this.exponent) || (b.exponent === this.exponent && b.mantissa < this.mantissa);
     }
 
     lte(b: Big) {
-        if (b.infinite || !this.infinite) return true;
+        if (b.infinite && !this.infinite) return true;
+        if (!b.infinite && this.infinite) return false;
         return (b.exponent > this.exponent) || (b.exponent === this.exponent && b.mantissa >= this.mantissa);
     }
 
     gte(b: Big) {
-        if (!b.infinite || this.infinite) return true;
+        if (!b.infinite && this.infinite) return true;
+        if (b.infinite && !this.infinite) return false;
         return (b.exponent < this.exponent) || (b.exponent === this.exponent && b.mantissa <= this.mantissa);
     }
 
@@ -153,20 +186,9 @@ export default class Big {
      * Rounds towards zero
      */
     floorEq() {
-        if (this.exponent < 0) {
-            this.mantissa = 0;
-            this.exponent = 0;
+        if (this.exponent >= 0) 
             return this;
-        }
-        if (this.exponent > MANTISSA_PRECISION) {
-            // too small, ignore
-            return this;
-        }
-        while (this.exponent > 0) {
-            this.mantissa *= 10;
-            this.exponent --;
-        }
-        this.mantissa = Math.floor(this.mantissa);
+        this.mantissa -= this.mantissa % (10n ** -this.exponent);
         return this.normalize();
     }
 
@@ -181,20 +203,11 @@ export default class Big {
      * Rounds away from zero
      */
     ceilEq() {
-        if (this.exponent < 0) {
-            this.mantissa = 0;
-            this.exponent = 0;
+        if (this.exponent >= 0) 
             return this;
-        }
-        if (this.exponent > MANTISSA_PRECISION) {
-            // too small, ignore
-            return this;
-        }
-        while (this.exponent > 0) {
-            this.mantissa *= 10;
-            this.exponent --;
-        }
-        this.mantissa = Math.ceil(this.mantissa);
+        const f = 10n ** -this.exponent;
+        this.mantissa -= this.mantissa % f;
+        this.mantissa += f;
         return this.normalize();
     }
     
@@ -214,7 +227,7 @@ export default class Big {
     }
 
     static max(...nums: Big[]): Big {
-        let first = nums[0];
+        let first = nums[0] ?? Big.Zero;
         for (const c of nums) {
             if (c.gt(first)) first = c;
         }
@@ -222,7 +235,7 @@ export default class Big {
     }
 
     static min(...nums: Big[]): Big {
-        let first = nums[0];
+        let first = nums[0] ?? Big.Zero;
         for (const c of nums) {
             if (c.lt(first)) first = c;
         }
@@ -230,7 +243,7 @@ export default class Big {
     }
 
     static sum(...nums: Big[]): Big {
-        let first = nums[0].clone();
+        let first = (nums[0] ?? Big.Zero).clone();
         for (const c of nums) {
             first.addEq(c);
         }

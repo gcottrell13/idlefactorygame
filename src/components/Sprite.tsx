@@ -3,10 +3,11 @@ import { useImages } from "../useImages";
 import { Items } from "../content/itemNames";
 import "./Sprite.scss";
 import { formatNumber, parseFormat } from "../numberFormatter";
+import Big from "../bigmath";
 
 interface Props {
     name: Items;
-    amount?: bigint | string;
+    amount?: Big | string;
 }
 
 export function Sprite({ name: spriteName, amount }: Props) {

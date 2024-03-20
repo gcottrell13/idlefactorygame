@@ -12,14 +12,14 @@ function maxCraftByAssemblerSpeed(game: GAMEVALUES, state: State, item: Items) {
     const pairs = mapPairs(state.assemblers[item], (numAssemblers, assemblerName) => {
         const boostingItem = game.buildingBoosts[assemblerName];
         if (!boostingItem) return numAssemblers;
-        return numAssemblers.mul(new Big(game.calculateBoost(assemblerName, state)).normalize());
+        return numAssemblers.mul(game.calculateBoost(assemblerName, state).normalize());
     });
     return Big.sum(...pairs);
 }
 
 
 
-const ABSOLUTE_MAX_CRAFT = new Big(2);
+const ABSOLUTE_MAX_CRAFT = Big.Two;
 const maxCraftAtATime: partialItems<number | maxCraftFunc> = {
     "copper-ore": 2,
     "iron-ore": 2,
@@ -29,12 +29,12 @@ const maxCraftAtATime: partialItems<number | maxCraftFunc> = {
     "wizard-degree": 100,
     "wizard-essence": 10,
     // money: (game, state) => bigMax(ABSOLUTE_MAX_CRAFT, maxCraftByAssemblerSpeed(game, state, "money")),
-    bank: (game, state) => Big.max(ABSOLUTE_MAX_CRAFT, (state.assemblers["money"]?.["bank"] ?? Big.Zero).mul(new Big(10))),
+    bank: (game, state) => Big.max(ABSOLUTE_MAX_CRAFT, (state.assemblers["money"]?.["bank"] ?? Big.Zero).mul(Big.Ten)),
 };
 
 const m = fromPairs(mapPairs(maxCraftAtATime, (amount, item) => {
     if (typeof amount === "number")
-        return [item, new Big(amount)] as pairsType;
+        return [item, Big.fromNumberOrBigInt(amount)] as pairsType;
     return [item, amount] as pairsType;
 }));
 

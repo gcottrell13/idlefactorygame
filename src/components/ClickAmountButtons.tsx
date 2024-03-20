@@ -1,12 +1,13 @@
 import { Button, ButtonToolbar } from 'react-bootstrap';
 import { mapPairs } from '../smap';
 import "./ClickAmountButtons.scss";
+import Big from '../bigmath';
 
 
 interface Props {
-    multiClickOptions: {[p: string]: bigint};
-    current: bigint;
-    onClick: (value: bigint) => void;
+    multiClickOptions: {[p: string]: Big};
+    current: Big;
+    onClick: (value: Big) => void;
 }
 
 

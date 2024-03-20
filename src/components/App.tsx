@@ -26,9 +26,9 @@ type Props = {
 
 const MAX_BIG = BigInt(Number.MAX_VALUE);
 const MULTI_CLICK_OPTIONS = {
-    "1": new Big(1),
-    "10": new Big(10),
-    "100": new Big(100),
+    "1": new Big(1n),
+    "10": new Big(10n),
+    "100": new Big(100n),
     "MAX": MAX_BIG,
 }
 
@@ -72,38 +72,43 @@ export function App({ ticksPerSecond }: Props) {
         sectionData?.SubSections.flatMap((x) => x.Items) ?? [],
     );
 
-    function calculateMaxMake(itemName: Items, n: bigint) {
-        return bigMin(
-            bigLt(currentClickAmount, 1) ? NumToBig(1) : currentClickAmount,
+    function calculateMaxMake(itemName: Items, n: Big) {
+        return Big.min(
+            currentClickAmount.lt(Big.One) ? Big.One : currentClickAmount,
             howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
-            state.calculateStorage(itemName) - n,
+            state.calculateStorage(itemName).sub(n),
             GAME.maxCraftAtATime(itemName, state),
         );
     }
 
     function calculateBuildingsToSatisfy(building: Items, recipe: Items) {
-        const consumption = bigSum(values(rates.effectiveConsumptionRates[recipe] ?? {})) +
-            bigSum(values(rates.powerConsumptionRates[recipe] ?? {}).map(x => x[2]));
-        const production = bigSum(values(rates.effectiveProductionRates[recipe] ?? {}));
-        const speed = NumToBig(
-            GAME.assemblerSpeeds[building] * GAME.calculateBoost(building, state) / GAME.timePerRecipe[recipe]
+        const consumption = Big.sum(
+            ...values(rates.effectiveConsumptionRates[recipe] ?? {}),
+            ...values(rates.powerConsumptionRates[recipe] ?? {}).map(x => x[2]),
         );
-        if (speed === 0n) return NumToBig(1);
-        return bigCeil(bigDiv(consumption - production, speed));
+        const production = Big.sum(...values(rates.effectiveProductionRates[recipe] ?? {}));
+        const speed = GAME.assemblerSpeeds[building]
+            .mul(GAME.calculateBoost(building, state))
+            .divEq(GAME.timePerRecipe[recipe]);
+        if (speed.eq(Big.Zero)) return Big.One;
+        return consumption
+            .sub(production)
+            .divEq(speed)
+            .ceilEq();
     }
 
     function calculateMaxAdd(itemName: Items, target?: Items) {
-        const amt = currentClickAmount === 0n && target
+        const amt = currentClickAmount.eq(Big.Zero) && target
             ? calculateBuildingsToSatisfy(itemName, target)
             : currentClickAmount;
-        return bigMin(
-            bigLt(amt, 1) ? NumToBig(1) : amt,
-            state.amountThatWeHave[itemName] ?? 0n,
+        return Big.min(
+            amt.lt(Big.One) ? Big.One : amt,
+            state.amountThatWeHave[itemName] ?? Big.Zero,
         );
     }
 
     const haveAssemblers = GAME.allAssemblers.filter(
-        (key) => (amountThatWeHave[key] ?? 0) > 0,
+        (key) => (amountThatWeHave[key] ?? Big.Zero).gt(Big.Zero),
     );
 
     if (currentTab === null) {
@@ -125,7 +130,7 @@ export function App({ ticksPerSecond }: Props) {
 
             if (!visible[itemName]) continue;
 
-            const amt = amountThatWeHave[itemName] ?? 0n;
+            const amt = amountThatWeHave[itemName] ?? Big.Zero;
             const recipe = GAME.recipes[itemName];
             if (recipe === undefined) continue;
 
@@ -134,7 +139,7 @@ export function App({ ticksPerSecond }: Props) {
             const assemblerCount = assemblers[itemName];
             const assemblersMakingThis = _.pickBy(
                 assemblerCount,
-                (x) => x !== 0n,
+                (x) => x.neq(Big.Zero),
             );
             const assemblerButtons: JSX.Element[] = [];
             const boxButtons: JSX.Element[] = [];
@@ -143,7 +148,7 @@ export function App({ ticksPerSecond }: Props) {
                 if (!state.visible[container]) return;
                 if (state.hideAddButtons[container]) return;
                 const num = calculateMaxAdd(container);
-                const disabled = bigLt(amountThatWeHave[container] ?? 0n, 1);
+                const disabled = (amountThatWeHave[container] ?? Big.Zero).lt(Big.One);
                 boxButtons.push(
                     <Button
                         className={"add-container"}
@@ -159,7 +164,7 @@ export function App({ ticksPerSecond }: Props) {
                         variant="info"
                         disabled={disabled}
                     >
-                        Add {num > 0 ? formatNumber(num) : ''}{" "}
+                        Add {num.gt(Big.Zero) ? formatNumber(num) : ''}{" "}
                         {GAME.displayNames(container)}
                     </Button>,
                 );
@@ -187,13 +192,13 @@ export function App({ ticksPerSecond }: Props) {
                         variant="secondary"
                         disabled={!haveAny}
                     >
-                        Add {num > 0 ? formatNumber(num) : ''}{" "}
+                        Add {num.gt(Big.Zero) ? formatNumber(num) : ''}{" "}
                         {GAME.displayNames(assemblerName)}
                     </Button>,
                 );
             });
 
-            if (pickMinigameByItem(itemName) && bigGt(amountThatWeHave['research-minigames'] ?? 0n, 0)) {
+            if (pickMinigameByItem(itemName) && (amountThatWeHave['research-minigames'] ?? Big.Zero).gt(Big.Zero)) {
                 assemblerButtons.push(
                     <Button
                         key={'playminigame'}
@@ -211,7 +216,7 @@ export function App({ ticksPerSecond }: Props) {
             thisSectionItems.push(
                 <ItemDisplay
                     key={itemName}
-                    amt={amt ?? 0n}
+                    amt={amt ?? Big.Zero}
                     state={state}
                     assemblersMakingThis={assemblersMakingThis}
                     boxButtons={boxButtons}
@@ -273,14 +278,14 @@ export function App({ ticksPerSecond }: Props) {
 
     let multiClickOptions = {};
 
-    if (bigEq(amountThatWeHave["research-mass-click"], 1)) {
+    if (amountThatWeHave["research-mass-click"]?.gte(Big.One)) {
         multiClickOptions = {
             ...multiClickOptions,
             ...MULTI_CLICK_OPTIONS,
         };
     }
 
-    if (bigEq(amountThatWeHave["research-satisfy-button"], 1)) {
+    if (amountThatWeHave["research-satisfy-button"]?.gte(Big.One)) {
         multiClickOptions = {
             ...multiClickOptions,
             ...SATISFY_CLICK_OPTIONS,

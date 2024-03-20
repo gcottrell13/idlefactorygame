@@ -9,7 +9,7 @@ import "./ByHandButton.scss";
 interface ByHandButtonProps {
     makeByHand: false | null | (() => void);
     itemName: Items;
-    count: bigint;
+    count: Big;
 }
 
 
@@ -64,7 +64,7 @@ export function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps)
             }}
             disabled={makeByHand === false}
         >
-            {GAME.byHandVerbs[itemName]} {bigGt(count, 1) ? d(count) : ""}
+            {GAME.byHandVerbs[itemName]} {count.gt(Big.One) ? d(count) : ""}
         </Button>
     );
 }

@@ -20,11 +20,13 @@ import Big from "../bigmath";
 import { useGameState } from "../hooks/useGameState";
 import "./Assembler.scss";
 
+const TOP_UPDATE_SPEED_DISPLAY = new Big(20n);
+
 type Props = {
     itemName: Items;
     assemblerName: Items;
     state: State;
-    assemblersMakingThis: partialItems<bigint>;
+    assemblersMakingThis: partialItems<Big>;
 };
 
 export function Assembler({
@@ -38,23 +40,24 @@ export function Assembler({
     const { dispatchAction } = useGameState();
 
     const progress =
-        (state.productionProgress[itemName] ?? {})[assemblerName] ?? 0n;
+        (state.productionProgress[itemName] ?? {})[assemblerName] ?? Big.Zero;
     const progressState =
         (state.productionState[itemName] ?? {})[assemblerName] ?? null;
 
     const [progressDisplay, setProgressDisplay] = useState(progress);
     const knownActualProgress = useRef(progress);
 
-    const progressDisplayNumber = bigToNum(progressDisplay) / PRODUCTION_SCALE;
+    const progressDisplayNumber = progressDisplay.toNumber();
 
     const baseCraftTime = GAME.timePerRecipe[itemName];
     // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
     const thisPowerState = state.powerConsumptionState[itemName] ?? {};
 
-    const no = assemblersMakingThis[assemblerName] ?? 0n;
-    let speedPer = GAME.assemblerSpeeds[assemblerName] / baseCraftTime;
-    speedPer *= GAME.calculateBoost(assemblerName, state);
-    const totalSpeed = scaleBigInt(no, speedPer);
+    const no = assemblersMakingThis[assemblerName] ?? Big.Zero;
+    let speedPer = GAME.assemblerSpeeds[assemblerName]
+        .div(baseCraftTime)
+        .mulEq(GAME.calculateBoost(assemblerName, state));
+    const totalSpeed = no.mul(speedPer);
 
     let label = (
         <span className={"assembler-count"}>
@@ -67,7 +70,7 @@ export function Assembler({
         </span>
     );
     let stateDisplay: JSX.Element | null = null;
-    const updateSpeed = bigGt(totalSpeed, 20) ? 20 : Math.max(4, bigToNum(totalSpeed) * 4);
+    const updateSpeed = totalSpeed.gt(TOP_UPDATE_SPEED_DISPLAY) ? TOP_UPDATE_SPEED_DISPLAY.toNumber() : Math.max(4, totalSpeed.toNumber() * 4);
 
     if (thisPowerState[assemblerName] === PRODUCTION_NO_POWER) {
         const word = GAME.buildingPowerDisplayWord[assemblerName] ?? "Power";
@@ -109,7 +112,7 @@ export function Assembler({
                 label={"Full"}
             />
         );
-    } else if (progress < 0) {
+    } else if (progress.mantissa < 0n) {
         stateDisplay = (
             <ProgressBar
                 className={"building-progress instant"}
@@ -133,8 +136,8 @@ export function Assembler({
 
     useEffect(() => {
         if (progressState === PRODUCTION_RUNNING) {
-            if (bigGt(totalSpeed, 5)) {
-                setProgressDisplay(100n * PRODUCTION_SCALE_N);
+            if (totalSpeed.gt(Big.Five)) {
+                setProgressDisplay(Big.Hundred);
                 return;
             }
             const intervalHandle = setTimeout(() => {
@@ -142,7 +145,7 @@ export function Assembler({
                 if (knownActualProgress.current !== progress) {
                     if (progress < knownActualProgress.current) {
                         setInstantAnim(true);
-                        setProgressDisplay(0n);
+                        setProgressDisplay(Big.Zero);
                     } else {
                         setInstantAnim(false);
                         setProgressDisplay(progress);
@@ -152,9 +155,8 @@ export function Assembler({
                     setProgressDisplay(progress);
                 } else {
                     const l = lastUpdateTimestamp ?? now;
-                    const timeDelta = (now - l) / 1000;
-                    const newProgress =
-                        progressDisplay + scaleBigInt(totalSpeed, Math.floor(timeDelta * PRODUCTION_SCALE));
+                    const timeDelta = new Big(BigInt(now - l), -3n);
+                    const newProgress = totalSpeed.mul(timeDelta).addEq(progressDisplay);
                     setProgressDisplay(newProgress);
                 }
                 setLastUpdateTimestamp(now);
@@ -163,7 +165,7 @@ export function Assembler({
                 clearTimeout(intervalHandle);
             };
         } else {
-            setProgressDisplay(0n);
+            setProgressDisplay(Big.Zero);
             setLastUpdateTimestamp(null);
             setInstantAnim(true);
         }
@@ -183,7 +185,7 @@ export function Assembler({
                                 .sort()
                                 .map((requirement) => {
                                     const rate =
-                                        powerRequirements[requirement] ?? 0n;
+                                        powerRequirements[requirement] ?? Big.Zero;
                                     return (
                                         <tr key={requirement}>
                                             <td>
@@ -196,7 +198,7 @@ export function Assembler({
                                             <td className="rate-per">
                                                 ({d(rate)}/s)
                                             </td>
-                                            <td>{d(bigMul(no, rate))}/s</td>
+                                            <td>{d(no.mul(rate))}/s</td>
                                         </tr>
                                     );
                                 })}

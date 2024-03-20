@@ -1,3 +1,4 @@
+import Big from "../bigmath";
 import { Items } from "./itemNames";
 
 type ACTION<T extends string> = {
@@ -16,24 +17,24 @@ type ACTION_HIDE_ITEM = ACTION<"hide-item"> & {
 type ACTION_ADD_BUILDING = ACTION<"add-building"> & {
     recipe: Items;
     building: Items;
-    amount: bigint;
+    amount: Big;
 }
 
 type ACTION_REMOVE_BUILDING = ACTION<"remove-building"> & {
     recipe: Items;
     building: Items;
-    amount: bigint;
+    amount: Big;
 }
 
 type ACTION_CRAFT_BYHAND = ACTION<"craft-byhand"> & {
     recipe: Items;
-    amount: bigint;
+    amount: Big;
 }
 
 type ACTION_ADD_BOX = ACTION<"add-box"> & {
     recipe: Items;
     box: Items;
-    amount: bigint;
+    amount: Big;
 }
 
 type ACTION_ACKNOWLEDGE_RECIPE = ACTION<'ack'> & {
@@ -52,12 +53,12 @@ type ACTION_RESET_GAME = ACTION<'reset-game'> & {};
 
 type ACTION_SET_AMOUNT = ACTION<'set-amount'> & {
     item: Items;
-    amount: number | bigint | string;
+    amount: number | Big | string;
 }
 
 type ACTION_ADD_AMOUNT = ACTION<'add-amount'> & {
     item: Items;
-    amount: number | bigint | string;
+    amount: number | Big | string;
 }
 
 type ACTION_HIDE_BUILDING_ADD_BUTTON = ACTION<'hide-building-add-button'> & {

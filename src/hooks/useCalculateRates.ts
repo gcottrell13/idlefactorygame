@@ -11,7 +11,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
     const effectiveConsumptionRates: partialItems<partialItems<Big>> = {};
 
     function addToMaxRate(ingredient: Items, rate: Big) {
-        maxConsumptionRates[ingredient] ??= Big.Zero;
+        maxConsumptionRates[ingredient] ??= Big.Zero.clone();
         maxConsumptionRates[ingredient]?.addEq(rate);
     }
 
@@ -68,8 +68,8 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             mapPairs(assemblersMakingThis, (assemblerCount, assemblerName) => {
                 const speed = assemblerCount
                     .mul(GAME.assemblerSpeeds[assemblerName])
-                    .mul(getBoost(assemblerName))
-                    .div(baseCraftTime);
+                    .mulEq(getBoost(assemblerName))
+                    .divEq(baseCraftTime);
                 production[assemblerName] = speed;
             });
         }
@@ -84,16 +84,16 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         const counted = !assemblerIsStuckOrDisabled(recipeName, assemblerName);
         mapPairs(power, (requiredCount, ingredient) => {
             (powerConsumptionRates[ingredient] ??= {})[assemblerName] ??= [
-                Big.Zero, Big.Zero, Big.Zero,
+                Big.Zero.clone(), Big.Zero.clone(), Big.Zero.clone(),
             ];
             const k = powerConsumptionRates[ingredient]![assemblerName]!;
             const q = requiredCount.mul(count);
             addToMaxRate(ingredient, q);
 
-            k[1] = k[1].add(count);
+            k[1].addEq(count);
             if (counted) {
-                k[0] = k[0].add(count);
-                k[2] = k[2].add(q);
+                k[0].addEq(count);
+                k[2].addEq(q);
             }
         });
     }
@@ -116,14 +116,14 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
                 const subRate = assemblerCount
                     .mul(GAME.assemblerSpeeds[assemblerName])
-                    .mul(getBoost(assemblerName))
-                    .div(baseCraftTime);
+                    .mulEq(getBoost(assemblerName))
+                    .divEq(baseCraftTime);
                 maxRate.addEq(subRate);
                 if (assemblerIsStuckOrDisabled(itemName, assemblerName)) return;
                 rate.addEq(subRate);
             });
-            addToMaxRate(ingredient, count.mul(maxRate));
-            (effectiveConsumptionRates[ingredient] ??= {})[itemName] = count.mul(rate);
+            addToMaxRate(ingredient, maxRate.mulEq(count));
+            (effectiveConsumptionRates[ingredient] ??= {})[itemName] = rate.mulEq(count);
         });
     });
 

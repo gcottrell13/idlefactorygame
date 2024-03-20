@@ -51,7 +51,7 @@ const ex = {
             : displayStrings.displayNames[item] ?? item,
     hideOnBuy: (item: Items): boolean => hideOnBuy.hideOnBuy.includes(item),
     itemsCanBeStoreIn: fillWithDefault(storage.itemsCanBeStoreIn, () => []) as itemsMap<Items[]>,
-    recipeScaleFactor: fillWithDefault(mapValues(recipeValues.recipeScaleFactor, x => new Big(x)), () => Big.One),
+    recipeScaleFactor: fillWithDefault(mapValues(recipeValues.recipeScaleFactor, Big.fromNumberOrBigInt), () => Big.One),
     recipes: mapValues(recipeValues.recipes, recipe => mapValues(recipe, v => !(v instanceof Big) ? Big.fromNumberOrBigInt(v) : v)) as BigIntRecipes,
     requiredBuildings: (item: Items): (Items | "by-hand")[] =>
         buildings.requiredBuildings[item] ?? ["by-hand"],
@@ -87,7 +87,7 @@ const ex = {
     recipesConsumingThis: fillWithDefault(recipesConsumingThis, () => []),
     MIN_STORAGE: Big.fromNumberOrBigInt(storage.MIN_STORAGE),
     buildingPowerRequirementsPerSecond: fillWithDefault(
-        mapValues(buildings.buildingPowerRequirementsPerSecond, recipe => mapValues(recipe, v => new Big(v))), 
+        mapValues(buildings.buildingPowerRequirementsPerSecond, recipe => mapValues(recipe, Big.fromNumberOrBigInt)), 
         () => ({}),
     ) as BigIntRecipes,
 
@@ -100,7 +100,7 @@ const ex = {
         const amount = state.amountThatWeHave[boostingItem]?.toNumber();
         if (!amount) return Big.One;
         const boost = ex.buildingBoostTiers[boostingItem][amount] ?? buildings.defaultBuildingBoostTiers[amount];
-        if (!boost) return new Big(2, 0).powEq(amount);
+        if (!boost) return Big.Two.pow(amount);
         return boost;
     },
     calculateRecipeScale: (item: Items | undefined, amount: Big | undefined): Big => {
@@ -126,7 +126,7 @@ keys(recipeValues.recipes).forEach((item) => {
                 byproductRatesPerSecond[byproduct] ??= {};
                 byproductRatesPerSecond[byproduct]![item] ??= Big.Zero;
                 const chance = pool[byproduct] ?? 0;
-                byproductRatesPerSecond[byproduct]![item]?.addEq(new Big(chance / sum / rate).normalize());
+                byproductRatesPerSecond[byproduct]![item]?.add(Big.fromNumberOrBigInt(chance / sum / rate).normalize());
             });
         });
     }

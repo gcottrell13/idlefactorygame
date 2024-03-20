@@ -1,9 +1,6 @@
 import _ from "lodash";
 import Big from "./bigmath";
 
-
-const scale_exp = SCALE_N.toString().length;
-
 export enum NumberFormat {
     SUFFIX = 'suffix',
     EXPONENT = 'exponent',
@@ -15,23 +12,14 @@ export function setMode(s: NumberFormat) {
     mode = s;
 }
 
-export function formatNumber(n: number | bigint | null | undefined) {
+export function formatNumber(n: Big | null | undefined) {
     if (!n) {
         return '0';
     }
 
-    const isBig = (typeof n === 'bigint' && n >= 1000n * SCALE_N) || (
-        typeof n === 'number' && n >= 1000
-    );
-
-    if (isBig) {
-        if (typeof n === 'number') {
-            if (n == Infinity) return "Infinity";
-            n = NumToBig(Math.floor(n));
-        }
-
-        const rep = n.toString();
-        const exp = rep.length - scale_exp;
+    if (n.magnitude() >= 3) {
+        const rep = n.mantissa.toString();
+        const exp = rep.length;
         const majorExp = Math.floor(exp / 3);
         const minorExp = exp % 3;
 
@@ -44,11 +32,8 @@ export function formatNumber(n: number | bigint | null | undefined) {
         }
     }
 
-    if (typeof n === 'bigint') {
-        n = bigToNum(n);
-    }
-    let value = n.toFixed(2);
-    if (value.endsWith('.00')) return Math.floor(n);
+    let value = n.toNumber().toFixed(2);
+    if (value.endsWith('.00')) return Math.floor(n.toNumber());
     return value.substring(0, value.indexOf('.') + 3);
 }
 
@@ -138,25 +123,23 @@ const bigLookup = _.fromPairs(bigExponents.map((exp, i) => {
     return [exp, i];
 }));
 
-((document as any).game ??= {}).REALLY_BIG_FORMATTED = formatNumber(REALLY_BIG);
 ((document as any).game ??= {}).bigExponents = bigExponents;
 
-export function parseFormat(amount: number | bigint | string): bigint {
-    if (typeof amount === 'number') return NumToBig(amount);
-    if (typeof amount === 'bigint') return amount;
+export function parseFormat(amount: number | bigint | Big | string): Big {
+    if (typeof amount === 'number' || typeof amount === 'bigint') return Big.fromNumberOrBigInt(amount);
+    if (amount instanceof Big) return amount;
 
     let [mantissaStr, exp] = amount.split(' ');
 
     if (_.isEmpty(exp)) {
-        return NumToBig(parseFloat(mantissaStr));
+        return Big.fromNumberOrBigInt(parseFloat(mantissaStr));
     }
 
-    const mantissa = parseFloat(mantissaStr);
+    const mantissa = Big.fromNumberOrBigInt(parseFloat(mantissaStr));
 
     function scale(exponent: string | number) {
         if (typeof exponent === 'string') exponent = parseInt(exponent);
-        const power = 10n ** BigInt(exponent);
-        return scaleBigInt(power, mantissa) * SCALE_N;
+        return new Big(mantissa.mantissa, BigInt(exponent));
     }
 
     const power = bigLookup[exp] ?? -1;
