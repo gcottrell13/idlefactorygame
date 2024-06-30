@@ -100,10 +100,13 @@ export function App({ ticksPerSecond }: Props) {
         const amt = currentClickAmount.eq(ZERO) && target
             ? calculateBuildingsToSatisfy(itemName, target)
             : currentClickAmount;
+        const have = state.amountThatWeHave[itemName];
+        if (have === undefined || have.lt(ONE))
+            return Decimal.max(amt, ONE);
         return Decimal.clamp(
             amt, 
             ONE,
-            state.amountThatWeHave[itemName] ?? ZERO,
+            have,
         );
     }
 

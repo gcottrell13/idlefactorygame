@@ -277,6 +277,30 @@ export function useProduction(ticksPerSecond: number) {
         (document as any).game.clearVisibles = clearVisibles;
         setInterval(() => saveGame(stateRef.current), 10 * 1000);
     }, []);
+    
+
+    const ctrlS = useCallback(
+        (e: any) => {
+            if (e.ctrlKey && e.key === 's') {
+                // Prevent the Save dialog to open
+                e.preventDefault();
+                // Place your code here
+                console.log('CTRL + S');
+                saveGame(stateRef.current);
+            }
+        },
+        [],
+    );
+
+    useEffect(
+        () => {
+            document.addEventListener('keydown', ctrlS);
+            return () => {
+                document.removeEventListener('keydown', ctrlS);
+            };
+        },
+        [],
+    );
 
     function doAction(action: ACTIONS) {
         dispatchAction(action);

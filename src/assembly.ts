@@ -5,7 +5,7 @@ import { SMap, keys, mapPairs } from "./smap";
 import { State } from "./typeDefs/State";
 import { dispatch } from "./content/actions";
 import Decimal from "decimal.js";
-import { MINUS_ONE, ZERO } from "./decimalConsts";
+import { INFINITY, ZERO } from "./decimalConsts";
 
 
 export function checkAmounts(
@@ -25,7 +25,7 @@ export function howManyRecipesCanBeMade(
     const recipe = GAME.recipes[itemName];
     if (recipe === undefined) return ZERO;
 
-    let numberOfRecipesToMake = MINUS_ONE;
+    let numberOfRecipesToMake = INFINITY;
 
     const scale = GAME.calculateRecipeScale(itemName, amounts[itemName]);
 
