@@ -16,17 +16,18 @@ import { Items, partialItems } from "../content/itemNames";
 import { formatNumber as d } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
-import Big from "../bigmath";
 import { useGameState } from "../hooks/useGameState";
 import "./Assembler.scss";
+import Decimal from "decimal.js";
+import { FIVE, HUNDRED, THOUSAND, ZERO } from "../decimalConsts";
 
-const TOP_UPDATE_SPEED_DISPLAY = new Big(20n);
+const TOP_UPDATE_SPEED_DISPLAY = new Decimal(20);
 
 type Props = {
     itemName: Items;
     assemblerName: Items;
     state: State;
-    assemblersMakingThis: partialItems<Big>;
+    assemblersMakingThis: partialItems<Decimal>;
 };
 
 export function Assembler({
@@ -40,7 +41,7 @@ export function Assembler({
     const { dispatchAction } = useGameState();
 
     const progress =
-        (state.productionProgress[itemName] ?? {})[assemblerName] ?? Big.Zero;
+        (state.productionProgress[itemName] ?? {})[assemblerName] ?? ZERO;
     const progressState =
         (state.productionState[itemName] ?? {})[assemblerName] ?? null;
 
@@ -53,10 +54,10 @@ export function Assembler({
     // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
     const thisPowerState = state.powerConsumptionState[itemName] ?? {};
 
-    const no = assemblersMakingThis[assemblerName] ?? Big.Zero;
+    const no = assemblersMakingThis[assemblerName] ?? ZERO;
     let speedPer = GAME.assemblerSpeeds[assemblerName]
         .div(baseCraftTime)
-        .mulEq(GAME.calculateBoost(assemblerName, state));
+        .mul(GAME.calculateBoost(assemblerName, state));
     const totalSpeed = no.mul(speedPer);
 
     let label = (
@@ -112,7 +113,7 @@ export function Assembler({
                 label={"Full"}
             />
         );
-    } else if (progress.mantissa < 0n) {
+    } else if (progress.lt(ZERO)) {
         stateDisplay = (
             <ProgressBar
                 className={"building-progress instant"}
@@ -136,8 +137,8 @@ export function Assembler({
 
     useEffect(() => {
         if (progressState === PRODUCTION_RUNNING) {
-            if (totalSpeed.gt(Big.Five)) {
-                setProgressDisplay(Big.Hundred);
+            if (totalSpeed.gt(FIVE)) {
+                setProgressDisplay(HUNDRED);
                 return;
             }
             const intervalHandle = setTimeout(() => {
@@ -145,7 +146,7 @@ export function Assembler({
                 if (knownActualProgress.current !== progress) {
                     if (progress < knownActualProgress.current) {
                         setInstantAnim(true);
-                        setProgressDisplay(Big.Zero);
+                        setProgressDisplay(ZERO);
                     } else {
                         setInstantAnim(false);
                         setProgressDisplay(progress);
@@ -155,8 +156,8 @@ export function Assembler({
                     setProgressDisplay(progress);
                 } else {
                     const l = lastUpdateTimestamp ?? now;
-                    const timeDelta = new Big(BigInt(now - l), -3n);
-                    const newProgress = totalSpeed.mul(timeDelta).addEq(progressDisplay);
+                    const timeDelta = new Decimal(now - l).div(THOUSAND);
+                    const newProgress = totalSpeed.mul(timeDelta).add(progressDisplay);
                     setProgressDisplay(newProgress);
                 }
                 setLastUpdateTimestamp(now);
@@ -165,7 +166,7 @@ export function Assembler({
                 clearTimeout(intervalHandle);
             };
         } else {
-            setProgressDisplay(Big.Zero);
+            setProgressDisplay(ZERO);
             setLastUpdateTimestamp(null);
             setInstantAnim(true);
         }
@@ -185,7 +186,7 @@ export function Assembler({
                                 .sort()
                                 .map((requirement) => {
                                     const rate =
-                                        powerRequirements[requirement] ?? Big.Zero;
+                                        powerRequirements[requirement] ?? ZERO;
                                     return (
                                         <tr key={requirement}>
                                             <td>

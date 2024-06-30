@@ -3,13 +3,14 @@ import { Items } from "./content/itemNames";
 import _ from "lodash";
 import { SMap, keys, mapPairs } from "./smap";
 import { State } from "./typeDefs/State";
-import Big from "./bigmath";
 import { dispatch } from "./content/actions";
+import Decimal from "decimal.js";
+import { MINUS_ONE, ZERO } from "./decimalConsts";
 
 
 export function checkAmounts(
-    amounts: SMap<Big>,
-    requirements: SMap<Big>,
+    amounts: SMap<Decimal>,
+    requirements: SMap<Decimal>,
 ) {
     return mapPairs(
         requirements,
@@ -19,38 +20,37 @@ export function checkAmounts(
 
 export function howManyRecipesCanBeMade(
     itemName: Items,
-    amounts: SMap<Big>,
-): Big {
+    amounts: SMap<Decimal>,
+): Decimal {
     const recipe = GAME.recipes[itemName];
-    if (recipe === undefined) return Big.Zero;
+    if (recipe === undefined) return ZERO;
 
-    let numberOfRecipesToMake = Big.Infinity;
+    let numberOfRecipesToMake = MINUS_ONE;
 
     const scale = GAME.calculateRecipeScale(itemName, amounts[itemName]);
 
     _.toPairs(recipe).forEach((pair) => {
         let [ingredientName, requiredCount] = pair;
         const totalRequired = requiredCount.mul(scale);
-        // const totalRequired = requiredCount * scale;
-        const weHave = amounts[ingredientName] ?? Big.Zero;
+        const weHave = amounts[ingredientName] ?? ZERO;
         if (weHave.lt(totalRequired)) {
-            numberOfRecipesToMake = Big.Zero;
+            numberOfRecipesToMake = ZERO;
         } else {
-            numberOfRecipesToMake = Big.min(
+            numberOfRecipesToMake = Decimal.min(
                 weHave.div(totalRequired),
                 numberOfRecipesToMake,
             );
         }
     });
 
-    return numberOfRecipesToMake.floorEq();
+    return Decimal.max(numberOfRecipesToMake, ZERO);
 }
 
 export function consumeMaterials(
     itemName: Items | undefined,
-    amountWeHave: SMap<Big>,
-    recipe: SMap<Big>,
-    recipeCount: Big
+    amountWeHave: SMap<Decimal>,
+    recipe: SMap<Decimal>,
+    recipeCount: Decimal
 ) {
     const scale = itemName
         ? GAME.calculateRecipeScale(itemName, amountWeHave[itemName])
@@ -61,14 +61,14 @@ export function consumeMaterials(
         const toGrab = requiredCount.mul(scale);
 
         const weHave = amountWeHave[ingredientName] ?? 0n;
-        amountWeHave[ingredientName] = Big.max(Big.Zero, weHave.sub(toGrab));
+        amountWeHave[ingredientName] = Decimal.max(ZERO, weHave.sub(toGrab));
     });
 }
 
 export function consumeMaterialsFromRecipe(
     itemName: Items,
-    amounts: SMap<Big>,
-    recipeCount: Big,
+    amounts: SMap<Decimal>,
+    recipeCount: Decimal,
 ): boolean {
     const recipe = GAME.recipes[itemName];
     if (recipe === undefined) return false;
@@ -98,7 +98,7 @@ export function checkVisible(state: State, dispatch: dispatch) {
         GAME.allItemNames.forEach((itemName) => {
             if (visible[itemName] === undefined) {
                 const unlockedWith = GAME.unlockedWith[itemName].every(
-                    (x) => (amountThatWeHave[x] ?? Big.Zero).mantissa > 0,
+                    (x) => (amountThatWeHave[x] ?? ZERO).gt(ZERO),
                 );
                 if (GAME.unlockedWith[itemName].length > 0 && unlockedWith) {
                     _visible(itemName);
@@ -144,7 +144,7 @@ export function hideTheHideOnBuyItems(state: State) {
         amountThatWeHave,
     } = state;
     GAME.allItemNames.forEach((itemName) => {
-        if (GAME.hideOnBuy(itemName) && (amountThatWeHave[itemName] ?? Big.Zero).mantissa > 0) {
+        if (GAME.hideOnBuy(itemName) && (amountThatWeHave[itemName] ?? ZERO).gt(ZERO)) {
             visible[itemName] = false;
         }
     });

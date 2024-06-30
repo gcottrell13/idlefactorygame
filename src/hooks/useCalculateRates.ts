@@ -3,23 +3,24 @@ import { Items, partialItems } from "../content/itemNames";
 import { mapPairs, keys, fromPairs } from "../smap";
 import { PRODUCTION_OUTPUT_BLOCKED, State } from "../typeDefs/State";
 import GAME from "../values";
-import Big from "../bigmath";
+import Decimal from "decimal.js";
+import { ONE, ZERO } from "../decimalConsts";
 
 export function useCalculateRates(state: State, itemFilter: Items[]) {
-    const effectiveProductionRates: partialItems<partialItems<Big>> = {};
-    const maxConsumptionRates: partialItems<Big> = {};
-    const effectiveConsumptionRates: partialItems<partialItems<Big>> = {};
+    const effectiveProductionRates: partialItems<partialItems<Decimal>> = {};
+    const maxConsumptionRates: partialItems<Decimal> = {};
+    const effectiveConsumptionRates: partialItems<partialItems<Decimal>> = {};
 
-    function addToMaxRate(ingredient: Items, rate: Big) {
-        maxConsumptionRates[ingredient] ??= Big.Zero.clone();
-        maxConsumptionRates[ingredient]?.addEq(rate);
+    function addToMaxRate(ingredient: Items, rate: Decimal) {
+        maxConsumptionRates[ingredient] ??= ZERO;
+        maxConsumptionRates[ingredient] = maxConsumptionRates[ingredient]?.add(rate);
     }
 
     /**
      * [what's being consumed][the building]
      */
     const powerConsumptionRates: partialItems<
-        partialItems<[count: Big, total: Big, consumption: Big]>
+        partialItems<[count: Decimal, total: Decimal, consumption: Decimal]>
     > = {};
 
     const { assemblers, disabledRecipes, productionState } = state;
@@ -36,7 +37,7 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         return false;
     }
 
-    const assemblerBoosts: partialItems<Big> = fromPairs(
+    const assemblerBoosts: partialItems<Decimal> = fromPairs(
         GAME.allAssemblers.map((assemblerName) => [
             assemblerName,
             GAME.calculateBoost(assemblerName, state)
@@ -44,11 +45,11 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
     );
 
     function getBoost(item: Items) {
-        return assemblerBoosts[item] ?? Big.One;
+        return assemblerBoosts[item] ?? ONE;
     }
 
     itemFilter.forEach((itemName) => {
-        const production: partialItems<Big> = {};
+        const production: partialItems<Decimal> = {};
         effectiveProductionRates[itemName] = production;
 
         mapPairs(GAME.byproductRatesPerSecond[itemName], (rate, producer) => {
@@ -56,10 +57,10 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
                 assemblers[producer],
                 (assemblerNumber, assemblerName) =>
                     producer != itemName && disabledRecipes[producer]
-                        ? Big.Zero
+                        ? ZERO
                         : assemblerNumber.mul(GAME.assemblerSpeeds[assemblerName]).mul(getBoost(assemblerName)).mul(rate),
             );
-            production[producer] = Big.sum(...speeds);
+            production[producer] = Decimal.sum(...speeds);
         });
 
         if (GAME.sideProducts[itemName].length === 0) {
@@ -68,8 +69,8 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             mapPairs(assemblersMakingThis, (assemblerCount, assemblerName) => {
                 const speed = assemblerCount
                     .mul(GAME.assemblerSpeeds[assemblerName])
-                    .mulEq(getBoost(assemblerName))
-                    .divEq(baseCraftTime);
+                    .mul(getBoost(assemblerName))
+                    .div(baseCraftTime);
                 production[assemblerName] = speed;
             });
         }
@@ -77,23 +78,23 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
 
     function addAssemblerPowerConsumption(
         assemblerName: Items,
-        count: Big,
+        count: Decimal,
         recipeName: Items,
     ) {
         const power = GAME.buildingPowerRequirementsPerSecond[assemblerName];
         const counted = !assemblerIsStuckOrDisabled(recipeName, assemblerName);
         mapPairs(power, (requiredCount, ingredient) => {
             (powerConsumptionRates[ingredient] ??= {})[assemblerName] ??= [
-                Big.Zero.clone(), Big.Zero.clone(), Big.Zero.clone(),
+                ZERO, ZERO, ZERO,
             ];
             const k = powerConsumptionRates[ingredient]![assemblerName]!;
             const q = requiredCount.mul(count);
             addToMaxRate(ingredient, q);
 
-            k[1].addEq(count);
+            k[1] = k[1].add(count);
             if (counted) {
-                k[0].addEq(count);
-                k[2].addEq(q);
+                k[0] = k[0].add(count);
+                k[2] = k[2].add(q);
             }
         });
     }
@@ -110,20 +111,20 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         const recipe = GAME.recipes[itemName];
         const baseCraftTime = GAME.timePerRecipe[itemName];
         mapPairs(recipe, (count, ingredient) => {
-            let rate = Big.Zero.clone();
-            let maxRate = Big.Zero.clone();
+            let rate = ZERO;
+            let maxRate = ZERO;
 
             mapPairs(assemblers[itemName], (assemblerCount, assemblerName) => {
                 const subRate = assemblerCount
                     .mul(GAME.assemblerSpeeds[assemblerName])
-                    .mulEq(getBoost(assemblerName))
-                    .divEq(baseCraftTime);
-                maxRate.addEq(subRate);
+                    .mul(getBoost(assemblerName))
+                    .div(baseCraftTime);
+                maxRate = maxRate.add(subRate);
                 if (assemblerIsStuckOrDisabled(itemName, assemblerName)) return;
-                rate.addEq(subRate);
+                rate = rate.add(subRate);
             });
-            addToMaxRate(ingredient, maxRate.mulEq(count));
-            (effectiveConsumptionRates[ingredient] ??= {})[itemName] = rate.mulEq(count);
+            addToMaxRate(ingredient, maxRate.mul(count));
+            (effectiveConsumptionRates[ingredient] ??= {})[itemName] = rate.mul(count);
         });
     });
 

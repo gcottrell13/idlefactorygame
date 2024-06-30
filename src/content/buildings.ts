@@ -1,4 +1,5 @@
-import Big from "../bigmath";
+import Decimal from "decimal.js";
+import { TWO } from "../decimalConsts";
 import { Items, partialItems } from "./itemNames";
 
 const assemblerSpeeds = {
@@ -117,7 +118,7 @@ const buildingBoostTiers: { [p in Items]?: number[] } = {
 
 };
 
-const defaultBuildingBoostTiers: Big[] = Array(20).map((v, i) => Big.Two.pow(i));
+const defaultBuildingBoostTiers: Decimal[] = Array(20).map((v, i) => TWO.pow(i));
 
 
 const requiredBuildings: {

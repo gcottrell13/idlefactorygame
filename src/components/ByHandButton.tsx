@@ -2,14 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Items } from "../content/itemNames";
 import { Button } from "react-bootstrap";
 import GAME from "../values";
-import Big from "../bigmath";
 import { formatNumber as d } from "../numberFormatter";
 import "./ByHandButton.scss";
+import Decimal from "decimal.js";
+import { ONE } from "../decimalConsts";
 
 interface ByHandButtonProps {
     makeByHand: false | null | (() => void);
     itemName: Items;
-    count: Big;
+    count: Decimal;
 }
 
 
@@ -64,7 +65,7 @@ export function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps)
             }}
             disabled={makeByHand === false}
         >
-            {GAME.byHandVerbs[itemName]} {count.gt(Big.One) ? d(count) : ""}
+            {GAME.byHandVerbs[itemName]} {count.gt(ONE) ? d(count) : ""}
         </Button>
     );
 }

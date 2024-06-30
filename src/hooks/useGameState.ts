@@ -12,9 +12,10 @@ import {
 import {
     consumeMaterialsFromRecipe,
 } from "../assembly";
-import Big from "../bigmath";
 import { parseFormat } from "../numberFormatter";
 import { ACTIONS } from "../content/actions";
+import Decimal from "decimal.js";
+import { INFINITY, ONE, ZERO } from "../decimalConsts";
 
 const stateRef = {
     current: null as any as State,
@@ -49,40 +50,40 @@ export function useGameState() {
         setState(resetGame());
     }, []);
 
-    function calculateStorage(itemName: Items): Big {
+    function calculateStorage(itemName: Items): Decimal {
         const canBeStoredIn = GAME.itemsCanBeStoreIn[itemName];
-        if (canBeStoredIn.length === 0) return Big.Infinity;
+        if (canBeStoredIn.length === 0) return INFINITY;
         const storage = stateRef.current.storage[itemName];
         if (storage === undefined) return GAME.MIN_STORAGE;
         const assemblers = stateRef.current.assemblers[itemName] ?? {};
         const assemblersMap = keys(assemblers).map(
-            (key) => (assemblers[key] ?? Big.Zero).mul(GAME.storageSizes[key])
+            (key) => (assemblers[key] ?? ZERO).mul(GAME.storageSizes[key])
         );
-        return Big.sum(
-            Big.max(Big.sum(...assemblersMap), Big.Zero),
-            Big.max(
-                Big.sum(
+        return Decimal.sum(
+            Decimal.max(Decimal.sum(...assemblersMap), ZERO),
+            Decimal.max(
+                Decimal.sum(
                     ...keys(storage).map(
                         (key) =>
-                            (storage[key] ?? Big.Zero).mul(canBeStoredIn.includes(key)
-                                ? GAME.storageSizes[key] ?? Big.Zero
-                                : Big.Zero),
+                            (storage[key] ?? ZERO).mul(canBeStoredIn.includes(key)
+                                ? GAME.storageSizes[key] ?? ZERO
+                                : ZERO),
                     )
                 ),
-                Big.Zero,
+                ZERO,
             ),
             GAME.MIN_STORAGE
         );
     }
 
-    function hasStorageCapacity(item: Items): Big {
-        const currentAmount = stateRef.current.amountThatWeHave[item] ?? Big.Zero;
+    function hasStorageCapacity(item: Items): Decimal {
+        const currentAmount = stateRef.current.amountThatWeHave[item] ?? ZERO;
         return calculateStorage(item).sub(currentAmount);
     }
 
-    function addToTotal(itemName: Items, recipeCount: Big): boolean {
+    function addToTotal(itemName: Items, recipeCount: Decimal): boolean {
         if (GAME.sideProducts[itemName].length > 0) {
-            const itemsChosen: partialItems<Big> = {};
+            const itemsChosen: partialItems<Decimal> = {};
 
             GAME.sideProducts[itemName].forEach((sideProduct) => {
                 const total = _.sum(values(sideProduct));
@@ -97,9 +98,9 @@ export function useGameState() {
                 });
             });
 
-            const canProduce = Big.min(recipeCount, ...Object.values(itemsChosen));
+            const canProduce = Decimal.min(recipeCount, ...Object.values(itemsChosen));
 
-            if (canProduce.gte(Big.One)) {
+            if (canProduce.gte(ONE)) {
                 keys(itemsChosen).forEach((x) => addAmount(x, canProduce));
             } else {
                 return false;
@@ -107,8 +108,8 @@ export function useGameState() {
 
             return true;
         } else {
-            const capacity = Big.min(recipeCount, hasStorageCapacity(itemName));
-            if (capacity.gte(Big.One)) {
+            const capacity = Decimal.min(recipeCount, hasStorageCapacity(itemName));
+            if (capacity.gte(ONE)) {
                 addAmount(itemName, capacity);
                 return true;
             }
@@ -127,17 +128,17 @@ export function useGameState() {
     function getProductionProgress(itemName: Items, assemblerName: Items) {
         const time = ((stateRef.current.productionProgress[itemName] ??= {})[
             assemblerName
-        ] ??= Big.Zero);
+        ] ??= ZERO);
         const state = ((stateRef.current.productionState[itemName] ??= {})[
             assemblerName
         ] ??= PRODUCTION_NO_INPUT);
         return [time, state] as const;
     }
 
-    const addAmount = useCallback((itemName: Items, amount: Big) => {
-        const k = stateRef.current.amountThatWeHave[itemName] ?? Big.Zero;
-        stateRef.current.amountThatWeHave[itemName] = Big.max(Big.Zero, k.add(amount));
-        const b = stateRef.current.amountCreated[itemName] ?? Big.Zero;
+    const addAmount = useCallback((itemName: Items, amount: Decimal) => {
+        const k = stateRef.current.amountThatWeHave[itemName] ?? ZERO;
+        stateRef.current.amountThatWeHave[itemName] = Decimal.max(ZERO, k.add(amount));
+        const b = stateRef.current.amountCreated[itemName] ?? ZERO;
         stateRef.current.amountCreated[itemName] = b.add(amount);
 
         if (GAME.hideOnBuy(itemName)) {
@@ -146,7 +147,7 @@ export function useGameState() {
         }
     }, []);
 
-    const makeItemByhand = useCallback((itemName: Items, count: Big) => {
+    const makeItemByhand = useCallback((itemName: Items, count: Decimal) => {
         const now = new Date().getTime();
         if (makeByHandTimeRef.current > now - 200) return;
         makeByHandTimeRef.current = now;
@@ -191,7 +192,7 @@ export function useGameState() {
                 break;
             }
             case 'remove-building': {
-                addAssemblers(action.building, action.recipe, action.amount.negate());
+                addAssemblers(action.building, action.recipe, action.amount.negated());
                 break;
             }
             case 'ack': {
@@ -234,19 +235,19 @@ export function useGameState() {
         }
     }
     
-    const setAmount = (amount: Big = Big.One, itemName: Items = "") => {
+    const setAmount = (amount: Decimal = ONE, itemName: Items = "") => {
         stateRef.current.amountThatWeHave[itemName] = amount;
         stateRef.current.visible[itemName] ??= true;
     };
     
     const addAssemblers = useCallback(
-        (level: Items, itemName: Items, amount: Big) => {
+        (level: Items, itemName: Items, amount: Decimal) => {
             const k = stateRef.current.assemblers[itemName] ?? {};
-            const appliedAssemblers = k[level] ?? Big.Zero;
+            const appliedAssemblers = k[level] ?? ZERO;
             const haveAssemblers =
-                stateRef.current.amountThatWeHave[level] ?? Big.Zero;
-            amount = Big.min(amount, haveAssemblers);
-            k[level] = Big.max(Big.Zero, appliedAssemblers.add(amount));
+                stateRef.current.amountThatWeHave[level] ?? ZERO;
+            amount = Decimal.min(amount, haveAssemblers);
+            k[level] = Decimal.max(ZERO, appliedAssemblers.add(amount));
             stateRef.current.assemblers[itemName] = k;
             stateRef.current.amountThatWeHave[level] = haveAssemblers.sub(amount);
         },
@@ -254,13 +255,13 @@ export function useGameState() {
     );
 
     const addContainer = useCallback(
-        (itemName: Items, container: Items, amount: Big) => {
+        (itemName: Items, container: Items, amount: Decimal) => {
             stateRef.current.storage[itemName] ??= {};
             const haveStorage =
-                stateRef.current.storage[itemName]![container] ?? Big.Zero;
+                stateRef.current.storage[itemName]![container] ?? ZERO;
             const haveContainers =
-                stateRef.current.amountThatWeHave[container] ?? Big.Zero;
-            amount = Big.min(amount, haveContainers);
+                stateRef.current.amountThatWeHave[container] ?? ZERO;
+            amount = Decimal.min(amount, haveContainers);
             stateRef.current.storage[itemName]![container] = haveStorage.add(amount);
             stateRef.current.amountThatWeHave[container] = haveContainers.sub(amount);
         },

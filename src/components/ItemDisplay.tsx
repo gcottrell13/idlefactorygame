@@ -29,24 +29,25 @@ import { useCalculateRates } from "../hooks/useCalculateRates";
 import { useProduction } from "../hooks/useSimulation";
 import { Assembler } from "./Assembler";
 import { Sprite } from "./Sprite";
-import Big from "../bigmath";
 import { useGameState } from "../hooks/useGameState";
 import { ByHandButton } from "./ByHandButton";
 import "./ItemDisplay.scss";
+import Decimal from "decimal.js";
+import { FIVE, HUNDRED, ONE, TEN, TWO, ZERO } from "../decimalConsts";
 
 type func = () => void;
 
 type Props = {
-    amt: Big;
+    amt: Decimal;
     itemName: Items;
     state: ReturnType<typeof useProduction>["state"];
     assemblerButtons: JSX.Element[];
-    assemblersMakingThis: partialItems<Big>;
+    assemblersMakingThis: partialItems<Decimal>;
     boxButtons: JSX.Element[];
     makeByHand: func | false | null;
     onMouseover: func | undefined;
     disableRecipe: func;
-    currentClickAmount: Big;
+    currentClickAmount: Decimal;
 } & ReturnType<typeof useCalculateRates>;
 
 export function ItemDisplay({
@@ -66,10 +67,10 @@ export function ItemDisplay({
     assemblerIsStuckOrDisabled,
     maxConsumptionRates,
 }: Props) {
-    const canMakeByHand = Big.min(
+    const canMakeByHand = Decimal.min(
         currentClickAmount,
         howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
-        state.calculateStorage(itemName).sub(amt).floorEq(),
+        state.calculateStorage(itemName).sub(amt).floor(),
         GAME.maxCraftAtATime(itemName, state),
     );
 
@@ -105,18 +106,18 @@ export function ItemDisplay({
     ).filter((x) => x != itemName);
     const byproductString = byproducts.map(GAME.displayNames).join(", ");
 
-    const producingRate = Big.sum(...values(effectiveProductionRates[itemName]));
+    const producingRate = Decimal.sum(ZERO, ...values(effectiveProductionRates[itemName]));
     const othersConsuming = effectiveConsumptionRates[itemName] ?? {};
     const othersConsumingAsPower = powerConsumptionRates[itemName] ?? {};
-    const othersConsumingAsPowerRate = Big.sum(...values(othersConsumingAsPower).map((k) => k[2]));
-    const othersConsumingRate = Big.sum(...values(othersConsuming)).addEq(othersConsumingAsPowerRate);
+    const othersConsumingAsPowerRate = Decimal.sum(ZERO, ...values(othersConsumingAsPower).map((k) => k[2]));
+    const othersConsumingRate = Decimal.sum(ZERO, ...values(othersConsuming)).add(othersConsumingAsPowerRate);
     
     const recipeScale = GAME.calculateRecipeScale(itemName, amt);
 
     const recipe = GAME.recipes[itemName];
     const formatIngredients = keys(recipe)
         .map((name) => [name, recipe[name]!] as const)
-        .filter(([_name, count]) => count.gt(Big.Zero))
+        .filter(([_name, count]) => count.gt(ZERO))
         .map(([name, count]) => (
             <tr key={name}>
                 <td className={"popover-ingredient-count"}>
@@ -130,7 +131,7 @@ export function ItemDisplay({
                 </td>
                 <td>
                     <span className={"popover-ingredient-has"}>
-                        ({d(state.amountThatWeHave[name] ?? Big.Zero)})
+                        ({d(state.amountThatWeHave[name] ?? ZERO)})
                     </span>
                 </td>
             </tr>
@@ -153,14 +154,14 @@ export function ItemDisplay({
 
     const historyVisible =
         assemblers.length > 0 ||
-            producingRate.gt(Big.Zero) ||
+            producingRate.gt(ZERO) ||
             keys(othersConsumingAsPower).length > 0
             ? "visible"
             : "";
     const netRate = producingRate.sub(othersConsumingRate);
-    const satisfactionPercent = othersConsumingRate.mantissa !== 0n
-        ? producingRate.mul(Big.Hundred).divEq(othersConsumingRate)
-        : Big.Hundred;
+    const satisfactionPercent = othersConsumingRate.gt(ZERO)
+        ? producingRate.mul(HUNDRED).div(othersConsumingRate)
+        : HUNDRED;
 
     const othersConsumingThis = GAME.recipesConsumingThis[itemName]
         .filter((recipeName) => keys(state.assemblers[recipeName]).length > 0)
@@ -211,8 +212,8 @@ export function ItemDisplay({
 
     const g = (
         <FontAwesomeIcon
-            icon={netRate.mantissa >= 0n ? faThumbsUp : faChevronCircleDown}
-            className={netRate.mantissa >= 0n ? "" : "text-danger"}
+            icon={netRate.gt(ZERO) ? faThumbsUp : faChevronCircleDown}
+            className={netRate.gt(ZERO) ? "" : "text-danger"}
         />
     );
     let historyDisplay = (
@@ -233,8 +234,8 @@ export function ItemDisplay({
                     <ProgressBar
                         now={satisfactionPercent.toNumber()}
                         variant={
-                            satisfactionPercent.lt(new Big(20n)) ? 'danger' :
-                            satisfactionPercent.lt(new Big(50n)) ? 'warning' :
+                            satisfactionPercent.lt(new Decimal(20)) ? 'danger' :
+                            satisfactionPercent.lt(new Decimal(50)) ? 'warning' :
                             'success'
                         }
                     />
@@ -276,7 +277,7 @@ export function ItemDisplay({
         madeIn.length > 0 && !_.isEqual(madeIn, ['by-hand']) && (
             <div className={"made-in"}>Made with: {madeIn.map(GAME.displayNames).join(", ")}</div>
         ),
-        costScale.neq(Big.One) && (
+        !costScale.eq(ONE) && (
             <div>Cost scales {costScale.toNumber()}x per item owned</div>
         ),
         formatIngredients.length > 0 && (
@@ -297,12 +298,12 @@ export function ItemDisplay({
                 Stored in: {storageObjects.join(", ")}
             </div>
         ),
-        storageValueIfContainer.mantissa > 0 && (
+        storageValueIfContainer.gt(ZERO) && (
             <div className={"storage-size"}>
                 Storage Size: {d(storageValueIfContainer)}
             </div>
         ),
-        assemblerSpeed.mantissa > 0 && (
+        assemblerSpeed.gt(ZERO) && (
             <div className={"item-assembler-speed"}>
                 Crafting Speed: {assemblerSpeed.toNumber()}x
             </div>
@@ -351,9 +352,9 @@ export function ItemDisplay({
     );
 
     const isNew = state.acknowledged[itemName] !== true;
-    const hasStorage = !maxValue.infinite;
+    const hasStorage = maxValue.isFinite();
 
-    const hasButton = GAME.allAssemblers.includes(itemName as any) || GAME.storageSizes[itemName].mantissa !== 0n;
+    const hasButton = GAME.allAssemblers.includes(itemName as any) || GAME.storageSizes[itemName].gt(ZERO);
     const hideButton = hasButton ? (
         <OverlayTrigger placement={"left"} overlay={<Popover><Popover.Body>Hide Add Buttons</Popover.Body></Popover>}>
             <Button
@@ -401,7 +402,7 @@ export function ItemDisplay({
             </div>
             <div className={"rate-container"}>
                 {
-                    hasStorage || amt.mantissa > 0 || producingRate.mantissa > 0 ? (
+                    hasStorage || amt.gt(ZERO) || producingRate.gt(ZERO) ? (
                         <span className="item-count">
                             {historyDisplay} {d(amt)}
                         </span>
@@ -412,7 +413,7 @@ export function ItemDisplay({
                         ? `/ ${d(maxValue)}`
                         : ""}
                 </span>
-                {producingRate.mantissa > 0 && (
+                {producingRate.gt(ZERO) && (
                     <span className={"speed"}> (+{d(producingRate)}/s)</span>
                 )}
             </div>

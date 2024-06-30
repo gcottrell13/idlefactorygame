@@ -1,8 +1,8 @@
 import _ from "lodash";
-import Big from "../bigmath";
 import { values, mapValues } from "../smap";
 import { Buildings } from "./buildings";
 import { Items, partialItems } from "./itemNames";
+import Decimal from "decimal.js";
 
 const MIN_STORAGE = 10;
 
@@ -176,6 +176,6 @@ for (let val of values(itemsCanBeStoreIn)) {
 
 export default {
     itemsCanBeStoreIn,
-    storageSizes: mapValues(storageSizes, Big.fromBigInt),
+    storageSizes: mapValues(storageSizes, x => new Decimal(x.toString())),
     MIN_STORAGE,
 };

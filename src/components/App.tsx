@@ -12,24 +12,23 @@ import { useProduction } from "../hooks/useSimulation";
 import { useCalculateRates } from "../hooks/useCalculateRates";
 import { formatNumber, formatSeconds } from "../numberFormatter";
 import { ReleaseNotes } from "./ReleaseNotes";
-import Big from "../bigmath";
+import { Decimal } from 'decimal.js';
 import { ClickAmountButtons } from "./ClickAmountButtons";
 import "./App.scss";
 import { useMinigames } from "../hooks/useMinigames";
 import { Sprite } from "./Sprite";
-import { Difficulty } from "../typeDefs/minigame";
 import { MinigameConfig } from "../content/minigamePrizes";
+import { INFINITY, ONE, ZERO, TEN, HUNDRED } from "../decimalConsts";
 
 type Props = {
     ticksPerSecond: number;
 };
 
-const MAX_BIG = BigInt(Number.MAX_VALUE);
 const MULTI_CLICK_OPTIONS = {
-    "1": new Big(1n),
-    "10": new Big(10n),
-    "100": new Big(100n),
-    "MAX": MAX_BIG,
+    "1": ONE,
+    "10": TEN,
+    "100": HUNDRED,
+    "MAX": INFINITY,
 }
 
 const SATISFY_CLICK_OPTIONS = {
@@ -50,7 +49,7 @@ export function App({ ticksPerSecond }: Props) {
     } = useProduction(ticksPerSecond);
 
     let [currentTab, setCurrentTab] = useState<string | null>(null);
-    const [currentClickAmount, setCurrentClickAmount] = useState<Big>(MULTI_CLICK_OPTIONS["1"]);
+    const [currentClickAmount, setCurrentClickAmount] = useState<Decimal>(MULTI_CLICK_OPTIONS["1"]);
 
     const [isPlayingMinigame, setIsPlayingMinigame] = useState<boolean>(false);
     const [miniGameConfig, setMiniGameConfig] = useState<MinigameConfig | null>(null);
@@ -72,9 +71,9 @@ export function App({ ticksPerSecond }: Props) {
         sectionData?.SubSections.flatMap((x) => x.Items) ?? [],
     );
 
-    function calculateMaxMake(itemName: Items, n: Big) {
-        return Big.min(
-            currentClickAmount.lt(Big.One) ? Big.One : currentClickAmount,
+    function calculateMaxMake(itemName: Items, n: Decimal) {
+        return Decimal.min(
+            currentClickAmount.lt(ONE) ? ONE : currentClickAmount,
             howManyRecipesCanBeMade(itemName, state.amountThatWeHave),
             state.calculateStorage(itemName).sub(n),
             GAME.maxCraftAtATime(itemName, state),
@@ -82,33 +81,34 @@ export function App({ ticksPerSecond }: Props) {
     }
 
     function calculateBuildingsToSatisfy(building: Items, recipe: Items) {
-        const consumption = Big.sum(
+        const consumption = Decimal.sum(
             ...values(rates.effectiveConsumptionRates[recipe] ?? {}),
             ...values(rates.powerConsumptionRates[recipe] ?? {}).map(x => x[2]),
         );
-        const production = Big.sum(...values(rates.effectiveProductionRates[recipe] ?? {}));
+        const production = Decimal.sum(...values(rates.effectiveProductionRates[recipe] ?? {}));
         const speed = GAME.assemblerSpeeds[building]
             .mul(GAME.calculateBoost(building, state))
-            .divEq(GAME.timePerRecipe[recipe]);
-        if (speed.eq(Big.Zero)) return Big.One;
+            .div(GAME.timePerRecipe[recipe]);
+        if (speed.eq(ZERO)) return ONE;
         return consumption
             .sub(production)
-            .divEq(speed)
-            .ceilEq();
+            .div(speed)
+            .ceil();
     }
 
     function calculateMaxAdd(itemName: Items, target?: Items) {
-        const amt = currentClickAmount.eq(Big.Zero) && target
+        const amt = currentClickAmount.eq(ZERO) && target
             ? calculateBuildingsToSatisfy(itemName, target)
             : currentClickAmount;
-        return Big.min(
-            amt.lt(Big.One) ? Big.One : amt,
-            state.amountThatWeHave[itemName] ?? Big.Zero,
+        return Decimal.clamp(
+            amt, 
+            ONE,
+            state.amountThatWeHave[itemName] ?? ZERO,
         );
     }
 
     const haveAssemblers = GAME.allAssemblers.filter(
-        (key) => (amountThatWeHave[key] ?? Big.Zero).gt(Big.Zero),
+        (key) => (amountThatWeHave[key] ?? ZERO).gt(ZERO),
     );
 
     if (currentTab === null) {
@@ -130,7 +130,7 @@ export function App({ ticksPerSecond }: Props) {
 
             if (!visible[itemName]) continue;
 
-            const amt = amountThatWeHave[itemName] ?? Big.Zero;
+            const amt = amountThatWeHave[itemName] ?? ZERO;
             const recipe = GAME.recipes[itemName];
             if (recipe === undefined) continue;
 
@@ -139,7 +139,7 @@ export function App({ ticksPerSecond }: Props) {
             const assemblerCount = assemblers[itemName];
             const assemblersMakingThis = _.pickBy(
                 assemblerCount,
-                (x) => x.neq(Big.Zero),
+                (x) => x.gt(ZERO),
             );
             const assemblerButtons: JSX.Element[] = [];
             const boxButtons: JSX.Element[] = [];
@@ -148,7 +148,7 @@ export function App({ ticksPerSecond }: Props) {
                 if (!state.visible[container]) return;
                 if (state.hideAddButtons[container]) return;
                 const num = calculateMaxAdd(container);
-                const disabled = (amountThatWeHave[container] ?? Big.Zero).lt(Big.One);
+                const disabled = (amountThatWeHave[container] ?? ZERO).lt(ONE);
                 boxButtons.push(
                     <Button
                         className={"add-container"}
@@ -164,7 +164,7 @@ export function App({ ticksPerSecond }: Props) {
                         variant="info"
                         disabled={disabled}
                     >
-                        Add {num.gt(Big.Zero) ? formatNumber(num) : ''}{" "}
+                        Add {num.gt(ZERO) ? formatNumber(num) : ''}{" "}
                         {GAME.displayNames(container)}
                     </Button>,
                 );
@@ -192,13 +192,13 @@ export function App({ ticksPerSecond }: Props) {
                         variant="secondary"
                         disabled={!haveAny}
                     >
-                        Add {num.gt(Big.Zero) ? formatNumber(num) : ''}{" "}
+                        Add {num.gt(ZERO) ? formatNumber(num) : ''}{" "}
                         {GAME.displayNames(assemblerName)}
                     </Button>,
                 );
             });
 
-            if (pickMinigameByItem(itemName) && (amountThatWeHave['research-minigames'] ?? Big.Zero).gt(Big.Zero)) {
+            if (pickMinigameByItem(itemName) && (amountThatWeHave['research-minigames'] ?? ZERO).gt(ZERO)) {
                 assemblerButtons.push(
                     <Button
                         key={'playminigame'}
@@ -216,7 +216,7 @@ export function App({ ticksPerSecond }: Props) {
             thisSectionItems.push(
                 <ItemDisplay
                     key={itemName}
-                    amt={amt ?? Big.Zero}
+                    amt={amt ?? ZERO}
                     state={state}
                     assemblersMakingThis={assemblersMakingThis}
                     boxButtons={boxButtons}
@@ -278,14 +278,14 @@ export function App({ ticksPerSecond }: Props) {
 
     let multiClickOptions = {};
 
-    if (amountThatWeHave["research-mass-click"]?.gte(Big.One)) {
+    if (amountThatWeHave["research-mass-click"]?.gte(ONE)) {
         multiClickOptions = {
             ...multiClickOptions,
             ...MULTI_CLICK_OPTIONS,
         };
     }
 
-    if (amountThatWeHave["research-satisfy-button"]?.gte(Big.One)) {
+    if (amountThatWeHave["research-satisfy-button"]?.gte(ONE)) {
         multiClickOptions = {
             ...multiClickOptions,
             ...SATISFY_CLICK_OPTIONS,

@@ -10,10 +10,11 @@ import storage from "./content/storage";
 import layout from "./content/layout";
 import unlockedWith from "./content/unlockedWith";
 import maxCraft from "./content/maxCraft";
-import Big from "./bigmath";
 import { State } from "./typeDefs/State";
+import Decimal from "decimal.js";
+import { ONE, TWO, ZERO, fromNumberOrBigInt } from "./decimalConsts";
 
-const byproductRatesPerSecond: partialItems<partialItems<Big>> = {};
+const byproductRatesPerSecond: partialItems<partialItems<Decimal>> = {};
 const recipesConsumingThis: partialItems<Items[]> = {};
 
 const allItemNames = keys(recipeValues.recipes).sort();
@@ -39,11 +40,11 @@ function fillWithDefault<T>(partial: partialItems<T>, defaultItem: () => T): ite
     return t as itemsMap<T>;
 }
 
-type BigIntRecipes = itemsMap<partialItems<Big>>;
+type BigIntRecipes = itemsMap<partialItems<Decimal>>;
 
 const ex = {
     sections: layout.sections,
-    assemblerSpeeds: fillWithDefault(mapValues(buildings.assemblerSpeeds, Big.fromNumberOrBigInt), () => Big.Zero),
+    assemblerSpeeds: fillWithDefault(mapValues(buildings.assemblerSpeeds, fromNumberOrBigInt), () => ZERO),
     byHandVerbs: fillWithDefault(displayStrings.byHandVerbs, () => "craft"),
     displayNames: (item: Items | "by-hand"): string =>
         item === "by-hand"
@@ -51,14 +52,14 @@ const ex = {
             : displayStrings.displayNames[item] ?? item,
     hideOnBuy: (item: Items): boolean => hideOnBuy.hideOnBuy.includes(item),
     itemsCanBeStoreIn: fillWithDefault(storage.itemsCanBeStoreIn, () => []) as itemsMap<Items[]>,
-    recipeScaleFactor: fillWithDefault(mapValues(recipeValues.recipeScaleFactor, Big.fromNumberOrBigInt), () => Big.One),
-    recipes: mapValues(recipeValues.recipes, recipe => mapValues(recipe, v => !(v instanceof Big) ? Big.fromNumberOrBigInt(v) : v)) as BigIntRecipes,
+    recipeScaleFactor: fillWithDefault(mapValues(recipeValues.recipeScaleFactor, fromNumberOrBigInt), () => ONE),
+    recipes: mapValues(recipeValues.recipes, recipe => mapValues(recipe, v => !(v instanceof Decimal) ? fromNumberOrBigInt(v) : v)) as BigIntRecipes,
     requiredBuildings: (item: Items): (Items | "by-hand")[] =>
         buildings.requiredBuildings[item] ?? ["by-hand"],
-    timePerRecipe: mapValues(recipeValues.timePerRecipe, Big.fromNumberOrBigInt),
+    timePerRecipe: mapValues(recipeValues.timePerRecipe, fromNumberOrBigInt),
     sideProducts: fillWithDefault(byproducts.byproducts, () => []),
     hideByproducts: fillWithDefault(byproducts.hideByproducts, () => false),
-    storageSizes: fillWithDefault(storage.storageSizes, () => Big.Zero),
+    storageSizes: fillWithDefault(storage.storageSizes, () => ZERO),
     unlockedWith: fillWithDefault(unlockedWith.unlockedWith, () => []),
     unlocks: fillWithDefault(unlocks, () => []),
     hideUnlocks: fillWithDefault(unlockedWith.hideUnlocks, () => false),
@@ -75,36 +76,36 @@ const ex = {
 
     maxCraftAtATime: (item: Items, state: State) => {
         const max = maxCraft.maxCraftAtATime[item] ?? maxCraft.ABSOLUTE_MAX_CRAFT;
-        if (max instanceof Big) {
+        if (max instanceof Decimal) {
             return max;
         }
         return max(ex, state);
     },
 
     flavorText: displayStrings.flavorText,
-    byproductRatesPerSecond: fillWithDefault<partialItems<Big>>(byproductRatesPerSecond, () => ({})),
+    byproductRatesPerSecond: fillWithDefault<partialItems<Decimal>>(byproductRatesPerSecond, () => ({})),
 
     recipesConsumingThis: fillWithDefault(recipesConsumingThis, () => []),
-    MIN_STORAGE: Big.fromNumberOrBigInt(storage.MIN_STORAGE),
+    MIN_STORAGE: fromNumberOrBigInt(storage.MIN_STORAGE),
     buildingPowerRequirementsPerSecond: fillWithDefault(
-        mapValues(buildings.buildingPowerRequirementsPerSecond, recipe => mapValues(recipe, Big.fromNumberOrBigInt)), 
+        mapValues(buildings.buildingPowerRequirementsPerSecond, recipe => mapValues(recipe, fromNumberOrBigInt)), 
         () => ({}),
     ) as BigIntRecipes,
 
     buildingBoosts: buildings.buildingBoosts as partialItems<Items>,
-    buildingBoostTiers: fillWithDefault(mapValues(buildings.buildingBoostTiers, x => x.map(Big.fromNumberOrBigInt)), () => buildings.defaultBuildingBoostTiers),
+    buildingBoostTiers: fillWithDefault(mapValues(buildings.buildingBoostTiers, x => x.map(fromNumberOrBigInt)), () => buildings.defaultBuildingBoostTiers),
     buildingPowerDisplayWord: buildings.buildingPowerDisplayWord,
-    calculateBoost: (recipe: Items, state: State): Big => {
+    calculateBoost: (recipe: Items, state: State): Decimal => {
         const boostingItem = ex.buildingBoosts[recipe];
-        if (!boostingItem) return Big.One;
+        if (!boostingItem) return ONE;
         const amount = state.amountThatWeHave[boostingItem]?.toNumber();
-        if (!amount) return Big.One;
+        if (!amount) return ONE;
         const boost = ex.buildingBoostTiers[boostingItem][amount] ?? buildings.defaultBuildingBoostTiers[amount];
-        if (!boost) return Big.Two.pow(amount);
+        if (!boost) return TWO.pow(amount);
         return boost;
     },
-    calculateRecipeScale: (item: Items | undefined, amount: Big | undefined): Big => {
-        if (!item || !amount) return Big.One;
+    calculateRecipeScale: (item: Items | undefined, amount: Decimal | undefined): Decimal => {
+        if (!item || !amount) return ONE;
         return ex.recipeScaleFactor[item];
     },
 
@@ -114,7 +115,7 @@ const ex = {
 keys(recipeValues.recipes).forEach((item) => {
     if (item.startsWith("research-")) {
         displayStrings.byHandVerbs[item] = "research";
-        maxCraft.maxCraftAtATime[item] = Big.One;
+        maxCraft.maxCraftAtATime[item] = ONE;
     }
 
     // calculate side product rates per second (assuming constructor rate 1x)
@@ -124,9 +125,9 @@ keys(recipeValues.recipes).forEach((item) => {
             const sum = _.sum(values(pool));
             keys(pool).forEach((byproduct) => {
                 byproductRatesPerSecond[byproduct] ??= {};
-                byproductRatesPerSecond[byproduct]![item] ??= Big.Zero;
+                byproductRatesPerSecond[byproduct]![item] ??= ZERO;
                 const chance = pool[byproduct] ?? 0;
-                byproductRatesPerSecond[byproduct]![item]?.add(Big.fromNumberOrBigInt(chance / sum / rate).normalize());
+                byproductRatesPerSecond[byproduct]![item]?.add(fromNumberOrBigInt(chance / sum / rate));
             });
         });
     }

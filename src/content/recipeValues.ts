@@ -1,8 +1,8 @@
-import Big from "../bigmath";
+import Decimal from "decimal.js";
 import { Items, itemsMap, partialItems } from "./itemNames";
 
 export type Recipe = {
-    [p in Items]?: number | Big;
+    [p in Items]?: number | Decimal;
 };
 
 export type Recipes = {
@@ -634,9 +634,9 @@ const recipes: Recipes = {
     "boost-desktop-computer": { "copper-wire": 42, "money": 10 },
 
     "research-box": { science1: 1 },
-    "research-box2": { science1: 1, box: new Big(1n, 5n) },
-    "research-box3": { science2: 10, box: new Big(1n, 8n) },
-    "research-box4": { science3: 100, box: new Big(1n, 11n) },
+    "research-box2": { science1: 1, box: new Decimal('10_000') },
+    "research-box3": { science2: 10, box: new Decimal('100_000_000') },
+    "research-box4": { science3: 100, box: new Decimal('100_000_000_000') },
     "research-box5": { science4: 1000, bauxite: 1000 },
 };
 

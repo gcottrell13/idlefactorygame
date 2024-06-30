@@ -3,11 +3,11 @@ import { useImages } from "../useImages";
 import { Items } from "../content/itemNames";
 import "./Sprite.scss";
 import { formatNumber, parseFormat } from "../numberFormatter";
-import Big from "../bigmath";
+import Decimal from "decimal.js";
 
 interface Props {
     name: Items;
-    amount?: Big | string;
+    amount?: Decimal | string;
 }
 
 export function Sprite({ name: spriteName, amount }: Props) {

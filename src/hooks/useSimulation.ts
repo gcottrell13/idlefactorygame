@@ -18,10 +18,11 @@ import {
     hideTheHideOnBuyItems,
     howManyRecipesCanBeMade,
 } from "../assembly";
-import Big from "../bigmath";
 import { ACTIONS } from "../content/actions";
 import { useGameState } from "./useGameState";
 import { NumberFormat, setMode } from "../numberFormatter";
+import { ONE, ZERO, fromNumberOrBigInt } from "../decimalConsts";
+import Decimal from "decimal.js";
 
 const updateTimestamps: number[] = [];
 
@@ -37,7 +38,7 @@ export function useProduction(ticksPerSecond: number) {
         calculateStorage,
     } = useGameState();
 
-    const [fps, setFps] = useState(Big.Zero);
+    const [fps, setFps] = useState(ZERO);
     const [, forceUpdate] = useReducer(x => x + 1, 0);
 
     function checkPowerConsumption(itemName: Items, building: Items): boolean {
@@ -64,7 +65,7 @@ export function useProduction(ticksPerSecond: number) {
         }
     }
 
-    function doProduction(timeStep: Big) {
+    function doProduction(timeStep: Decimal) {
         const {
             assemblers,
             amountThatWeHave,
@@ -101,8 +102,8 @@ export function useProduction(ticksPerSecond: number) {
                         // there's probably a better way to organize this code
 
                         if (state === PRODUCTION_OUTPUT_BLOCKED) {
-                            if (addToTotal(itemName, Big.One)) {
-                                time = Big.Zero;
+                            if (addToTotal(itemName, ONE)) {
+                                time = ZERO;
                                 state = PRODUCTION_NO_INPUT;
                             } else {
                                 return;
@@ -119,7 +120,7 @@ export function useProduction(ticksPerSecond: number) {
                             const result = consumeMaterialsFromRecipe(
                                 itemName,
                                 amountThatWeHave,
-                                Big.One,
+                                ONE,
                             );
                             if (!result) state = PRODUCTION_NO_INPUT;
                             else if (hadNoInput) {
@@ -134,12 +135,12 @@ export function useProduction(ticksPerSecond: number) {
                             }
                             doPowerConsumption(itemName, assemblerName);
 
-                            time.addEq(amountAddPerTick);
-                            const flooredTime = time.floored();
+                            time = time.add(amountAddPerTick);
+                            const flooredTime = time.floor();
 
-                            if (time.gte(Big.One)) {
+                            if (time.gte(ONE)) {
                                 if (addToTotal(itemName, flooredTime)) {
-                                    time.subEq(flooredTime);
+                                    time = time.sub(flooredTime);
                                     if (
                                         !consumeMaterialsFromRecipe(
                                             itemName,
@@ -176,10 +177,10 @@ export function useProduction(ticksPerSecond: number) {
             howManyRecipesCanBeMade(
                 itemName,
                 stateRef.current.amountThatWeHave,
-            ).lt(Big.One)
+            ).lt(ONE)
         )
             return false;
-        return hasStorageCapacity(itemName).gte(Big.One);
+        return hasStorageCapacity(itemName).gte(ONE);
     }, []);
 
 
@@ -189,7 +190,7 @@ export function useProduction(ticksPerSecond: number) {
         while (updateTimestamps[0] < now - 1000) {
             updateTimestamps.shift();
         }
-        setFps(Big.fromNumberOrBigInt(updateTimestamps.length));
+        setFps(fromNumberOrBigInt(updateTimestamps.length));
         forceUpdate();
         const before =
             stateRef.current.lastUIUpdateTimestamp === 0
@@ -244,7 +245,7 @@ export function useProduction(ticksPerSecond: number) {
                 1,
                 (now - stateRef.current.lastTickTimestamp) / 1000,
             );
-            doProduction(Big.fromNumberOrBigInt(timeDiff));
+            doProduction(fromNumberOrBigInt(timeDiff));
             stateRef.current.lastTickTimestamp = now;
             stateRef.current.ticksSinceLastUIUpdate++;
             updateTimestamps.push(now);
@@ -266,7 +267,7 @@ export function useProduction(ticksPerSecond: number) {
 
     useEffect(() => {
         (document as any).game ??= {};
-        (document as any).game.setAmount = (amount: string | number | Big, item: Items) => {
+        (document as any).game.setAmount = (amount: string | number | Decimal, item: Items) => {
             doAction({
                 action: 'set-amount',
                 amount,

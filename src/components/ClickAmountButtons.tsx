@@ -1,13 +1,13 @@
 import { Button, ButtonToolbar } from 'react-bootstrap';
 import { mapPairs } from '../smap';
 import "./ClickAmountButtons.scss";
-import Big from '../bigmath';
+import Decimal from 'decimal.js';
 
 
 interface Props {
-    multiClickOptions: {[p: string]: Big};
-    current: Big;
-    onClick: (value: Big) => void;
+    multiClickOptions: {[p: string]: Decimal};
+    current: Decimal;
+    onClick: (value: Decimal) => void;
 }
 
 

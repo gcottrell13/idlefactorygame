@@ -1,6 +1,6 @@
 import { checkVisible } from "../src/assembly";
-import Big from "../src/bigmath";
 import { Items } from "../src/content/itemNames";
+import { ONE } from "../src/decimalConsts";
 import { NumberFormat } from "../src/numberFormatter";
 import { Queue } from "../src/queue";
 import { State } from "../src/typeDefs/State";
@@ -47,7 +47,7 @@ describe("tree-check", () => {
         while (true) {
             let addOne: Items | undefined;
             if ((addOne = addOneToItemQueue.pop())) {
-                state.amountThatWeHave[addOne] = Big.One;
+                state.amountThatWeHave[addOne] = ONE;
             } else {
                 break;
             }

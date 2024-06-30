@@ -1,5 +1,5 @@
 import _ from "lodash";
-import Big from "./bigmath";
+import Decimal from "decimal.js";
 
 export enum NumberFormat {
     SUFFIX = 'suffix',
@@ -12,13 +12,13 @@ export function setMode(s: NumberFormat) {
     mode = s;
 }
 
-export function formatNumber(n: Big | null | undefined) {
+export function formatNumber(n: Decimal | null | undefined) {
     if (!n) {
         return '0';
     }
 
-    if (n.magnitude() >= 3) {
-        const rep = n.mantissa.toString();
+    if (n.e >= 3) {
+        const rep = n.d.join('');
         const exp = rep.length;
         const majorExp = Math.floor(exp / 3);
         const minorExp = exp % 3;
@@ -125,27 +125,8 @@ const bigLookup = _.fromPairs(bigExponents.map((exp, i) => {
 
 ((document as any).game ??= {}).bigExponents = bigExponents;
 
-export function parseFormat(amount: number | bigint | Big | string): Big {
-    if (typeof amount === 'number' || typeof amount === 'bigint') return Big.fromNumberOrBigInt(amount);
-    if (amount instanceof Big) return amount;
-
-    let [mantissaStr, exp] = amount.split(' ');
-
-    if (_.isEmpty(exp)) {
-        return Big.fromNumberOrBigInt(parseFloat(mantissaStr));
-    }
-
-    const mantissa = Big.fromNumberOrBigInt(parseFloat(mantissaStr));
-
-    function scale(exponent: string | number) {
-        if (typeof exponent === 'string') exponent = parseInt(exponent);
-        return new Big(mantissa.mantissa, BigInt(exponent));
-    }
-
-    const power = bigLookup[exp] ?? -1;
-
-    if (power == -1)
-        throw new Error(`unable to parse ${amount}`);
-
-    return scale(power * 3);
+export function parseFormat(amount: number | bigint | Decimal | string): Decimal {
+    if (amount instanceof Decimal) return amount;
+    if (typeof amount == 'bigint') return new Decimal(amount.toString());
+    return new Decimal(amount);
 }

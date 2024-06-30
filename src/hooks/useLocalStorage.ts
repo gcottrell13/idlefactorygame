@@ -4,7 +4,7 @@ import { VERSION } from "../version";
 import { keys } from "../smap";
 import { NumberFormat } from "../numberFormatter";
 import _ from "lodash";
-import Big from "../bigmath";
+import Decimal from "decimal.js";
 
 const defaultState: State = {
     version: VERSION(),
@@ -37,8 +37,8 @@ function serializer(this: any, key: string, value: any) {
     if (typeof value === "number") {
         return Math.round(value * 1000) / 1000;
     }
-    if (value instanceof Big) {
-        return `big=${value.mantissa}x${value.exponent}`;
+    if (value instanceof Decimal) {
+        return `big=${value.toString()}`;
     }
     return value;
 }
@@ -46,8 +46,7 @@ function serializer(this: any, key: string, value: any) {
 function deserializer(this: any, key: string, value: any) {
     if (typeof value === 'string' && value.startsWith('big=')) {
         const [, val] = value.split('=');
-        const [mantissa, exponent] = val.split('x');
-        return new Big(BigInt(mantissa), BigInt(exponent));
+        return new Decimal(val);
     }
     return value;
 }
@@ -73,11 +72,16 @@ function getStorage(): State {
 }
 
 function loadAndCheckStorage(): State {
-    const state = getStorage();
-    if (state.version[0] != VERSION()[0]) {
+    try {
+        const state = getStorage();
+        if (state.version[0] != VERSION()[0]) {
+            return defaultState;
+        }
+        return state;
+    }
+    catch {
         return defaultState;
     }
-    return state;
 }
 
 function saveGame(state: State) {
