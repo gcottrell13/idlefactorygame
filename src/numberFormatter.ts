@@ -17,24 +17,15 @@ export function formatNumber(n: Decimal | null | undefined) {
         return '0';
     }
 
-    if (n.e >= 3) {
-        const rep = n.d.join('');
-        const exp = rep.length;
-        const majorExp = Math.floor(exp / 3);
-        const minorExp = exp % 3;
-
-        const r = (parseInt(rep.substring(0, minorExp + 3)) / 100).toFixed(2);
-        if (mode === NumberFormat.SUFFIX) {
-            return r + ' ' + (bigExponents[majorExp] ?? `e${exp}`);
-        }
-        else if (mode === NumberFormat.EXPONENT) {
-            return r + ' ' + `e${exp}`;
-        }
+    if (n.e <= 30) {
+        const factor = Math.floor(n.e / 3);
+        if (factor < 1)
+            return n.toNumber();
+        const lead = (n.toNumber() / Math.pow(10, factor * 3)).toFixed(2);
+        return `${lead} ${under30[factor]}`;
     }
 
-    let value = n.toNumber().toFixed(2);
-    if (value.endsWith('.00')) return Math.floor(n.toNumber());
-    return value.substring(0, value.indexOf('.') + 3);
+    return n.toString();
 }
 
 export function formatSeconds(n: number) {
@@ -68,7 +59,7 @@ const under30 = [
     'Sx',
     'Sp',
     'Oc',
-    'N',
+    'No',
 ];
 const firstOrder = [
     '',
