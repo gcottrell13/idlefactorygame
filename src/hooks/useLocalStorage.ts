@@ -5,6 +5,7 @@ import { keys } from "../smap";
 import { NumberFormat } from "../numberFormatter";
 import _ from "lodash";
 import Decimal from "decimal.js";
+import { ONE } from "../decimalConsts";
 
 const defaultState: State = {
     version: VERSION(),
@@ -27,6 +28,7 @@ const defaultState: State = {
     productionState: {},
     hideAddButtons: {},
     numberFormatMode: NumberFormat.SUFFIX,
+    clickAmount: ONE,
 };
 
 function makeName(name: string) {

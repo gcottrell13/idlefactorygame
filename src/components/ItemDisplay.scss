@@ -83,13 +83,6 @@ button {
         }
     }
 
-    .assembler-display-container {
-        grid-column: 4;
-        display: grid;
-        grid-template-columns: 50px 1fr 20px 1fr;
-        grid-column-gap: 5px;
-    }
-
     .hide-add-button-container {
         grid-column: 6;
     }

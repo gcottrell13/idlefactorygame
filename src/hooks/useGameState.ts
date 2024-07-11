@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import GAME from "../values";
 import { Items, partialItems } from "../content/itemNames";
 import _ from "lodash";
@@ -59,17 +59,19 @@ export function useGameState() {
         const assemblersMap = keys(assemblers).map(
             (key) => (assemblers[key] ?? ZERO).mul(GAME.storageSizes[key])
         );
+        const one = Decimal.max(ZERO, Decimal.sum(ZERO, ...assemblersMap));
+        const two = keys(storage).map(
+            (key) =>
+                !storage[key] ? ZERO : storage[key]!.mul(canBeStoredIn.includes(key)
+                    ? GAME.storageSizes[key] ?? ZERO
+                    : ZERO),
+        );
         return Decimal.sum(
-            Decimal.max(ZERO, Decimal.sum(...assemblersMap)),
+            one,
             Decimal.max(
                 Decimal.sum(
                     ZERO,
-                    ...keys(storage).map(
-                        (key) =>
-                            (storage[key] ?? ZERO).mul(canBeStoredIn.includes(key)
-                                ? GAME.storageSizes[key] ?? ZERO
-                                : ZERO),
-                    )
+                    ...two,
                 ),
                 ZERO,
             ),

@@ -1,6 +1,11 @@
 
 .assembler-display-container {
 
+    grid-column: 4;
+    display: grid;
+    grid-template-columns: 50px 260px 20px auto 1fr;
+    grid-column-gap: 5px;
+
     .assembler-count {
         display: inline-block;
         white-space: nowrap;
@@ -22,6 +27,18 @@
             border-radius: 10px;
             line-height: 15px;
             width: 20px;
+        }
+    }
+
+    .add-building-container {
+        grid-column: 5;
+        align-self: center;
+        justify-self: start;
+
+        .assembler-add-button {
+            border-radius: 10px;
+            line-height: 15px;
+            padding: 6px;
         }
     }
 }

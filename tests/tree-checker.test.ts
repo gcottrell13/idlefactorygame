@@ -32,6 +32,7 @@ describe("tree-check", () => {
             productionState: {},
             hideAddButtons: {},
             numberFormatMode: NumberFormat.SUFFIX,
+            clickAmount: ONE,
         };
 
         const discoveryLog: string[] = [];

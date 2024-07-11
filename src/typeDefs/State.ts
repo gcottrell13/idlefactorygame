@@ -74,4 +74,6 @@ export interface State {
     hideAddButtons: partialItems<boolean>;
 
     numberFormatMode: NumberFormat;
+
+    clickAmount: Decimal;
 }

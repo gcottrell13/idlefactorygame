@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { Items, partialItems } from "../content/itemNames";
-import { mapPairs, keys, fromPairs } from "../smap";
+import { mapPairs, keys, fromPairs, values } from "../smap";
 import { PRODUCTION_OUTPUT_BLOCKED, State } from "../typeDefs/State";
 import GAME from "../values";
 import Decimal from "decimal.js";
@@ -127,6 +127,23 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
             (effectiveConsumptionRates[ingredient] ??= {})[itemName] = rate.mul(count);
         });
     });
+    
+
+    function calculateBuildingsToSatisfy(building: Items, recipe: Items) {
+        const consumption = Decimal.sum(
+            ...values(effectiveConsumptionRates[recipe] ?? {}),
+            ...values(powerConsumptionRates[recipe] ?? {}).map(x => x[2]),
+        );
+        const production = Decimal.sum(...values(effectiveProductionRates[recipe] ?? {}));
+        const speed = GAME.assemblerSpeeds[building]
+            .mul(GAME.calculateBoost(building, state))
+            .div(GAME.timePerRecipe[recipe]);
+        if (speed.eq(ZERO)) return ONE;
+        return consumption
+            .sub(production)
+            .div(speed)
+            .ceil();
+    }
 
     return {
         effectiveConsumptionRates,
@@ -134,5 +151,6 @@ export function useCalculateRates(state: State, itemFilter: Items[]) {
         powerConsumptionRates,
         maxConsumptionRates,
         assemblerIsStuckOrDisabled,
+        calculateBuildingsToSatisfy,
     };
 }

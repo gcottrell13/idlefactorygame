@@ -46,7 +46,6 @@ export function ByHandButton({ makeByHand, itemName, count }: ByHandButtonProps)
                             clearInterval(intervalIdRef.current);
                             return;
                         }
-                        console.log(`making ${itemName}`);
                         makeByHand();
                     }, 200);
                     isPressed.current = true;

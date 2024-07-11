@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import GAME from "../values";
 import { OverlayTrigger, Table, Button } from "react-bootstrap";
 import {
@@ -13,13 +13,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBolt } from "@fortawesome/free-solid-svg-icons";
 import { keys } from "../smap";
 import { Items, partialItems } from "../content/itemNames";
-import { formatNumber as d } from "../numberFormatter";
+import { formatNumber as d, formatNumber } from "../numberFormatter";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { Sprite } from "./Sprite";
 import { useGameState } from "../hooks/useGameState";
 import "./Assembler.scss";
 import Decimal from "decimal.js";
-import { FIVE, HUNDRED, THOUSAND, ZERO } from "../decimalConsts";
+import { ONE, THOUSAND, THREE, ZERO } from "../decimalConsts";
+import { AppContext } from "./AppContext";
 
 const TOP_UPDATE_SPEED_DISPLAY = new Decimal(20);
 
@@ -36,6 +37,9 @@ export function Assembler({
     assemblersMakingThis,
     state,
 }: Props) {
+
+    const appContext = useContext(AppContext);
+
     const [lastUpdateTimestamp, setLastUpdateTimestamp] = useState<number | null>(null);
     const [instantAnim, setInstantAnim] = useState(false);
     const { dispatchAction } = useGameState();
@@ -48,17 +52,82 @@ export function Assembler({
     const [progressDisplay, setProgressDisplay] = useState(progress);
     const knownActualProgress = useRef(progress);
 
-    const progressDisplayNumber = progressDisplay.toNumber();
-
-    const baseCraftTime = GAME.timePerRecipe[itemName];
-    // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
-    const thisPowerState = state.powerConsumptionState[itemName] ?? {};
+    const amountWeHave = state.amountThatWeHave[assemblerName] ?? ZERO;
 
     const no = assemblersMakingThis[assemblerName] ?? ZERO;
+    const baseCraftTime = GAME.timePerRecipe[itemName];
+
     let speedPer = GAME.assemblerSpeeds[assemblerName]
         .div(baseCraftTime)
         .mul(GAME.calculateBoost(assemblerName, state));
+
     const totalSpeed = no.mul(speedPer);
+    const updateSpeed = totalSpeed.gt(TOP_UPDATE_SPEED_DISPLAY) ? TOP_UPDATE_SPEED_DISPLAY.toNumber() : Math.max(4, totalSpeed.toNumber() * 4);
+    
+    useEffect(() => {
+        if (progressState === PRODUCTION_RUNNING) {
+            const intervalHandle = setTimeout(() => {
+                const now = new Date().getTime();
+                if (knownActualProgress.current !== progress) {
+                    if (progress < knownActualProgress.current) {
+                        setInstantAnim(true);
+                        setProgressDisplay(ZERO);
+                    } else {
+                        setInstantAnim(false);
+                        setProgressDisplay(progress);
+                    }
+                    knownActualProgress.current = progress;
+                } else if (lastUpdateTimestamp === null && progress) {
+                    setProgressDisplay(progress);
+                } else {
+                    const l = lastUpdateTimestamp ?? now;
+                    const timeDelta = new Decimal(now - l).div(THOUSAND);
+                    const newProgress = totalSpeed.mul(timeDelta).add(progressDisplay);
+                    setProgressDisplay(newProgress);
+                }
+                setLastUpdateTimestamp(now);
+            }, 1000 / updateSpeed);
+            return () => {
+                clearTimeout(intervalHandle);
+            };
+        } else {
+            setProgressDisplay(ZERO);
+            setLastUpdateTimestamp(null);
+            setInstantAnim(true);
+        }
+    }, [totalSpeed.toNumber(), progressDisplay.toNumber(), progressState, lastUpdateTimestamp]);
+    
+    // =====================================================================================================================
+    // =====================================================================================================================
+
+    if (state.timeUnlockedAt[assemblerName] === undefined) {
+        return null;
+    }
+
+    const progressDisplayNumber = progressDisplay.toNumber();
+
+    // const thisPower = state.powerConsumptionProgress[itemName] ?? {};
+    const thisPowerState = state.powerConsumptionState[itemName] ?? {};
+
+    if (no.eq(ZERO)) {
+        return (
+            <Button
+                className={"add-assembler"}
+                key={assemblerName}
+                onClick={() => dispatchAction({
+                    action: 'add-building',
+                    amount: state.clickAmount,
+                    building: assemblerName,
+                    recipe: itemName,
+                })}
+                variant="secondary"
+                disabled={amountWeHave.eq(ZERO)}
+            >
+                Add {no.gt(ZERO) ? formatNumber(no) : ''}{" "}
+                {GAME.displayNames(assemblerName)}
+            </Button>
+        );
+    }
 
     let label = (
         <span className={"assembler-count"}>
@@ -71,7 +140,6 @@ export function Assembler({
         </span>
     );
     let stateDisplay: JSX.Element | null = null;
-    const updateSpeed = totalSpeed.gt(TOP_UPDATE_SPEED_DISPLAY) ? TOP_UPDATE_SPEED_DISPLAY.toNumber() : Math.max(4, totalSpeed.toNumber() * 4);
 
     if (thisPowerState[assemblerName] === PRODUCTION_NO_POWER) {
         const word = GAME.buildingPowerDisplayWord[assemblerName] ?? "Power";
@@ -124,8 +192,8 @@ export function Assembler({
     } else if (progressState === PRODUCTION_RUNNING) {
         let speedClass = "slow";
         if (instantAnim) speedClass = "instant";
-        else if (updateSpeed > 15) speedClass = "instant";
-        else if (updateSpeed > 8) speedClass = "fast";
+        else if (totalSpeed.gt(new Decimal(15))) speedClass = "instant";
+        else if (totalSpeed.gt(new Decimal(8))) speedClass = "fast";
         stateDisplay = (
             <ProgressBar
                 animated={progressDisplayNumber === 1}
@@ -134,43 +202,6 @@ export function Assembler({
             />
         );
     }
-
-    useEffect(() => {
-        if (progressState === PRODUCTION_RUNNING) {
-            if (totalSpeed.gt(FIVE)) {
-                setProgressDisplay(HUNDRED);
-                return;
-            }
-            const intervalHandle = setTimeout(() => {
-                const now = new Date().getTime();
-                if (knownActualProgress.current !== progress) {
-                    if (progress < knownActualProgress.current) {
-                        setInstantAnim(true);
-                        setProgressDisplay(ZERO);
-                    } else {
-                        setInstantAnim(false);
-                        setProgressDisplay(progress);
-                    }
-                    knownActualProgress.current = progress;
-                } else if (lastUpdateTimestamp === null && progress) {
-                    setProgressDisplay(progress);
-                } else {
-                    const l = lastUpdateTimestamp ?? now;
-                    const timeDelta = new Decimal(now - l).div(THOUSAND);
-                    const newProgress = totalSpeed.mul(timeDelta).add(progressDisplay);
-                    setProgressDisplay(newProgress);
-                }
-                setLastUpdateTimestamp(now);
-            }, 1000 / updateSpeed);
-            return () => {
-                clearTimeout(intervalHandle);
-            };
-        } else {
-            setProgressDisplay(ZERO);
-            setLastUpdateTimestamp(null);
-            setInstantAnim(true);
-        }
-    }, [totalSpeed, progressDisplay, progressState, lastUpdateTimestamp]);
 
     const powerRequirements =
         GAME.buildingPowerRequirementsPerSecond[assemblerName];
@@ -215,6 +246,8 @@ export function Assembler({
         );
     }
 
+    const amountToAdd = appContext.calculateMaxAdd(assemblerName, itemName);
+
     return (
         <>
             <span className={"building-label"}>{label}</span>
@@ -235,6 +268,23 @@ export function Assembler({
                 </OverlayTrigger>
             </span>
             <span className={"building-state-display"}>{stateDisplay}</span>
+            <span className={'add-building-container'}>
+                <OverlayTrigger placement={"left"} overlay={<Popover><Popover.Body>Add {d(amountToAdd)}</Popover.Body></Popover>}>
+                    <Button
+                        className={'assembler-add-button'}
+                        onClick={() => dispatchAction({
+                            action: 'add-building',
+                            amount: amountToAdd,
+                            building: assemblerName,
+                            recipe: itemName,
+                        })}
+                        variant={'success'}
+                        disabled={amountToAdd.eq(ZERO)}
+                    >
+                        +{d(amountToAdd)}
+                    </Button>
+                </OverlayTrigger>
+            </span>
         </>
     );
 }

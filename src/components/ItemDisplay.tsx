@@ -33,7 +33,7 @@ import { useGameState } from "../hooks/useGameState";
 import { ByHandButton } from "./ByHandButton";
 import "./ItemDisplay.scss";
 import Decimal from "decimal.js";
-import { FIVE, HUNDRED, ONE, TEN, TWO, ZERO } from "../decimalConsts";
+import { HUNDRED, ONE, ZERO } from "../decimalConsts";
 
 type func = () => void;
 
@@ -41,20 +41,18 @@ type Props = {
     amt: Decimal;
     itemName: Items;
     state: ReturnType<typeof useProduction>["state"];
-    assemblerButtons: JSX.Element[];
     assemblersMakingThis: partialItems<Decimal>;
-    boxButtons: JSX.Element[];
     makeByHand: func | false | null;
     onMouseover: func | undefined;
     disableRecipe: func;
     currentClickAmount: Decimal;
+    sideButtons: JSX.Element[];
 } & ReturnType<typeof useCalculateRates>;
 
 export function ItemDisplay({
     amt,
     itemName,
-    assemblerButtons,
-    boxButtons,
+    sideButtons,
     makeByHand,
     onMouseover,
     disableRecipe,
@@ -73,6 +71,8 @@ export function ItemDisplay({
         state.calculateStorage(itemName).sub(amt).floor(),
         GAME.maxCraftAtATime(itemName, state),
     );
+    
+    const buildingsToMakeThis = GAME.requiredBuildings(itemName);
 
     const { dispatchAction } = useGameState();
 
@@ -80,7 +80,7 @@ export function ItemDisplay({
     const thisPowerRequirements =
         GAME.buildingPowerRequirementsPerSecond[itemName];
 
-    const assemblers = keys(assemblersMakingThis).map((name) => (
+    const assemblers = buildingsToMakeThis.map((name) => name == 'by-hand' ? null : (
         <Assembler
             assemblerName={name}
             assemblersMakingThis={assemblersMakingThis}
@@ -91,7 +91,7 @@ export function ItemDisplay({
     ));
 
     const disableButton =
-        assemblers.length > 0 ? (
+        values(assemblersMakingThis).some(x => (x ?? ZERO).gt(ZERO)) ? (
             <Button
                 className={"assembler-disable-button"}
                 onClick={disableRecipe}
@@ -99,7 +99,7 @@ export function ItemDisplay({
             >
                 {recipeDisabled ? "Start" : "Stop"}
             </Button>
-        ) : null;
+        ) : <span></span>;
 
     const byproducts = _.uniq(
         GAME.sideProducts[itemName].flatMap((x) => keys(x)),
@@ -212,8 +212,8 @@ export function ItemDisplay({
 
     const g = (
         <FontAwesomeIcon
-            icon={netRate.gt(ZERO) ? faThumbsUp : faChevronCircleDown}
-            className={netRate.gt(ZERO) ? "" : "text-danger"}
+            icon={netRate.gte(ZERO) ? faThumbsUp : faChevronCircleDown}
+            className={netRate.gte(ZERO) ? "" : "text-danger"}
         />
     );
     let historyDisplay = (
@@ -423,8 +423,7 @@ export function ItemDisplay({
             </div>
             <div className={"add-button-container"}>
                 <div className={"buttons-display"}>
-                    {boxButtons}
-                    {assemblerButtons}
+                    {sideButtons}
                 </div>
             </div>
             <div className={'hide-add-button-container'}>

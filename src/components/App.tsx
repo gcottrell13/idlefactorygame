@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import _ from "lodash";
 import { howManyRecipesCanBeMade } from "../assembly";
 import GAME from "../values";
@@ -19,6 +19,7 @@ import { useMinigames } from "../hooks/useMinigames";
 import { Sprite } from "./Sprite";
 import { MinigameConfig } from "../content/minigamePrizes";
 import { INFINITY, ONE, ZERO, TEN, HUNDRED } from "../decimalConsts";
+import { AppContext } from "./AppContext";
 
 type Props = {
     ticksPerSecond: number;
@@ -80,39 +81,23 @@ export function App({ ticksPerSecond }: Props) {
         );
     }
 
-    function calculateBuildingsToSatisfy(building: Items, recipe: Items) {
-        const consumption = Decimal.sum(
-            ...values(rates.effectiveConsumptionRates[recipe] ?? {}),
-            ...values(rates.powerConsumptionRates[recipe] ?? {}).map(x => x[2]),
-        );
-        const production = Decimal.sum(...values(rates.effectiveProductionRates[recipe] ?? {}));
-        const speed = GAME.assemblerSpeeds[building]
-            .mul(GAME.calculateBoost(building, state))
-            .div(GAME.timePerRecipe[recipe]);
-        if (speed.eq(ZERO)) return ONE;
-        return consumption
-            .sub(production)
-            .div(speed)
-            .ceil();
-    }
-
     function calculateMaxAdd(itemName: Items, target?: Items) {
         const amt = currentClickAmount.eq(ZERO) && target
-            ? calculateBuildingsToSatisfy(itemName, target)
+            ? rates.calculateBuildingsToSatisfy(itemName, target)
             : currentClickAmount;
         const have = state.amountThatWeHave[itemName];
         if (have === undefined || have.lt(ONE))
-            return Decimal.max(amt, ONE);
+            return ZERO;
         return Decimal.clamp(
-            amt, 
+            amt,
             ONE,
             have,
         );
     }
 
-    const haveAssemblers = GAME.allAssemblers.filter(
-        (key) => (amountThatWeHave[key] ?? ZERO).gt(ZERO),
-    );
+    const appContext = useMemo(() => ({
+        rates, calculateMaxAdd,
+    }), [rates, calculateMaxAdd]);
 
     if (currentTab === null) {
         setCurrentTab(
@@ -137,22 +122,20 @@ export function App({ ticksPerSecond }: Props) {
             const recipe = GAME.recipes[itemName];
             if (recipe === undefined) continue;
 
-            const buildingsToMakeThis = GAME.requiredBuildings(itemName);
             const makeByHand = canMakeItemByHand(itemName);
             const assemblerCount = assemblers[itemName];
             const assemblersMakingThis = _.pickBy(
                 assemblerCount,
                 (x) => x.gt(ZERO),
             );
-            const assemblerButtons: JSX.Element[] = [];
-            const boxButtons: JSX.Element[] = [];
+            const sideButtons: JSX.Element[] = [];
 
             GAME.itemsCanBeStoreIn[itemName].forEach((container) => {
                 if (!state.visible[container]) return;
                 if (state.hideAddButtons[container]) return;
                 const num = calculateMaxAdd(container);
                 const disabled = (amountThatWeHave[container] ?? ZERO).lt(ONE);
-                boxButtons.push(
+                sideButtons.push(
                     <Button
                         className={"add-container"}
                         key={container}
@@ -173,36 +156,36 @@ export function App({ ticksPerSecond }: Props) {
                 );
             });
 
-            buildingsToMakeThis.forEach((assemblerName) => {
-                if (assemblerName === 'by-hand') return;
-                if (!state.visible[assemblerName]) return;
-                if (state.hideAddButtons[assemblerName]) return;
-                const a = assemblerName as (typeof haveAssemblers)[0];
-                const haveAny = haveAssemblers.includes(assemblerName as any);
-                const num = calculateMaxAdd(a, itemName);
-                assemblerButtons.push(
-                    <Button
-                        className={"add-assembler"}
-                        key={assemblerName}
-                        onClick={() => {
-                            doAction({
-                                action: 'add-building',
-                                amount: num,
-                                building: a,
-                                recipe: itemName,
-                            })
-                        }}
-                        variant="secondary"
-                        disabled={!haveAny}
-                    >
-                        Add {num.gt(ZERO) ? formatNumber(num) : ''}{" "}
-                        {GAME.displayNames(assemblerName)}
-                    </Button>,
-                );
-            });
+            // buildingsToMakeThis.forEach((assemblerName) => {
+            //     if (assemblerName === 'by-hand') return;
+            //     if (!state.visible[assemblerName]) return;
+            //     if (state.hideAddButtons[assemblerName]) return;
+            //     const a = assemblerName as (typeof haveAssemblers)[0];
+            //     const haveAny = haveAssemblers.includes(assemblerName as any);
+            //     const num = calculateMaxAdd(a, itemName);
+            //     assemblerButtons.push(
+            //         <Button
+            //             className={"add-assembler"}
+            //             key={assemblerName}
+            //             onClick={() => {
+            //                 doAction({
+            //                     action: 'add-building',
+            //                     amount: num,
+            //                     building: a,
+            //                     recipe: itemName,
+            //                 })
+            //             }}
+            //             variant="secondary"
+            //             disabled={!haveAny}
+            //         >
+            //             Add {num.gt(ZERO) ? formatNumber(num) : ''}{" "}
+            //             {GAME.displayNames(assemblerName)}
+            //         </Button>,
+            //     );
+            // });
 
             if (pickMinigameByItem(itemName) && (amountThatWeHave['research-minigames'] ?? ZERO).gt(ZERO)) {
-                assemblerButtons.push(
+                sideButtons.push(
                     <Button
                         key={'playminigame'}
                         onClick={() => {
@@ -222,9 +205,8 @@ export function App({ ticksPerSecond }: Props) {
                     amt={amt ?? ZERO}
                     state={state}
                     assemblersMakingThis={assemblersMakingThis}
-                    boxButtons={boxButtons}
+                    sideButtons={sideButtons}
                     itemName={itemName}
-                    assemblerButtons={assemblerButtons}
                     currentClickAmount={currentClickAmount}
                     makeByHand={
                         makeByHand === null
@@ -296,90 +278,92 @@ export function App({ ticksPerSecond }: Props) {
     }
 
     return (
-        <Container fluid className={"game-container noselect"}>
-            <div className={"sticky"}>
-                <Button onClick={() => doAction({ action: 'reset-game' })} variant={"secondary"}>
-                    Reset
-                </Button>{" "}
-                <ReleaseNotes version={VERSION().join(".")} />{" "}
-                <span className={"play-timer"}>
-                    Play Time: {formatSeconds(state.timeSpentPlaying)}
-                </span>
-                <span className={"fps"}>{formatNumber(fps)} UPS</span>
-            </div>
-            <Tabs
-                activeKey={currentTab}
-                onSelect={setCurrentTab}
-                className={"section-tabs sticky"}
-            >
-                {GAME.sections.map((section) => {
-                    let title = (
-                        <span>
+        <AppContext.Provider value={appContext}>
+            <Container fluid className={"game-container noselect"}>
+                <div className={"sticky"}>
+                    <Button onClick={() => doAction({ action: 'reset-game' })} variant={"secondary"}>
+                        Reset
+                    </Button>{" "}
+                    <ReleaseNotes version={VERSION().join(".")} />{" "}
+                    <span className={"play-timer"}>
+                        Play Time: {formatSeconds(state.timeSpentPlaying)}
+                    </span>
+                    <span className={"fps"}>{formatNumber(fps)} UPS</span>
+                </div>
+                <Tabs
+                    activeKey={currentTab}
+                    onSelect={setCurrentTab}
+                    className={"section-tabs sticky"}
+                >
+                    {GAME.sections.map((section) => {
+                        let title = (
+                            <span>
 
-                            {section.Icon && (
-                                <Sprite name={section.Icon} />
-                            )}
-                            {section.Name}
-                        </span>
-                    );
-
-                    if (
-                        section.SubSections.every((ss) =>
-                            ss.Items.every((j) => !visible[j]),
-                        )
-                    )
-                        return null;
-
-                    if (
-                        section.SubSections.some((ss) =>
-                            ss.Items.some((j) => acknowledged[j] === false),
-                        )
-                    )
-                        title = (
-                            <span className={"layout-tab"}>
-                                {title}{" "}
-                                <Badge className={"new-item-tab-badge"}>New</Badge>
+                                {section.Icon && (
+                                    <Sprite name={section.Icon} />
+                                )}
+                                {section.Name}
                             </span>
                         );
 
-                    return (
-                        <Tab
-                            key={section.Name}
-                            eventKey={section.Name}
-                            title={title}
-                        >
-                            <div className={"main-grid"}>
-                                {sections[section.Name]}
-                            </div>
-                        </Tab>
-                    );
-                })}
-            </Tabs>
+                        if (
+                            section.SubSections.every((ss) =>
+                                ss.Items.every((j) => !visible[j]),
+                            )
+                        )
+                            return null;
 
-            <ClickAmountButtons
-                current={currentClickAmount}
-                multiClickOptions={multiClickOptions}
-                onClick={setCurrentClickAmount}
-            />
-            {MiniGameClass && miniGamePrize && (
-                <MiniGameClass
-                    giftRepr={<span>
-                        <Sprite name={miniGamePrize} amount={miniGameConfig?.count} />
-                        {GAME.displayNames(miniGamePrize)}
-                    </span>}
-                    onSolve={() => {
-                        doAction({
-                            action: 'add-amount',
-                            amount: miniGameConfig!.count,
-                            item: miniGamePrize,
-                        });
-                        setIsPlayingMinigame(false);
-                        setMiniGamePrize(null);
-                    }}
-                    difficulty={miniGameConfig!.difficulty}
-                    onCancel={stopMinigame}
+                        if (
+                            section.SubSections.some((ss) =>
+                                ss.Items.some((j) => acknowledged[j] === false),
+                            )
+                        )
+                            title = (
+                                <span className={"layout-tab"}>
+                                    {title}{" "}
+                                    <Badge className={"new-item-tab-badge"}>New</Badge>
+                                </span>
+                            );
+
+                        return (
+                            <Tab
+                                key={section.Name}
+                                eventKey={section.Name}
+                                title={title}
+                            >
+                                <div className={"main-grid"}>
+                                    {sections[section.Name]}
+                                </div>
+                            </Tab>
+                        );
+                    })}
+                </Tabs>
+
+                <ClickAmountButtons
+                    current={currentClickAmount}
+                    multiClickOptions={multiClickOptions}
+                    onClick={setCurrentClickAmount}
                 />
-            )}
-        </Container>
+                {MiniGameClass && miniGamePrize && (
+                    <MiniGameClass
+                        giftRepr={<span>
+                            <Sprite name={miniGamePrize} amount={miniGameConfig?.count} />
+                            {GAME.displayNames(miniGamePrize)}
+                        </span>}
+                        onSolve={() => {
+                            doAction({
+                                action: 'add-amount',
+                                amount: miniGameConfig!.count,
+                                item: miniGamePrize,
+                            });
+                            setIsPlayingMinigame(false);
+                            setMiniGamePrize(null);
+                        }}
+                        difficulty={miniGameConfig!.difficulty}
+                        onCancel={stopMinigame}
+                    />
+                )}
+            </Container>
+        </AppContext.Provider>
     );
 }
